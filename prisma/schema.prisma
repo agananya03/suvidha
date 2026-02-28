@@ -28,3 +28,10 @@ model ServiceRequest {
 
   user        User     @relation(fields: [userId], references: [id])
 }
+
+model OTPSession {
+  mobile String   
+  otp    String
+  expiresAt DateTime
+
+}
