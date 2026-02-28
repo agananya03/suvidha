@@ -14,7 +14,31 @@
   * {
     @apply border-gray-200;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-all duration-300;
   }
+}
+
+/* Accessibility Utilities */
+.high-contrast {
+  filter: contrast(1.5) saturate(1.2) !important;
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+.high-contrast * {
+  border-color: #fff !important;
+}
+
+.text-size-normal {
+  font-size: 100% !important;
+}
+
+.text-size-large {
+  font-size: 110% !important;
+}
+
+.text-size-xlarge {
+  font-size: 125% !important;
 }
