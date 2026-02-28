@@ -1,0 +1,59 @@
+﻿DB URL from ENV: Exists
+Seeding SUVIDHA 2026 database...
+node.exe : (node:29672) Warning: SECURITY WARNING: 
+The SSL modes 'prefer', 'require', and 'verify-ca' 
+are treated as aliases for 'verify-full'.
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node: 
+   29672) Wa... 'verify-full'.:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+In the next major version (pg-connection-string 
+v3.0.0 and pg v9.0.0), these modes will adopt 
+standard libpq semantics, which have weaker 
+security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 
+'sslmode=verify-full'
+- If you want libpq compatibility now, use 
+'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ss
+l.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the 
+warning was created)
+PrismaClientKnownRequestError: 
+Invalid `prisma.queueEntry.deleteMany()` invocation 
+in
+C:\Users\parva\OneDrive\Desktop\suvidha\suvidha-2026
+\prisma\seed.ts:26:29
+
+  23 console.log('Seeding SUVIDHA 2026 database...')
+  24 
+  25 // Clean existing data for idempotency
+ΓåÆ 26 await prisma.queueEntry.deleteMany(
+
+    at zr.handleRequestError (C:\Users\parva\OneDriv
+e\Desktop\suvidha\suvidha-2026\node_modules\@prisma\
+client\src\runtime\RequestHandler.ts:237:13)
+    at zr.handleAndLogRequestError (C:\Users\parva\O
+neDrive\Desktop\suvidha\suvidha-2026\node_modules\@p
+risma\client\src\runtime\RequestHandler.ts:183:12)
+    at zr.request (C:\Users\parva\OneDrive\Desktop\s
+uvidha\suvidha-2026\node_modules\@prisma\client\src\
+runtime\RequestHandler.ts:152:12)
+    at process.processTicksAndRejections 
+(node:internal/process/task_queues:105:5)
+    at async a (C:\Users\parva\OneDrive\Desktop\suvi
+dha\suvidha-2026\node_modules\@prisma\client\src\run
+time\getPrismaClient.ts:808:24)
+    at async main (C:\Users\parva\OneDrive\Desktop\s
+uvidha\suvidha-2026\prisma\seed.ts:26:5) {
+  code: 'ETIMEDOUT',
+  meta: { modelName: 'QueueEntry' },
+  clientVersion: '7.4.2'
+}

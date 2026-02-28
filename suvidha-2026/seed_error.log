@@ -1,0 +1,50 @@
+﻿DB URL from ENV: Exists
+node.exe : C:\Users\parva\OneDrive\Desktop\suvidha\s
+uvidha-2026\node_modules\@prisma\client\src\runtime\
+utils\validatePrismaClientOptions.ts:229
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:    
+\Users\parva\...tOptions.ts:229:String) [],     
+RemoteException
+    + FullyQualifiedErrorId : NativeCommandErro    r
+ 
+    throw new 
+PrismaClientConstructorValidationError(
+          ^
+
+
+PrismaClientConstructorValidationError: Using 
+engine type "client" requires either "adapter" or 
+"accelerateUrl" to be provided to PrismaClient 
+constructor.
+Read more at https://pris.ly/d/client-constructor
+    at validateDependentOptions (C:\Users\parva\OneD
+rive\Desktop\suvidha\suvidha-2026\node_modules\@pris
+ma\client\src\runtime\utils\validatePrismaClientOpti
+ons.ts:229:11)
+    at validatePrismaClientOptions (C:\Users\parva\O
+neDrive\Desktop\suvidha\suvidha-2026\node_modules\@p
+risma\client\src\runtime\utils\validatePrismaClientO
+ptions.ts:246:3)
+    at new t (C:\Users\parva\OneDrive\Desktop\suvidh
+a\suvidha-2026\node_modules\@prisma\client\src\runti
+me\getPrismaClient.ts:282:7)
+    at <anonymous> (C:\Users\parva\OneDrive\Desktop\
+suvidha\suvidha-2026\prisma\seed.ts:7:16)
+    at Object.<anonymous> (C:\Users\parva\OneDrive\D
+esktop\suvidha\suvidha-2026\prisma\seed.ts:220:6)
+    at Module._compile 
+(node:internal/modules/cjs/loader:1730:14)
+    at Object.transformer (C:\Users\parva\OneDrive\D
+esktop\suvidha\suvidha-2026\node_modules\tsx\dist\re
+gister-D46fvsV_.cjs:3:1104)
+    at Module.load 
+(node:internal/modules/cjs/loader:1465:32)
+    at Function._load 
+(node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync 
+(node:diagnostics_channel:322:14)
+
+Node.js v22.17.0

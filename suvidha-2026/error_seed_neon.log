@@ -1,0 +1,55 @@
+﻿DB URL from ENV: Exists
+Checking URL length: 149
+Seeding SUVIDHA 2026 database...
+node.exe : Error: No database host or 
+connection string was set, and key parameters 
+have default values (host: localhost, user: 
+parva, db: parva, password: null). Is an 
+environment variable missing? Alternatively, if 
+you intended to connect with these parameters, 
+please set the host to 'localhost' explicitly.
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Er 
+   ror: No datab...st' explicitly.:String) [],  
+   RemoteException
+    + FullyQualifiedErrorId : NativeCommandErro 
+   r
+ 
+    at Un.connect (C:\Users\parva\OneDrive\Deskt
+op\suvidha\suvidha-2026\node_modules\@neondataba
+se\serverless\index.js:1318:50)
+    at Dn.newClient (C:\Users\parva\OneDrive\Des
+ktop\suvidha\suvidha-2026\node_modules\@neondata
+base\serverless\index.js:1117:85)
+    at Dn.connect (C:\Users\parva\OneDrive\Deskt
+op\suvidha\suvidha-2026\node_modules\@neondataba
+se\serverless\index.js:1114:1)
+    at Dn.query (C:\Users\parva\OneDrive\Desktop
+\suvidha\suvidha-2026\node_modules\@neondatabase
+\serverless\index.js:1138:1)
+    at Dn.query (C:\Users\parva\OneDrive\Desktop
+\suvidha\suvidha-2026\node_modules\@neondatabase
+\serverless\index.js:1354:96)
+    at PrismaNeonAdapter.performIO (C:\Users\par
+va\OneDrive\Desktop\suvidha\suvidha-2026\node_mo
+dules\@prisma\adapter-neon\dist\index.js:554:40)
+    at PrismaNeonAdapter.executeRaw (C:\Users\pa
+rva\OneDrive\Desktop\suvidha\suvidha-2026\node_m
+odules\@prisma\adapter-neon\dist\index.js:543:24
+)
+    at callback (C:\Users\parva\OneDrive\Desktop
+\suvidha\suvidha-2026\node_modules\@prisma\clien
+t-engine-runtime\src\interpreter\query-interpret
+er.ts:170:16)
+    at withQuerySpanAndEvent (C:\Users\parva\One
+Drive\Desktop\suvidha\suvidha-2026\node_modules\
+@prisma\client-engine-runtime\src\tracing.ts:80:
+12)
+    at #withQuerySpanAndEvent (C:\Users\parva\On
+eDrive\Desktop\suvidha\suvidha-2026\node_modules
+\@prisma\client-engine-runtime\src\interpreter\q
+uery-interpreter.ts:373:12) {
+  clientVersion: '7.4.2'
+}

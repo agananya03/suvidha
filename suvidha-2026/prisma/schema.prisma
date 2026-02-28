@@ -1,0 +1,126 @@
+generator client {
+  provider        = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String          @id @default(cuid())
+  mobile            String          @unique
+  name              String?
+  address           String?
+  preferredLanguage String          @default("en")
+  accessibilityMode String          @default("standard")
+  createdAt         DateTime        @default(now())
+  
+  connections       Connection[]
+  complaints        Complaint[]
+  documentTokens    DocumentToken[]
+}
+
+model OTPSession {
+  id        String   @id @default(cuid())
+  mobile    String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+enum ConnectionType {
+  ELECTRICITY
+  GAS
+  WATER
+  PROPERTY_TAX
+}
+
+model Connection {
+  id              String         @id @default(cuid())
+  userId          String
+  type            ConnectionType
+  provider        String
+  consumerNumber  String
+  address         String
+  outstandingAmt  Float          @default(0)
+  lastBillAmt     Float          @default(0)
+  lastPaymentDate DateTime?
+  createdAt       DateTime       @default(now())
+
+  user            User           @relation(fields: [userId], references: [id])
+}
+
+enum ComplaintStatus {
+  PENDING
+  IN_PROGRESS
+  ESCALATED
+  RESOLVED
+  CLOSED
+}
+
+model Complaint {
+  id                  String          @id @default(cuid())
+  ticketId            String          @unique
+  userId              String?
+  type                String
+  description         String          @db.Text
+  department          String
+  secondaryDepartment String?
+  status              ComplaintStatus
+  priority            Int             @default(5)
+  queuePosition       Int?
+  agingBonus          Float           @default(0)
+  vulnerabilityScore  Float           @default(0)
+  slaDeadline         DateTime?
+  resolvedAt          DateTime?
+  createdAt           DateTime        @default(now())
+
+  user                User?           @relation(fields: [userId], references: [id])
+  queueEntry          QueueEntry?
+}
+
+model DocumentToken {
+  id            String   @id @default(cuid())
+  token         String   @unique
+  mobile        String
+  fileName      String?
+  fileSize      Int?
+  mimeType      String?
+  encryptedData String?  @db.Text
+  expiresAt     DateTime
+  used          Boolean  @default(false)
+  usedAt        DateTime?
+  autoDeleteAt  DateTime
+  createdAt     DateTime @default(now())
+
+  user          User?    @relation(fields: [mobile], references: [mobile])
+}
+
+model QueueEntry {
+  id                      String    @id @default(cuid())
+  complaintId             String    @unique
+  departmentQueue         String
+  position                Int
+  estimatedResolutionDate DateTime
+  officerId               String?
+  isEscalated             Boolean   @default(false)
+  escalatedAt             DateTime?
+  createdAt               DateTime  @default(now())
+
+  complaint               Complaint @relation(fields: [complaintId], references: [id])
+}
+
+model PaymentRecord {
+  id             String   @id @default(cuid())
+  userId         String?
+  connectionId   String
+  amount         Float
+  method         String
+  transactionId  String   @unique
+  receiptNumber  String   @unique
+  status         String
+  anomalyFlagged Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
