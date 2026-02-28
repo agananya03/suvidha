@@ -1,0 +1,44 @@
+{
+  "name": "suvidha",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.4.2",
+    "@react-aria/ssr": "^3.9.10",
+    "@tensorflow/tfjs": "^4.22.0",
+    "bcryptjs": "^3.0.3",
+    "bull": "^4.16.5",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.34.3",
+    "i18next": "^25.8.13",
+    "ioredis": "^5.10.0",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^0.575.0",
+    "natural": "^8.1.1",
+    "next": "14.2.35",
+    "next-i18n-router": "^5.5.6",
+    "react": "^18",
+    "react-aria": "^3.46.0",
+    "react-dom": "^18",
+    "react-i18next": "^16.5.4",
+    "schema-dts": "^1.1.5",
+    "tailwind-merge": "^3.5.0",
+    "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
