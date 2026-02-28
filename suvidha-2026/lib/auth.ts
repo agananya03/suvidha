@@ -12,10 +12,10 @@ export function signToken(payload: TokenPayload): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 }
 
-export function verifyToken(token: string): unknown {
+export function verifyToken(token: string): any {
   try {
     return jwt.verify(token, JWT_SECRET);
-  } catch {
+  } catch (error) {
     throw new Error('Invalid or expired token');
   }
 }
@@ -26,32 +26,31 @@ export function getTokenFromRequest(req: NextRequest): string | null {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.split(' ')[1];
   }
-
+  
   const cookieToken = req.cookies.get('token')?.value;
   if (cookieToken) {
     return cookieToken;
   }
-
+  
   return null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function withAuth(handler: Function) {
-  return async (req: NextRequest, ...args: unknown[]) => {
+  return async (req: NextRequest, ...args: any[]) => {
     try {
       const token = getTokenFromRequest(req);
-
+      
       if (!token) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
 
       const decoded = verifyToken(token);
-
+      
       // Inject user info into the request if needed, or just pass it as an argument
-      (req as unknown as { user: unknown }).user = decoded;
+      (req as any).user = decoded;
 
       return handler(req, ...args);
-    } catch {
+    } catch (error) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
     }
   };

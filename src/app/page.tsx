@@ -2,8 +2,10 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Lightbulb, Droplet, Trash2, Flame, ShieldCheck } from "lucide-react";
+import { useKioskStore } from "@/store/useKioskStore";
 
 export default function Home() {
+  const { login, isAuthenticated } = useKioskStore();
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -65,8 +67,26 @@ export default function Home() {
         </motion.div>
 
         <motion.div variants={itemVariants} className="flex w-full sm:w-auto flex-col sm:flex-row gap-4 justify-center">
-          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/30 transform hover:-translate-y-1">
-            Tap to Start <ArrowRight className="w-5 h-5" />
+          <button
+            onClick={() => {
+              if (isAuthenticated) {
+                alert("You are already locally authenticated Phase 2! Wait 10s for the FaceLock timeout to appear on the top right.");
+              } else {
+                login("mock-token", {
+                  id: "1",
+                  mobile: "9999999999",
+                  name: "Suvidha Citizen",
+                  address: "123 Smart City Blvd",
+                  preferredLanguage: "en",
+                  accessibilityMode: "standard",
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                }, "FULL_ACCESS");
+              }
+            }}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/30 transform hover:-translate-y-1"
+          >
+            {isAuthenticated ? "Authenticated! (Wait 10s)" : "Tap to Start (Mock Login)"} <ArrowRight className="w-5 h-5" />
           </button>
           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border-2 border-primary text-primary hover:bg-primary/5 px-8 py-4 rounded-xl font-bold text-lg transition-all">
             Choose Language

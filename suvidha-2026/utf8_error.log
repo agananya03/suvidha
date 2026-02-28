@@ -1,0 +1,21 @@
+﻿components/ui/avatar.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-avatar' or its corresponding type declarations.
+components/ui/badge.tsx(2,40): error TS2307: Cannot find module 'class-variance-authority' or its corresponding type declarations.
+components/ui/badge.tsx(30,29): error TS2339: Property 'variant' does not exist on type 'BadgeProps'.
+components/ui/button.tsx(2,22): error TS2307: Cannot find module '@radix-ui/react-slot' or its corresponding type declarations.
+components/ui/button.tsx(3,40): error TS2307: Cannot find module 'class-variance-authority' or its corresponding type declarations.
+components/ui/button.tsx(44,17): error TS2339: Property 'variant' does not exist on type 'ButtonProps'.
+components/ui/button.tsx(44,26): error TS2339: Property 'size' does not exist on type 'ButtonProps'.
+components/ui/dialog.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-dialog' or its corresponding type declarations.
+components/ui/progress.tsx(4,36): error TS2307: Cannot find module '@radix-ui/react-progress' or its corresponding type declarations.
+components/ui/select.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-select' or its corresponding type declarations.
+components/ui/separator.tsx(4,37): error TS2307: Cannot find module '@radix-ui/react-separator' or its corresponding type declarations.
+components/ui/tabs.tsx(4,32): error TS2307: Cannot find module '@radix-ui/react-tabs' or its corresponding type declarations.
+components/ui/toast.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-toast' or its corresponding type declarations.
+components/ui/toast.tsx(5,40): error TS2307: Cannot find module 'class-variance-authority' or its corresponding type declarations.
+hooks/use-toast.ts(161,22): error TS7006: Parameter 'open' implicitly has an 'any' type.
+lib/prisma.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
+prisma.config.ts(1,30): error TS2307: Cannot find module 'prisma/config' or its corresponding type declarations.
+prisma/seed.ts(5,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
+prisma/seed.ts(5,24): error TS2305: Module '"@prisma/client"' has no exported member 'ConnectionType'.
+prisma/seed.ts(5,40): error TS2305: Module '"@prisma/client"' has no exported member 'ComplaintStatus'.
+test-prisma.ts(4,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
