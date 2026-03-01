@@ -1,0 +1,77 @@
+﻿
+> suvidha-2026@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+node.exe :  Γ¿» ESLint: Plugin 
+"@next/next" was conflicted 
+between ".eslintrc.json ┬╗ eslin
+t-config-next/core-web-vitals 
+┬╗ plugin:@next/next/core-web-vi
+tals" and "..\.eslintrc.json ┬╗ 
+eslint-config-next/core-web-vita
+ls ┬╗ plugin:@next/next/core-web
+-vitals".
+At C:\Program 
+Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : N 
+   otSpecified: ( Γ¿» ESLint:   
+  Pl...re-web-vitals".:String   
+ ) [], RemoteException
+    + FullyQualifiedErrorId : N 
+   ativeCommandError
+ 
+Failed to compile.
+
+./lib/prisma.ts:18:36
+Type error: Argument of type 
+'Pool' is not assignable to 
+parameter of type 'PoolConfig'.
+  Types of property 'options' 
+are incompatible.
+    Type 'PoolOptions' is not 
+assignable to type 'string'.
+
+[0m [90m 16 |[39m     
+[36mconst[39m 
+connectionString [33m=[39m pro
+cess[33m.[39menv[33m.[39m[3
+3mDATABASE_URL[39m 
+[33m||[39m [32m"postgres://lo
+calhost:5432/db"[39m[33m;[39m
+[0m
+[0m [90m 17 |[39m     
+[36mconst[39m pool 
+[33m=[39m [36mnew[39m 
+[33mPool[39m({ 
+connectionString 
+})[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 
+18 |[39m     [36mconst[39m 
+adapter [33m=[39m 
+[36mnew[39m [33mPrismaNeon[3
+9m(pool)[33m;[39m[0m
+[0m [90m    |[39m            
+                        
+[31m[1m^[22m[39m[0m
+[0m [90m 19 |[39m     
+[36mreturn[39m [36mnew[39m 
+[33mPrismaClient[39m({ 
+adapter[33m,[39m 
+log[33m:[39m 
+[[32m"query"[39m] 
+})[33m;[39m[0m
+[0m [90m 20 |[39m 
+}[33m;[39m[0m
+[0m [90m 21 |[39m[0m
+Next.js build worker exited 
+with code: 1 and signal: null

@@ -1,5 +1,4 @@
 import natural from 'natural';
-import * as tf from '@tensorflow/tfjs';
 
 export async function detectKeywords(text: string) {
     if (!text) return [];

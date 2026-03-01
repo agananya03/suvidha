@@ -7,7 +7,8 @@ export async function createMockOrder(amount: number) {
     };
 }
 
-export async function verifyPayment(signature: string, orderId: string, paymentId: string) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function verifyPayment(_signature: string, _orderId: string, _paymentId: string) {
     // Mock verification
     return true;
 }

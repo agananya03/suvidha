@@ -1,0 +1,106 @@
+﻿
+> suvidha-2026@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+node.exe :  Γ¿» ESLint: 
+Plugin "@next/next" was 
+conflicted between 
+".eslintrc.json ┬╗ eslint-co
+nfig-next/core-web-vitals 
+┬╗ plugin:@next/next/core-we
+b-vitals" and 
+"..\.eslintrc.json ┬╗ eslint
+-config-next/core-web-vitals
+ ┬╗ plugin:@next/next/core-w
+eb-vitals".
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo          
+    : NotSpecified: ( Γ¿»   
+  ESLint: Pl...re-web-vit   
+ als".:String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+   Collecting page data ...
+PrismaClientConstructorValid
+ationError: Using engine 
+type "client" requires 
+either "adapter" or 
+"accelerateUrl" to be 
+provided to PrismaClient 
+constructor.
+Read more at https://pris.ly
+/d/client-constructor
+    at vm (C:\Users\ASUS\One
+Drive\Desktop\suvidhaah\suvi
+dha-2026\node_modules\@prism
+a\client\runtime\client.js:6
+6:3615)
+    at jl (C:\Users\ASUS\One
+Drive\Desktop\suvidhaah\suvi
+dha-2026\node_modules\@prism
+a\client\runtime\client.js:6
+6:3916)
+    at new t (C:\Users\ASUS\
+OneDrive\Desktop\suvidhaah\s
+uvidha-2026\node_modules\@pr
+isma\client\runtime\client.j
+s:70:1241)
+    at 3493 (C:\Users\ASUS\O
+neDrive\Desktop\suvidhaah\su
+vidha-2026\.next\server\app\
+api\auth\send-otp\route.js:1
+:1978)
+    at t (C:\Users\ASUS\OneD
+rive\Desktop\suvidhaah\suvid
+ha-2026\.next\server\webpack
+-runtime.js:1:127)
+    at 9796 (C:\Users\ASUS\O
+neDrive\Desktop\suvidhaah\su
+vidha-2026\.next\server\app\
+api\auth\send-otp\route.js:1
+:483)
+    at t (C:\Users\ASUS\OneD
+rive\Desktop\suvidhaah\suvid
+ha-2026\.next\server\webpack
+-runtime.js:1:127)
+    at r (C:\Users\ASUS\OneD
+rive\Desktop\suvidhaah\suvid
+ha-2026\.next\server\app\api
+\auth\send-otp\route.js:1:20
+80)
+    at C:\Users\ASUS\OneDriv
+e\Desktop\suvidhaah\suvidha-
+2026\.next\server\app\api\au
+th\send-otp\route.js:1:2111
+    at t.X (C:\Users\ASUS\On
+eDrive\Desktop\suvidhaah\suv
+idha-2026\.next\server\webpa
+ck-runtime.js:1:1191)
+
+> Build error occurred
+Error: Failed to collect 
+page data for 
+/api/auth/send-otp
+    at C:\Users\ASUS\OneDriv
+e\Desktop\suvidhaah\suvidha-
+2026\node_modules\next\dist\
+build\utils.js:1269:15
+    at process.processTicksA
+ndRejections (node:internal/
+process/task_queues:105:5) {
+  type: 'Error'
+}
