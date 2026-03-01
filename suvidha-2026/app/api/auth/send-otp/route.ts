@@ -1,63 +1,92 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import { storeOTP, canRequestOTP } from '@/lib/redis'
+import { generateOTP, sendOTPviaSMS, isValidPhoneNumber } from '@/lib/twilio'
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+/**
+ * POST /api/auth/send-otp
+ * 
+ * Sends an OTP to the provided mobile number.
+ * 
+ * Request body:
+ * { mobile: string }
+ * 
+ * Response:
+ * { success: boolean, message?: string, error?: string, otp?: string (demo only) }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { mobile } = body
 
-export async function POST(req: NextRequest) {
-    try {
-        const { mobile } = await req.json();
-
-        // Validate mobile: exactly 10 digits, Indian format usually starts with 6-9, 
-        // but the prompt only requested "exactly 10 digits" based on "Indian format"
-        const mobileRegex = /^[6-9]\d{9}$/;
-        if (!mobile || !mobileRegex.test(mobile)) {
-            return NextResponse.json({ error: 'Invalid mobile number' }, { status: 400 });
-        }
-
-        // Rate limit: max 5 OTPs per mobile per hour
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        const recentOtps = await prisma.oTPSession.count({
-            where: {
-                mobile,
-                createdAt: {
-                    gte: oneHourAgo,
-                },
-            },
-        });
-
-        if (recentOtps >= 5) {
-            return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 });
-        }
-
-        // Generate cryptographically random 6-digit OTP
-        const otpArray = new Uint32Array(1);
-        crypto.getRandomValues(otpArray);
-        const otp = (otpArray[0] % 900000 + 100000).toString(); // Ensures 6 digits
-
-        // Set expiry to exactly 5 minutes from now
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-        // Save to OTPSession table
-        await prisma.oTPSession.create({
-            data: {
-                mobile,
-                otp,
-                expiresAt,
-            },
-        });
-
-        if (DEMO_MODE) {
-            // In DEMO MODE: return OTP in response
-            return NextResponse.json({ success: true, expiresIn: 300, demoOtp: otp });
-        }
-
-        // In production: integrate Twilio SMS (stub the function, add TODO)
-        // TODO: Implement Twilio SMS integration to send `otp` to `mobile`
-        console.log(`[Twilio Stub] Sending OTP ${otp} to ${mobile}`);
-
-        return NextResponse.json({ success: true, expiresIn: 300 });
-    } catch (error) {
-        console.error('Error generating OTP:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    // Validate mobile number
+    if (!mobile) {
+      return NextResponse.json(
+        { success: false, error: 'Mobile number is required' },
+        { status: 400 }
+      )
     }
+
+    if (!isValidPhoneNumber(mobile)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid mobile number format. Please enter a 10-digit Indian mobile number.' },
+        { status: 400 }
+      )
+    }
+
+    // Check rate limiting (can user request OTP?)
+    const rateCheck = await canRequestOTP(mobile)
+    
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: rateCheck.error,
+          waitSeconds: rateCheck.waitSeconds 
+        },
+        { status: 429 } // Too Many Requests
+      )
+    }
+
+    // Generate 6-digit OTP
+    const otp = generateOTP()
+
+    // Store OTP in Redis with expiry (auto-deletes after 5 min)
+    await storeOTP(mobile, otp)
+
+    // Send OTP via SMS
+    const smsResult = await sendOTPviaSMS(mobile, otp)
+
+    if (!smsResult.success) {
+      return NextResponse.json(
+        { success: false, error: smsResult.error },
+        { status: 500 }
+      )
+    }
+
+    // Prepare response
+    const response: {
+      success: boolean
+      message: string
+      expiresIn: number
+      otp?: string
+    } = {
+      success: true,
+      message: 'OTP sent successfully',
+      expiresIn: 300, // 5 minutes in seconds
+    }
+
+    // In demo mode, include OTP in response so it can be shown on screen
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      response.otp = otp
+    }
+
+    return NextResponse.json(response)
+
+  } catch (error) {
+    console.error('Send OTP error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to send OTP. Please try again.' },
+      { status: 500 }
+    )
+  }
 }
