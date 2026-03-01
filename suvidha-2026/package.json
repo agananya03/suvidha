@@ -24,6 +24,7 @@
     "@react-aria/button": "^3.14.4",
     "@react-aria/textfield": "^3.18.4",
     "@types/jsonwebtoken": "^9.0.10",
+    "@upstash/redis": "^1.36.3",
     "bull": "^4.16.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -42,6 +43,7 @@
     "redis": "^5.11.0",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
+    "twilio": "^5.12.2",
     "ws": "^8.19.0",
     "zustand": "^5.0.11"
   },
