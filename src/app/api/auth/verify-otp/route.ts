@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { signToken } from '@/lib/auth';
+import { rateLimiter } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
     try {
@@ -8,6 +9,16 @@ export async function POST(req: NextRequest) {
 
         if (!mobile || !otp) {
             return NextResponse.json({ error: 'Mobile and OTP are required' }, { status: 400 });
+        }
+
+        // Throttle Verify Attempts per IP basis
+        const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
+        const rateLimitResult = rateLimiter.checkLoginAttempt(ip);
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: `Too many login attempts. Please wait ${rateLimitResult.retryAfter} seconds.` },
+                { status: 429, headers: { 'Retry-After': String(rateLimitResult.retryAfter) } }
+            );
         }
 
         // Find OTPSession: mobile match, otp match, not used, not expired

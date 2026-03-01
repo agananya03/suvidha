@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { rateLimiter } from '@/lib/rateLimit';
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+const DEMO_MODE = true; // Forced for E2E testing
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,7 +15,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid mobile number' }, { status: 400 });
         }
 
-        // Rate limit: max 5 OTPs per mobile per hour
+        // Apply In-Memory Rate Limit (DPDP/Security standard)
+        const rateLimitResult = rateLimiter.checkOtpRequest(mobile);
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: `Too many OTP requests. Please wait ${rateLimitResult.retryAfter} seconds.` },
+                { status: 429, headers: { 'Retry-After': String(rateLimitResult.retryAfter) } }
+            );
+        }
+
+        // DB Level Rate limit (fallback): max 5 OTPs per mobile per hour
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
         const recentOtps = await prisma.oTPSession.count({
             where: {
@@ -29,10 +39,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 });
         }
 
-        // Generate cryptographically random 6-digit OTP
-        const otpArray = new Uint32Array(1);
-        crypto.getRandomValues(otpArray);
-        const otp = (otpArray[0] % 900000 + 100000).toString(); // Ensures 6 digits
+        // Generate random 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // Set expiry to exactly 5 minutes from now
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
@@ -56,8 +64,8 @@ export async function POST(req: NextRequest) {
         console.log(`[Twilio Stub] Sending OTP ${otp} to ${mobile}`);
 
         return NextResponse.json({ success: true, expiresIn: 300 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error generating OTP:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
     }
 }

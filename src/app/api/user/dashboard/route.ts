@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
 
         const userId = decoded.userId;
 
-        const user = await prisma.user.findUnique({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const user = await (prisma.user as any).findUnique({
             where: { id: userId },
             include: {
                 connections: true,
@@ -35,7 +36,8 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const paymentHistory = await prisma.paymentRecord.findMany({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const paymentHistory = await (prisma as any).paymentRecord.findMany({
             where: { userId: userId },
             orderBy: { createdAt: 'desc' },
             take: 20

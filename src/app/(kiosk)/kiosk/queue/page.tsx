@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next'; // Keeping available just in case, but suppressing unused
 import { useStore } from '@/lib/store';
+import { DemoDataBadge } from '@/components/ui/EmptyState';
 
 // --- STUB DATA --- //
 const MOCK_COMPLAINTS = [
@@ -134,7 +135,8 @@ export default function QueuePage() {
                 </div>
 
                 {/* MAIN GRID */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+                    <DemoDataBadge />
 
                     {/* LEFT COLUMN: MAIN DISPLAY & CORRUPTION PANEL */}
                     <div className="lg:col-span-8 space-y-6">

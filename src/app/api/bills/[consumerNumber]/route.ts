@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Assumes src/lib/prisma exports PrismaClient singleton
+import { prisma } from '@/lib/prisma';
+import { rateLimiter } from '@/lib/rateLimit';
+import { regexes } from '@/lib/sanitization';
 
 // Example: app/api/bills/[consumerNumber]/route.ts
 export async function GET(
@@ -9,10 +11,24 @@ export async function GET(
     try {
         const { consumerNumber } = params;
 
+        if (!consumerNumber || !regexes.consumerNumber.test(consumerNumber)) {
+            return NextResponse.json({ error: 'Invalid consumer number format' }, { status: 400 });
+        }
+
         // Fetch user context if token exists (skipped for simplicity in this endpoint)
+        const ip = request.headers.get('x-forwarded-for') || 'unknown';
+        const rateLimitResult = rateLimiter.checkBillFetch(ip);
+
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: `Too many bill fetching requests. Please wait ${rateLimitResult.retryAfter} seconds.` },
+                { status: 429, headers: { 'Retry-After': String(rateLimitResult.retryAfter) } }
+            );
+        }
 
         // 1. Fetch connection details from DB
-        const connection = await prisma.connection.findFirst({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const connection = await (prisma as any).connection.findFirst({
             where: { consumerNumber },
             include: { user: true }
         });

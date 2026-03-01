@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
   Clock, WifiOff, Map, Accessibility, FileWarning,
   AlertTriangle, Banknote, HelpCircle, ArrowRight,
-  SearchCheck, Lock, CheckCircle2, QrCode, Fingerprint,
+  SearchCheck, Lock, QrCode, Fingerprint,
   Languages, Zap, ShieldCheck, FileText, Bot, HandMetal,
   Volume2, Ear, Eye, Home, Terminal
 } from 'lucide-react';

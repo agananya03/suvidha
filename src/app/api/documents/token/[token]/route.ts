@@ -9,7 +9,8 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
             return NextResponse.json({ error: 'Invalid token format. Must be 6 characters.' }, { status: 400 });
         }
 
-        const documentToken = await prisma.documentToken.findUnique({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const documentToken = await (prisma as any).documentToken.findUnique({
             where: { token: token.toUpperCase() }
         });
 

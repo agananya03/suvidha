@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { jsPDF } from 'jspdf';
 import { useRouter } from 'next/navigation';
 
+import { DemoDataBadge } from '@/components/ui/EmptyState';
+
 export default function PaymentPage() {
     const router = useRouter();
 
@@ -115,8 +117,9 @@ export default function PaymentPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -50 }}
-                        className="space-y-6"
+                        className="space-y-6 relative"
                     >
+                        <DemoDataBadge />
                         {/* SECTION 1: Bill Details Card */}
                         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                             <div className="flex items-start justify-between border-b pb-6">

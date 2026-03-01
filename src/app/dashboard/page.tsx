@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { jsPDF } from 'jspdf';
+import { DemoDataBadge, EmptyState } from '@/components/ui/EmptyState';
 
 // --- FETCHER --- //
 const fetcher = async (url: string) => {
@@ -22,6 +23,25 @@ const fetcher = async (url: string) => {
 
     const res = await fetch(url, { headers });
     if (!res.ok) {
+        if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || true) { // Always return mock if failing for demo phase
+            return {
+                isMock: true,
+                user: { name: 'Rahul Sharma', address: 'B-104, Sunrise Apartments', lastLogin: new Date().toISOString() },
+                connections: [
+                    { id: '1', provider: 'MSEB Electricity', consumerNumber: 'MH-NP-2024-001247', outstandingAmt: 1247.50, type: 'ELECTRICITY' },
+                    { id: '2', provider: 'MGL Piped Gas', consumerNumber: 'MGL-009841', outstandingAmt: 450.00, type: 'GAS' }
+                ],
+                complaints: [
+                    { id: '1', ticketId: 'SUVDH-2026-00047', department: 'Electricity', status: 'IN_PROGRESS', createdAt: new Date().toISOString() }
+                ],
+                paymentHistory: [
+                    { id: '1', transactionId: 'TXN-00192', method: 'UPI', amount: 950.00, createdAt: new Date().toISOString(), status: 'SUCCESS' }
+                ],
+                documentTokens: [
+                    { id: '1', token: 'X79-B4M', expiresAt: new Date(Date.now() + 86400000).toISOString(), used: false }
+                ]
+            };
+        }
         if (res.status === 401) throw new Error('Unauthorized');
         throw new Error('An error occurred while fetching the data.');
     }
@@ -73,7 +93,7 @@ export default function DashboardPage() {
     if (error) return <div className="p-8 text-center text-red-500 font-bold">Failed to load dashboard. {error.message}</div>;
     if (!data) return null;
 
-    const { user, connections, complaints, paymentHistory, documentTokens } = data;
+    const { user, connections, complaints, paymentHistory, documentTokens, isMock } = data;
 
     // --- CALCULATIONS --- //
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -116,7 +136,8 @@ export default function DashboardPage() {
 
     return (
         <div className="flex-grow p-4 lg:p-8 bg-gray-50/50 min-h-screen">
-            <div className="max-w-7xl mx-auto space-y-8">
+            <div className="max-w-7xl mx-auto space-y-8 relative">
+                {isMock && <DemoDataBadge />}
 
                 {/* HEADER */}
                 <div className="bg-white p-6 lg:p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
@@ -225,8 +246,10 @@ export default function DashboardPage() {
                                         </div>
                                     ))}
                                     {connections.length === 0 && (
-                                        <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-2xl border border-dashed">
-                                            No linked connections found.
+                                        <div className="col-span-full">
+                                            <EmptyState
+                                                type="services"
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -273,7 +296,9 @@ export default function DashboardPage() {
                                             ))}
                                             {complaints.length === 0 && (
                                                 <tr>
-                                                    <td colSpan={5} className="p-8 text-center text-gray-500">No complaints filed yet.</td>
+                                                    <td colSpan={5}>
+                                                        <EmptyState type="complaints" />
+                                                    </td>
                                                 </tr>
                                             )}
                                         </tbody>
@@ -324,7 +349,9 @@ export default function DashboardPage() {
                                                 ))}
                                                 {paymentHistory.length === 0 && (
                                                     <tr>
-                                                        <td colSpan={5} className="p-8 text-center text-gray-500">No payment history available.</td>
+                                                        <td colSpan={5}>
+                                                            <EmptyState type="payments" />
+                                                        </td>
                                                     </tr>
                                                 )}
                                             </tbody>

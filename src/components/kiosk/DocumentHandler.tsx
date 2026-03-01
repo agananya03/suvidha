@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Smartphone, ScanLine,
     CheckCircle2, AlertTriangle, DownloadCloud,
-    Camera, RefreshCcw, Search, KeyRound
+    Camera, RefreshCcw, KeyRound
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
@@ -90,7 +90,7 @@ export default function DocumentHandler() {
                 setTokenStatus('error');
                 setTokenError(data.error || 'Failed to retrieve documents.');
             }
-        } catch (err) {
+        } catch {
             setTokenStatus('error');
             setTokenError('Network error while retrieving token.');
         }

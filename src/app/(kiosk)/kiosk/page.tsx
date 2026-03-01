@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useKioskStore, AccessibilityMode } from '@/store/useKioskStore';
 import { Ear, Eye, ALargeSmall, UserRound } from 'lucide-react';
+import { ConsentModal } from '@/components/kiosk/ConsentModal';
 
 type Step = 'ACCESSIBILITY' | 'LANGUAGE';
 
@@ -61,6 +62,7 @@ export default function KioskHome() {
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center relative p-8">
+            <ConsentModal />
             <AnimatePresence mode="wait">
 
                 {/* STEP 1: ACCESSIBILITY SELECTION */}

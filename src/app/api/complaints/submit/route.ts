@@ -1,26 +1,57 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Assumes src/lib/prisma exports PrismaClient singleton
+import { prisma } from '@/lib/prisma';
+import { rateLimiter } from '@/lib/rateLimit';
+import { sanitizeString, validateFile } from '@/lib/sanitization';
+import { File } from 'buffer';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const {
-            description,
-            type, // optional string
-            userId, // optional
-            // The following would come from calling the /analyze endpoint internally or passed from frontend
-            primaryDepartment,
-            secondaryDepartment,
-            priority,
-            queuePosition,
-            vulnerabilityScore,
-            agingBonus,
-            slaDeadline
-        } = body;
+        const formData = await request.formData();
+
+        // Extract fields from formData
+        const description = formData.get('description') as string;
+        const type = formData.get('type') as string;
+        const userId = formData.get('userId') as string;
+        const primaryDepartment = formData.get('primaryDepartment') as string;
+        const secondaryDepartment = formData.get('secondaryDepartment') as string;
+        const priority = parseInt(formData.get('priority') as string);
+        const queuePosition = parseInt(formData.get('queuePosition') as string);
+        const vulnerabilityScore = parseInt(formData.get('vulnerabilityScore') as string);
+        const agingBonus = parseInt(formData.get('agingBonus') as string);
+        const slaDeadline = formData.get('slaDeadline') as string;
+
+        // Extract optional file
+        const file = formData.get('file') as File | null;
 
         // 1. Basic validation
         if (!description || !primaryDepartment) {
             return NextResponse.json({ error: 'Missing required tracking domains' }, { status: 400 });
+        }
+
+        const sanitizedDesc = sanitizeString(description);
+        if (!sanitizedDesc) {
+            return NextResponse.json({ error: 'Description contains invalid characters or is empty after sanitization.' }, { status: 400 });
+        }
+
+        // Validate File Upload (if any)
+        if (file) {
+            const validation = validateFile(file as any); // Type cast due to Next/Buffer File differences
+            if (!validation.isValid) {
+                return NextResponse.json({ error: validation.error }, { status: 400 });
+            }
+            // Logic to save file to cloud/local storage would go here
+        }
+
+        // Apply Rate Limit (max 5 per day per user)
+        const ip = request.headers.get('x-forwarded-for') || 'unknown';
+        const identifier = userId || ip;
+        const rateLimitResult = rateLimiter.checkComplaintSubmit(identifier);
+
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: `You have reached your daily complaint limit. Please try again in ${rateLimitResult.retryAfter} seconds.` },
+                { status: 429, headers: { 'Retry-After': String(rateLimitResult.retryAfter) } }
+            );
         }
 
         // 2. Ticket ID Generation (SUVDH-2026-XXXXX)
@@ -28,6 +59,7 @@ export async function POST(request: Request) {
         const ticketId = `SUVDH-2026-${randomNum}`;
 
         // 3. Database Transaction
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newComplaint = await prisma.$transaction(async (tx: any) => {
 
             // Create Complaint
@@ -36,7 +68,7 @@ export async function POST(request: Request) {
                     ticketId,
                     userId: userId || null,
                     type: type || 'GENERAL',
-                    description,
+                    description: sanitizedDesc,
                     department: primaryDepartment,
                     secondaryDepartment: secondaryDepartment || null,
                     status: 'PENDING',

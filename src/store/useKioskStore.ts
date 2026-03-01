@@ -1,6 +1,20 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { User, Connection, Complaint } from '@prisma/client';
+import type { User } from '@prisma/client';
+
+export interface Connection {
+    id: string;
+    type: string;
+    name: string;
+}
+
+export interface Complaint {
+    id: string;
+    description: string;
+    department: string;
+    status: string;
+    [key: string]: unknown;
+}
 
 export type AuthMode = 'QUICK_PAY' | 'FULL_ACCESS' | null;
 export type AccessibilityMode = 'standard' | 'voice' | 'visual' | 'simplified';

@@ -8,5 +8,3 @@ src/app/api/user/dashboard/route.ts(38,45): error TS2339: Property 'paymentRecor
 src/app/api/user/dashboard/route.ts(56,31): error TS2339: Property 'connections' does not exist on type '{ id: string; mobile: string; name: string | null; address: string | null; preferredLanguage: string; accessibilityMode: string; createdAt: Date; updatedAt: Date; }'.
 src/app/api/user/dashboard/route.ts(57,30): error TS2339: Property 'complaints' does not exist on type '{ id: string; mobile: string; name: string | null; address: string | null; preferredLanguage: string; accessibilityMode: string; createdAt: Date; updatedAt: Date; }'.
 src/app/api/user/dashboard/route.ts(59,34): error TS2339: Property 'documentTokens' does not exist on type '{ id: string; mobile: string; name: string | null; address: string | null; preferredLanguage: string; accessibilityMode: string; createdAt: Date; updatedAt: Date; }'.
-src/app/pre-visit/page.tsx(91,18): error TS2448: Block-scoped variable 'CheckCircle2' used before its declaration.
-src/app/pre-visit/page.tsx(91,18): error TS2454: Variable 'CheckCircle2' is used before being assigned.

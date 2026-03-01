@@ -13,6 +13,7 @@ import debounce from 'lodash.debounce';
 import { Button } from '@/components/ui/button';
 import { webSpeech } from '@/lib/webSpeech';
 import { useStore } from '@/lib/store';
+import { DemoDataBadge } from '@/components/ui/EmptyState';
 
 // --- TYPES & INTERFACES --- //
 type ServiceType = 'ELECTRICITY' | 'GAS' | 'WATER' | 'MUNICIPAL' | 'OTHER';
@@ -369,6 +370,7 @@ export default function ComplaintPage() {
                                 <Lightbulb className="w-5 h-5 text-yellow-400" />
                                 Live DNA Analysis
                             </h2>
+                            <DemoDataBadge />
                             {isAnalyzing && (
                                 <span className="flex items-center gap-2 text-sm text-gray-400 bg-gray-800 px-3 py-1 rounded-full">
                                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>

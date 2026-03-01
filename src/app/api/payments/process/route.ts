@@ -12,7 +12,8 @@ export async function POST(request: Request) {
         }
 
         // 2. Fetch the existing connection
-        const connection = await prisma.connection.findUnique({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const connection = await (prisma as any).connection.findUnique({
             where: { id: connectionId }
         });
 
@@ -36,7 +37,8 @@ export async function POST(request: Request) {
         const receiptNumber = `RCPT-2026-${randomString}`;
 
         // 5. Database Transaction to Record Payment & Clear Outstanding Balance
-        const paymentRecord = await prisma.$transaction(async (tx) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const paymentRecord = await prisma.$transaction(async (tx: any) => {
 
             // Create the payment record
             const payment = await tx.paymentRecord.create({

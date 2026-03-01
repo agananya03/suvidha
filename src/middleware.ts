@@ -30,7 +30,40 @@ export function middleware(request: NextRequest) {
         // Here we are simply checking for the token's presence to protect the layout.
     }
 
-    return NextResponse.next();
+    // Default response allows the request to proceed
+    const response = NextResponse.next();
+
+    // --- SECURITY HEADERS (DPDP Act 2023 & General Best Practices) ---
+    // Prevent Clickjacking
+    response.headers.set('X-Frame-Options', 'DENY');
+
+    // Prevent MIME-type sniffing
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+
+    // Control referer info
+    response.headers.set('Referrer-Policy', 'no-referrer');
+
+    // Face-Lock camera permission strictly for self origin
+    response.headers.set('Permissions-Policy', 'camera=self');
+
+    // Basic CSP restricting external execution except where needed
+    // (In production, this might need hashes for Next.js inline scripts)
+    const csp = `
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob: https:;
+        font-src 'self';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+        upgrade-insecure-requests;
+    `.replace(/\s{2,}/g, ' ').trim();
+
+    response.headers.set('Content-Security-Policy', csp);
+
+    return response;
 }
 
 export const config = {

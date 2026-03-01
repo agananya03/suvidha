@@ -2,6 +2,7 @@ import React from 'react';
 import { KioskHeader } from '@/components/kiosk/KioskHeader';
 import { KioskFooter } from '@/components/kiosk/KioskFooter';
 import { FaceLock } from '@/components/kiosk/FaceLock';
+import { ConsentModal } from '@/components/kiosk/ConsentModal';
 
 export default function KioskLayout({
     children,
@@ -15,6 +16,7 @@ export default function KioskLayout({
                 {/* Rendered content should be scrollable internally if needed, but the main layout body isn't */}
                 {children}
                 <FaceLock />
+                <ConsentModal />
             </main>
             <KioskFooter />
         </div>

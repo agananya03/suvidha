@@ -61,7 +61,7 @@ export async function apiClient<T>(
             try {
                 const errorData = await response.json();
                 errorMsg = errorData.error || errorData.message || errorMsg;
-            } catch (e) {
+            } catch {
                 // Fallback to strict status parsing if no json payload was mounted
                 errorMsg = `Server responded with ${response.status} ${response.statusText}`;
             }
@@ -74,6 +74,7 @@ export async function apiClient<T>(
         const data = await response.json();
         return data as T;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error(`[apiClient] Exception bridging ${url}:`, error);
 
@@ -100,9 +101,11 @@ export const api = {
     get: <T>(url: string, options?: FetchOptions) =>
         apiClient<T>(url, { ...options, method: 'GET' }),
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     post: <T>(url: string, body: any, options?: FetchOptions) =>
         apiClient<T>(url, { ...options, method: 'POST', body: JSON.stringify(body) }),
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     put: <T>(url: string, body: any, options?: FetchOptions) =>
         apiClient<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }),
 

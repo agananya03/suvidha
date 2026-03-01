@@ -1,0 +1,24 @@
+
+> suvidha@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./src/app/api/user/data/route.ts
+20:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+32:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+33:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+40:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/kiosk/FaceLock.tsx
+98:8  Warning: React Hook useEffect has a missing dependency: 'handleLogoutSequence'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
