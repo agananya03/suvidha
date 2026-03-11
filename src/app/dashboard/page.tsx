@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { jsPDF } from 'jspdf';
 import { DemoDataBadge, EmptyState } from '@/components/ui/EmptyState';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 // --- FETCHER --- //
 const fetcher = async (url: string) => {
@@ -77,6 +78,7 @@ const DashboardSkeleton = () => (
 
 export default function DashboardPage() {
     const router = useRouter();
+    const { t } = useDynamicTranslation();
     const [activeTab, setActiveTab] = useState('connections');
 
     const { data, error, isLoading } = useSWR('/api/user/dashboard', fetcher, {
@@ -85,7 +87,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (error && error.message === 'Unauthorized') {
-            router.push('/login'); // Assuming login is at /login
+            router.push('/kiosk/auth'); 
         }
     }, [error, router]);
 
@@ -146,23 +148,23 @@ export default function DashboardPage() {
                             {getInitials(user.name)}
                         </div>
                         <div>
-                            <h1 className="text-2xl lg:text-3xl font-bold mb-1">Welcome back, {user.name}</h1>
+                            <h1 className="text-2xl lg:text-3xl font-bold mb-1">{t('Welcome back')}, {user.name}</h1>
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                                 <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {user.address}</span>
-                                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> Last login: {new Date(user.lastLogin).toLocaleString()}</span>
+                                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {t('Last login')}: {new Date(user.lastLogin).toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex flex-wrap gap-3 w-full md:w-auto">
                         <Button onClick={() => router.push('/kiosk/pay')} className="flex-1 md:flex-none">
-                            <CreditCard className="w-4 h-4 mr-2" /> Pay Bill
+                            <CreditCard className="w-4 h-4 mr-2" /> {t('Pay Bill')}
                         </Button>
                         <Button variant="secondary" onClick={() => router.push('/kiosk/complaint')} className="flex-1 md:flex-none">
-                            <AlertCircle className="w-4 h-4 mr-2" /> File Complaint
+                            <AlertCircle className="w-4 h-4 mr-2" /> {t('File Complaint')}
                         </Button>
                         <Button variant="outline" onClick={() => router.push('/kiosk/queue')} className="flex-1 md:flex-none">
-                            <Activity className="w-4 h-4 mr-2" /> Track
+                            <Activity className="w-4 h-4 mr-2" /> {t('Track')}
                         </Button>
                         <Button variant="ghost" onClick={handleLogout} className="text-red-500 hover:text-red-700 hover:bg-red-50">
                             <LogOut className="w-4 h-4" />
@@ -186,7 +188,7 @@ export default function DashboardPage() {
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
-                            <tab.icon className="w-4 h-4" /> {tab.label}
+                            <tab.icon className="w-4 h-4" /> {t(tab.label)}
                         </button>
                     ))}
                 </div>
@@ -205,11 +207,11 @@ export default function DashboardPage() {
                             <div className="space-y-6">
                                 <div className="bg-orange-50 text-orange-900 p-6 rounded-2xl border border-orange-100 flex items-center justify-between">
                                     <div>
-                                        <p className="text-orange-700 font-bold text-sm uppercase mb-1">Total Outstanding Dues</p>
+                                        <p className="text-orange-700 font-bold text-sm uppercase mb-1">{t('Total Outstanding Dues')}</p>
                                         <h2 className="text-4xl font-black">₹{totalOutstanding.toFixed(2)}</h2>
                                     </div>
                                     <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => router.push('/kiosk/pay')}>
-                                        Pay All <ChevronRight className="w-5 h-5 ml-1" />
+                                        {t('Pay All')} <ChevronRight className="w-5 h-5 ml-1" />
                                     </Button>
                                 </div>
 
@@ -236,11 +238,11 @@ export default function DashboardPage() {
 
                                             <div className="flex items-end justify-between border-t pt-4">
                                                 <div>
-                                                    <p className="text-sm text-gray-500 mb-1">Outstanding Bill</p>
+                                                    <p className="text-sm text-gray-500 mb-1">{t('Outstanding Bill')}</p>
                                                     <p className="text-2xl font-bold">₹{conn.outstandingAmt.toFixed(2)}</p>
                                                 </div>
                                                 <Button disabled={conn.outstandingAmt <= 0} onClick={() => router.push('/kiosk/pay')}>
-                                                    {conn.outstandingAmt > 0 ? 'Pay Now' : 'Paid'}
+                                                    {conn.outstandingAmt > 0 ? t('Pay Now') : t('Paid')}
                                                 </Button>
                                             </div>
                                         </div>
@@ -263,11 +265,11 @@ export default function DashboardPage() {
                                     <table className="w-full text-left border-collapse">
                                         <thead>
                                             <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
-                                                <th className="p-4 font-semibold">Ticket ID</th>
-                                                <th className="p-4 font-semibold">Department</th>
-                                                <th className="p-4 font-semibold">Status</th>
-                                                <th className="p-4 font-semibold">Date</th>
-                                                <th className="p-4 font-semibold text-right">Action</th>
+                                                <th className="p-4 font-semibold">{t('Ticket ID')}</th>
+                                                <th className="p-4 font-semibold">{t('Department')}</th>
+                                                <th className="p-4 font-semibold">{t('Status')}</th>
+                                                <th className="p-4 font-semibold">{t('Date')}</th>
+                                                <th className="p-4 font-semibold text-right">{t('Action')}</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
@@ -289,7 +291,7 @@ export default function DashboardPage() {
                                                     <td className="p-4 text-sm text-gray-500">{new Date(comp.createdAt).toLocaleDateString()}</td>
                                                     <td className="p-4 text-right">
                                                         <Button variant="ghost" size="sm" onClick={() => router.push('/kiosk/queue')}>
-                                                            View Tracker
+                                                            {t('View Tracker')}
                                                         </Button>
                                                     </td>
                                                 </tr>
@@ -312,7 +314,7 @@ export default function DashboardPage() {
                             <div className="space-y-6">
                                 <div className="bg-white p-6 rounded-2xl border shadow-sm flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-500 text-sm font-medium uppercase mb-1">Total Paid This Year</p>
+                                        <p className="text-gray-500 text-sm font-medium uppercase mb-1">{t('Total Paid This Year')}</p>
                                         <h3 className="text-3xl font-black">₹{totalPaidThisYear.toFixed(2)}</h3>
                                     </div>
                                     <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
@@ -325,11 +327,11 @@ export default function DashboardPage() {
                                         <table className="w-full text-left border-collapse">
                                             <thead>
                                                 <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
-                                                    <th className="p-4 font-semibold">Date</th>
-                                                    <th className="p-4 font-semibold">TXN ID</th>
-                                                    <th className="p-4 font-semibold">Method</th>
-                                                    <th className="p-4 font-semibold">Amount</th>
-                                                    <th className="p-4 font-semibold text-right">Receipt</th>
+                                                    <th className="p-4 font-semibold">{t('Date')}</th>
+                                                    <th className="p-4 font-semibold">{t('TXN ID')}</th>
+                                                    <th className="p-4 font-semibold">{t('Method')}</th>
+                                                    <th className="p-4 font-semibold">{t('Amount')}</th>
+                                                    <th className="p-4 font-semibold text-right">{t('Receipt')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
@@ -366,7 +368,7 @@ export default function DashboardPage() {
                             <div className="space-y-6">
                                 <div className="flex justify-end mb-4">
                                     <Button onClick={() => router.push('/pre-visit')}>
-                                        Generate New Token
+                                        {t('Generate New Token')}
                                     </Button>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -380,18 +382,18 @@ export default function DashboardPage() {
                                                         isExpired ? 'bg-red-100 text-red-600' :
                                                             'bg-green-100 text-green-600'
                                                         }`}>
-                                                        {doc.used ? 'USED' : isExpired ? 'EXPIRED' : 'ACTIVE'}
+                                                        {doc.used ? t('USED') : isExpired ? t('EXPIRED') : t('ACTIVE')}
                                                     </span>
                                                 </div>
                                                 <FileText className="w-10 h-10 text-primary mb-4" />
-                                                <p className="text-sm text-gray-500 mb-1">Secure Token</p>
+                                                <p className="text-sm text-gray-500 mb-1">{t('Secure Token')}</p>
                                                 <h3 className="font-mono text-2xl font-bold tracking-widest mb-4">{doc.token}</h3>
                                                 <p className="text-xs text-gray-400">
-                                                    Expires: {new Date(doc.expiresAt).toLocaleString()}
+                                                    {t('Expires')}: {new Date(doc.expiresAt).toLocaleString()}
                                                 </p>
                                                 {doc.fileName && (
                                                     <p className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
-                                                        Linked File: {doc.fileName}
+                                                        {t('Linked File')}: {doc.fileName}
                                                     </p>
                                                 )}
                                             </div>
@@ -399,7 +401,7 @@ export default function DashboardPage() {
                                     })}
                                     {documentTokens.length === 0 && (
                                         <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-2xl border border-dashed">
-                                            No active document tokens found.
+                                            {t('No active document tokens found.')}
                                         </div>
                                     )}
                                 </div>

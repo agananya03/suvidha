@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useKioskStore } from '@/store/useKioskStore';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 export function KioskHeader() {
     const { isAuthenticated, sessionStartTime } = useKioskStore();
+    const { t } = useDynamicTranslation();
     const [timeLeft, setTimeLeft] = useState<string>('');
 
     const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
@@ -61,22 +63,24 @@ export function KioskHeader() {
                         </svg>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-2xl font-bold tracking-wide">Government of India</span>
-                        <span className="text-lg text-blue-200">Ministry of Electronics & IT</span>
+                        <span className="text-2xl font-bold tracking-wide">{t('Government of India')}</span>
+                        <span className="text-lg text-blue-200">{t('Ministry of Electronics & IT')}</span>
                     </div>
                 </div>
 
                 {/* Center Side: SUVIDHA 2026 */}
                 <div className="flex flex-col items-center">
                     <h1 className="text-5xl font-extrabold tracking-tight">SUVIDHA <span className="text-[#FF9933]">2026</span></h1>
-                    <span className="text-base font-medium text-blue-100 tracking-wider">Smart Urban Virtual Interface for Digital Helpdesk</span>
+                    <span className="text-base font-medium text-blue-100 tracking-wider w-full overflow-hidden text-ellipsis whitespace-nowrap max-w-sm md:max-w-lg lg:max-w-xl text-center">
+                        {t('Smart Urban Virtual Interface for Digital Helpdesk')}
+                    </span>
                 </div>
 
                 {/* Right Side: Timer, CDAC, Tricolor */}
                 <div className="flex items-center gap-8">
                     {isAuthenticated && timeLeft && (
                         <div className="flex flex-col items-end">
-                            <span className="text-sm text-blue-200 uppercase tracking-widest">Session Expires</span>
+                            <span className="text-sm text-blue-200 uppercase tracking-widest">{t('Session Expires')}</span>
                             <span className="text-2xl font-mono font-bold text-red-100 bg-black/30 px-3 py-1 rounded">
                                 {timeLeft}
                             </span>
@@ -98,7 +102,7 @@ export function KioskHeader() {
 
             {isDemoMode && (
                 <div className="w-full bg-[#FF9933] text-black font-bold text-center py-2 text-base md:text-lg uppercase tracking-widest shadow-inner border-y border-orange-600/50">
-                    DEMO MODE — OTP displayed on screen for demonstration purposes
+                    {t('DEMO MODE — OTP displayed on screen for demonstration purposes')}
                 </div>
             )}
         </header>

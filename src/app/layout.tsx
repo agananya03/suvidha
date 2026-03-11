@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { AccessibilityToolbar } from "@/components/accessibility/AccessibilityToolbar";
+import { DemoBanner } from "@/components/kiosk/DemoBanner";
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
@@ -22,9 +23,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased bg-gray-50 text-dark min-h-screen flex flex-col`}>
         <I18nProvider>
           {/* GLOBAL DEMO MODE BANNER */}
-          <div className="w-full bg-accent text-white text-center py-1 font-bold text-sm tracking-wider uppercase z-[110] relative">
-            DEMO MODE - C-DAC Smart City Challenge 2026
-          </div>
+          <DemoBanner />
 
           <AccessibilityToolbar />
 

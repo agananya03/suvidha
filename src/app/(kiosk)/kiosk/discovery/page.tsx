@@ -5,9 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { MapPin, Search, Building2, Zap, Flame, Droplets, Trash2, ArrowRight, ShieldCheck, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 export default function DiscoveryPage() {
     const router = useRouter();
+    const { t } = useDynamicTranslation();
     const [address, setAddress] = useState('12 Civil Lines Nagpur');
     const [status, setStatus] = useState<'INPUT' | 'SEARCHING' | 'FOUND'>('INPUT');
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -51,9 +53,9 @@ export default function DiscoveryPage() {
                         <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                             <MapPin className="w-10 h-10" />
                         </div>
-                        <h1 className="text-3xl font-black text-gray-900 mb-4">Address-Based Service Discovery</h1>
+                        <h1 className="text-3xl font-black text-gray-900 mb-4">{t('Address-Based Service Discovery')}</h1>
                         <p className="text-lg text-gray-500 mb-10 max-w-lg mx-auto">
-                            Enter your address. Our AI will normalize the format and securely fetch all government service connections linked to this property.
+                            {t('Enter your address. Our AI will normalize the format and securely fetch all government service connections linked to this property.')}
                         </p>
 
                         <div className="relative max-w-xl mx-auto mb-8">
@@ -74,7 +76,7 @@ export default function DiscoveryPage() {
                             onClick={handleSearch}
                             disabled={address.length < 5}
                         >
-                            Connect Linked Utilities <ArrowRight className="w-6 h-6 ml-2" />
+                            {t('Connect Linked Utilities')} <ArrowRight className="w-6 h-6 ml-2" />
                         </Button>
                     </motion.div>
                 )}
@@ -104,8 +106,8 @@ export default function DiscoveryPage() {
                             </div>
                         </div>
 
-                        <h2 className="text-3xl font-black text-gray-800 mb-2">Connecting to utility databases...</h2>
-                        <p className="text-xl text-gray-500">Normalizing address formats via Bhuvan AI</p>
+                        <h2 className="text-3xl font-black text-gray-800 mb-2">{t('Connecting to utility databases...')}</h2>
+                        <p className="text-xl text-gray-500">{t('Normalizing address formats via Bhuvan AI')}</p>
 
                         <div className="mt-12 w-full max-w-md bg-gray-200 h-2 rounded-full overflow-hidden">
                             <motion.div
@@ -129,15 +131,15 @@ export default function DiscoveryPage() {
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-gray-100 pb-6">
                                 <div>
                                     <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full font-bold text-sm mb-4">
-                                        <ShieldCheck className="w-4 h-4" /> Address Verified
+                                        <ShieldCheck className="w-4 h-4" /> {t('Address Verified')}
                                     </div>
-                                    <h2 className="text-3xl font-black text-gray-900">4 Utility Connections Found</h2>
+                                    <h2 className="text-3xl font-black text-gray-900">{t('4 Utility Connections Found')}</h2>
                                     <p className="text-gray-500 mt-1 flex items-center gap-2">
                                         <MapPin className="w-4 h-4" /> 12 Civil Lines, Nagpur, MH 440001
                                     </p>
                                 </div>
                                 <div className="mt-4 md:mt-0 text-right">
-                                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Total Outstanding</p>
+                                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">{t('Total Outstanding')}</p>
                                     <p className="text-4xl font-black text-gray-900">₹{services.reduce((a, b) => a + b.amount, 0).toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
@@ -170,7 +172,7 @@ export default function DiscoveryPage() {
                                                 <p className="text-sm text-gray-500 font-mono tracking-wider">{service.consumerNo}</p>
                                                 <div className="flex justify-between items-end mt-4">
                                                     <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase">Due Date</p>
+                                                        <p className="text-xs font-bold text-gray-400 uppercase">{t('Due Date')}</p>
                                                         <p className="font-semibold">{service.due}</p>
                                                     </div>
                                                     <div className="text-right">
@@ -198,7 +200,7 @@ export default function DiscoveryPage() {
                                         router.push('/kiosk/pay');
                                     }}
                                 >
-                                    Confirm & Link Selected ({selectedServices.length})
+                                    {t('Confirm & Link Selected')} ({selectedServices.length})
                                 </Button>
                             </div>
                         </div>

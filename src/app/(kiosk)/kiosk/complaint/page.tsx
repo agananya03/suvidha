@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { webSpeech } from '@/lib/webSpeech';
 import { useStore } from '@/lib/store';
 import { DemoDataBadge } from '@/components/ui/EmptyState';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 // --- TYPES & INTERFACES --- //
 type ServiceType = 'ELECTRICITY' | 'GAS' | 'WATER' | 'MUNICIPAL' | 'OTHER';
@@ -34,6 +35,7 @@ interface DNAAnalysis {
 export default function ComplaintPage() {
     const router = useRouter();
     const { language } = useStore();
+    const { t } = useDynamicTranslation();
 
     // Form State
     const [serviceType, setServiceType] = useState<ServiceType | null>(null);
@@ -212,24 +214,24 @@ export default function ComplaintPage() {
                     <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle2 className="w-12 h-12" />
                     </div>
-                    <h1 className="text-3xl font-bold mb-2">Complaint Logged</h1>
-                    <p className="text-gray-500 mb-8">Your request has been successfully recorded in the centralized routing system.</p>
+                    <h1 className="text-3xl font-bold mb-2">{t('Complaint Logged')}</h1>
+                    <p className="text-gray-500 mb-8">{t('Your request has been successfully recorded in the centralized routing system.')}</p>
 
                     <div className="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100">
-                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Ticket ID</p>
+                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">{t('Ticket ID')}</p>
                         <p className="text-3xl font-mono font-bold text-primary tracking-widest">{submittedTicket}</p>
                     </div>
 
                     <p className="text-sm text-gray-600 mb-8 flex items-center justify-center gap-2">
-                        <Smartphone className="w-4 h-4" /> You will receive live updates via WhatsApp
+                        <Smartphone className="w-4 h-4" /> {t('You will receive live updates via WhatsApp')}
                     </p>
 
                     <div className="space-y-3">
                         <Button size="lg" className="w-full" onClick={() => router.push('/kiosk/queue')}>
-                            Track this Complaint
+                            {t('Track this Complaint')}
                         </Button>
                         <Button variant="outline" size="lg" className="w-full" onClick={() => router.push('/kiosk')}>
-                            Return to Home
+                            {t('Return to Home')}
                         </Button>
                     </div>
                 </div>
@@ -244,15 +246,15 @@ export default function ComplaintPage() {
                 {/* LEFT COLUMN: FORM */}
                 <div className="flex-1 space-y-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Register Complaint</h1>
-                        <p className="text-gray-500">Our AI routing system will automatically assign the correct departments.</p>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('Register Complaint')}</h1>
+                        <p className="text-gray-500">{t('Our AI routing system will automatically assign the correct departments.')}</p>
                     </div>
 
                     {/* Step 1: Service Type */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">1</span>
-                            Select Category
+                            {t('Select Category')}
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                             {[
@@ -271,7 +273,7 @@ export default function ComplaintPage() {
                                         }`}
                                 >
                                     <btn.icon className={`w-8 h-8 mb-2 ${serviceType === btn.id ? 'text-orange-500' : 'text-gray-400'}`} />
-                                    <span className="text-sm font-medium">{btn.label}</span>
+                                    <span className="text-sm font-medium">{t(btn.label)}</span>
                                 </button>
                             ))}
                         </div>
@@ -281,25 +283,25 @@ export default function ComplaintPage() {
                     <AnimatePresence>
                         {serviceType === 'GAS' && (
                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                <h3 className="font-bold mb-4">Do you currently smell gas in the vicinity?</h3>
+                                <h3 className="font-bold mb-4">{t('Do you currently smell gas in the vicinity?')}</h3>
                                 <div className="flex gap-4">
-                                    <Button variant={qsmellGas === 'yes' ? 'destructive' : 'outline'} onClick={() => { setQSmellGas('yes'); setDescription(prev => prev + " Strong smell of gas detected."); }}>YES</Button>
-                                    <Button variant={qsmellGas === 'no' ? 'default' : 'outline'} onClick={() => setQSmellGas('no')}>NO</Button>
+                                    <Button variant={qsmellGas === 'yes' ? 'destructive' : 'outline'} onClick={() => { setQSmellGas('yes'); setDescription(prev => prev + " Strong smell of gas detected."); }}>{t('YES')}</Button>
+                                    <Button variant={qsmellGas === 'no' ? 'default' : 'outline'} onClick={() => setQSmellGas('no')}>{t('NO')}</Button>
                                 </div>
                                 {qsmellGas === 'yes' && (
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 p-4 bg-red-50 text-red-800 border-l-4 border-red-500 rounded-r-lg flex gap-3">
                                         <AlertTriangle className="w-6 h-6 flex-shrink-0" />
-                                        <p className="font-bold text-sm">SAFETY WARNING: EVACUATE IMMEDIATELY. Do not use electrical switches. Call emergency services at 1906!</p>
+                                        <p className="font-bold text-sm">{t('SAFETY WARNING: EVACUATE IMMEDIATELY. Do not use electrical switches. Call emergency services at 1906!')}</p>
                                     </motion.div>
                                 )}
                             </motion.div>
                         )}
                         {serviceType === 'ELECTRICITY' && (
                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                <h3 className="font-bold mb-4">Is the power completely out or just flickering?</h3>
+                                <h3 className="font-bold mb-4">{t('Is the power completely out or just flickering?')}</h3>
                                 <div className="flex gap-4">
-                                    <Button variant={qPowerOutage === 'out' ? 'default' : 'outline'} onClick={() => { setQPowerOutage('out'); setDescription(prev => prev + " Power is completely out."); }}>Completely Out</Button>
-                                    <Button variant={qPowerOutage === 'flickering' ? 'default' : 'outline'} onClick={() => { setQPowerOutage('flickering'); setDescription(prev => prev + " Power is flickering."); }}>Flickering</Button>
+                                    <Button variant={qPowerOutage === 'out' ? 'default' : 'outline'} onClick={() => { setQPowerOutage('out'); setDescription(prev => prev + " Power is completely out."); }}>{t('Completely Out')}</Button>
+                                    <Button variant={qPowerOutage === 'flickering' ? 'default' : 'outline'} onClick={() => { setQPowerOutage('flickering'); setDescription(prev => prev + " Power is flickering."); }}>{t('Flickering')}</Button>
                                 </div>
                             </motion.div>
                         )}
@@ -310,7 +312,7 @@ export default function ComplaintPage() {
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-bold flex items-center gap-2">
                                 <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">2</span>
-                                Describe the Issue
+                                {t('Describe the Issue')}
                             </h2>
 
                             <div className="flex gap-2">
@@ -321,24 +323,24 @@ export default function ComplaintPage() {
                                     className={isRecording ? 'bg-red-50 text-red-600 border-red-200 animate-pulse' : ''}
                                 >
                                     <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'animate-bounce' : ''}`} />
-                                    {isRecording ? 'Listening...' : 'Dictate'}
+                                    {isRecording ? t('Listening...') : t('Dictate')}
                                 </Button>
                                 <Button variant="outline" size="sm" onClick={() => alert('Camera simulated for demo.')}>
-                                    <ImageIcon className="w-4 h-4 mr-2" /> Photo
+                                    <ImageIcon className="w-4 h-4 mr-2" /> {t('Photo')}
                                 </Button>
                             </div>
                         </div>
 
                         <textarea
                             className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 min-h-[200px] focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none text-lg"
-                            placeholder="Please describe the problem in detail. The smart routing system analyzes your text as you type..."
+                            placeholder={t('Please describe the problem in detail. The smart routing system analyzes your text as you type...')}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
 
                         <div className="flex items-center justify-between mt-2 text-sm">
                             <span className={`${description.length < 20 ? 'text-orange-500 font-medium' : 'text-green-600 font-medium'}`}>
-                                {description.length}/500 chars (Min 20 required)
+                                {description.length}/500 {t('chars (Min 20 required)')}
                             </span>
                         </div>
 
@@ -348,7 +350,7 @@ export default function ComplaintPage() {
                             disabled={description.length < 20 || isSubmitting}
                             onClick={handleSubmit}
                         >
-                            {isSubmitting ? 'Routing Complaint...' : 'Submit Complaint'} <Send className="w-4 h-4 ml-2" />
+                            {isSubmitting ? t('Routing Complaint...') : t('Submit Complaint')} <Send className="w-4 h-4 ml-2" />
                         </Button>
                     </div>
                 </div>
@@ -368,13 +370,13 @@ export default function ComplaintPage() {
                         <div className="flex items-center justify-between mb-8 relative z-10">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <Lightbulb className="w-5 h-5 text-yellow-400" />
-                                Live DNA Analysis
+                                {t('Live DNA Analysis')}
                             </h2>
                             <DemoDataBadge />
                             {isAnalyzing && (
                                 <span className="flex items-center gap-2 text-sm text-gray-400 bg-gray-800 px-3 py-1 rounded-full">
                                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                                    Analyzing...
+                                    {t('Analyzing...')}
                                 </span>
                             )}
                         </div>
@@ -382,7 +384,7 @@ export default function ComplaintPage() {
                         {!dnaAnalysis && description.length < 5 && (
                             <div className="text-center py-12 text-gray-500 relative z-10 border-2 border-dashed border-gray-700 rounded-2xl">
                                 <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                                <p>Start typing to see AI routing decisions...</p>
+                                <p>{t('Start typing to see AI routing decisions...')}</p>
                             </div>
                         )}
 
@@ -395,7 +397,7 @@ export default function ComplaintPage() {
                                 >
                                     {/* 2. Keyword Highlights Review */}
                                     <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Audited Transcript</p>
+                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">{t('Audited Transcript')}</p>
                                         <p className="text-sm leading-relaxed text-gray-300">
                                             {renderHighlightedText()}
                                         </p>
@@ -406,7 +408,7 @@ export default function ComplaintPage() {
                                         initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
                                         className="bg-gray-800 rounded-xl p-4 border border-gray-700"
                                     >
-                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Calculated Routing</p>
+                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">{t('Calculated Routing')}</p>
                                         <div className="flex items-center gap-3">
                                             {dnaAnalysis.isMultiDepartment ? (
                                                 <div className="flex -space-x-2">
@@ -420,7 +422,7 @@ export default function ComplaintPage() {
                                             )}
                                             <div>
                                                 <p className="font-bold text-lg">
-                                                    {dnaAnalysis.isMultiDepartment ? 'Multi-Department' : dnaAnalysis.primaryDepartment}
+                                                    {dnaAnalysis.isMultiDepartment ? t('Multi-Department') : t(dnaAnalysis.primaryDepartment)}
                                                 </p>
                                                 {dnaAnalysis.isMultiDepartment && (
                                                     <p className="text-xs text-blue-300">{dnaAnalysis.departments.join(' + ')}</p>
@@ -435,7 +437,7 @@ export default function ComplaintPage() {
                                     {/* 4. Priority Meter */}
                                     <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                                         <div className="flex justify-between items-end mb-2">
-                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Priority Index</p>
+                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{t('Priority Index')}</p>
                                             <span className={`text-xs font-bold px-2 py-0.5 rounded-sm ${getPriorityColor(dnaAnalysis.priorityLabel)}`}>
                                                 {dnaAnalysis.priorityLabel}
                                             </span>
@@ -456,16 +458,16 @@ export default function ComplaintPage() {
                                     {/* 5 & 6. Queue & SLA */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 text-center">
-                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Queue Position</p>
+                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">{t('Queue Position')}</p>
                                             <p className="text-3xl font-bold font-mono">#{dnaAnalysis.queuePosition}</p>
-                                            <p className="text-xs text-gray-500 mt-1">Est. live tracking</p>
+                                            <p className="text-xs text-gray-500 mt-1">{t('Est. live tracking')}</p>
                                         </div>
                                         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 text-center flex flex-col justify-center">
-                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">SLA Target</p>
+                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">{t('SLA Target')}</p>
                                             <div className="flex items-center justify-center gap-1 text-2xl font-bold text-blue-400">
                                                 <Clock className="w-5 h-5" /> {dnaAnalysis.slaDays}
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">Maximum Days</p>
+                                            <p className="text-xs text-gray-500 mt-1">{t('Maximum Days')}</p>
                                         </div>
                                     </div>
 
