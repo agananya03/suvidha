@@ -6,22 +6,36 @@ import { File } from 'buffer';
 
 export async function POST(request: Request) {
     try {
-        const formData = await request.formData();
+        let description, type, userId, primaryDepartment, secondaryDepartment, priority, queuePosition, vulnerabilityScore, agingBonus, slaDeadline;
+        let file: File | null = null;
 
-        // Extract fields from formData
-        const description = formData.get('description') as string;
-        const type = formData.get('type') as string;
-        const userId = formData.get('userId') as string;
-        const primaryDepartment = formData.get('primaryDepartment') as string;
-        const secondaryDepartment = formData.get('secondaryDepartment') as string;
-        const priority = parseInt(formData.get('priority') as string);
-        const queuePosition = parseInt(formData.get('queuePosition') as string);
-        const vulnerabilityScore = parseInt(formData.get('vulnerabilityScore') as string);
-        const agingBonus = parseInt(formData.get('agingBonus') as string);
-        const slaDeadline = formData.get('slaDeadline') as string;
-
-        // Extract optional file
-        const file = formData.get('file') as File | null;
+        const contentType = request.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            const body = await request.json();
+            description = body.description;
+            type = body.type;
+            userId = body.userId;
+            primaryDepartment = body.primaryDepartment;
+            secondaryDepartment = body.secondaryDepartment;
+            priority = body.priority;
+            queuePosition = body.queuePosition;
+            vulnerabilityScore = body.vulnerabilityScore;
+            agingBonus = body.agingBonus;
+            slaDeadline = body.slaDeadline;
+        } else {
+            const formData = await request.formData();
+            description = formData.get('description') as string;
+            type = formData.get('type') as string;
+            userId = formData.get('userId') as string;
+            primaryDepartment = formData.get('primaryDepartment') as string;
+            secondaryDepartment = formData.get('secondaryDepartment') as string;
+            priority = parseInt(formData.get('priority') as string);
+            queuePosition = parseInt(formData.get('queuePosition') as string);
+            vulnerabilityScore = parseInt(formData.get('vulnerabilityScore') as string);
+            agingBonus = parseInt(formData.get('agingBonus') as string);
+            slaDeadline = formData.get('slaDeadline') as string;
+            file = formData.get('file') as File | null;
+        }
 
         // 1. Basic validation
         if (!description || !primaryDepartment) {

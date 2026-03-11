@@ -8,7 +8,10 @@ const getPrisma = () => {
     if (globalForPrisma.prisma) {
         return globalForPrisma.prisma;
     }
-    return new PrismaClient({ log: ["query"] });
+    return new PrismaClient({
+        log: ["query"],
+        datasourceUrl: process.env.DATABASE_URL
+    });
 };
 
 export const prisma = getPrisma();

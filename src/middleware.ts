@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Protect /dashboard and /admin routes
-const protectedRoutes = ['/dashboard', '/admin'];
+// Protect /dashboard and /admin routes and authenticated kiosk pages
+const protectedRoutes = ['/dashboard', '/admin', '/kiosk/discovery'];
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;

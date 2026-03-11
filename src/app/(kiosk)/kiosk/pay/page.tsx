@@ -392,23 +392,23 @@ export default function PaymentPage() {
                             <div className="space-y-4 mb-8">
                                 <div className="flex justify-between border-b pb-4">
                                     <span className="text-gray-500">Transaction ID</span>
-                                    <span className="font-mono font-medium">{receiptData.transactionId}</span>
+                                    <span className="font-mono font-medium text-gray-900">{receiptData.transactionId}</span>
                                 </div>
                                 <div className="flex justify-between border-b pb-4">
                                     <span className="text-gray-500">Receipt Number</span>
-                                    <span className="font-mono font-medium">{receiptData.receiptNumber}</span>
+                                    <span className="font-mono font-medium text-gray-900">{receiptData.receiptNumber}</span>
                                 </div>
                                 <div className="flex justify-between border-b pb-4">
                                     <span className="text-gray-500">Date & Time</span>
-                                    <span>{receiptData.timestamp}</span>
+                                    <span className="text-gray-900">{receiptData.timestamp}</span>
                                 </div>
                                 <div className="flex justify-between border-b pb-4">
                                     <span className="text-gray-500">Amount Paid</span>
-                                    <span className="font-bold text-lg">₹{billData.currentBill.toFixed(2)}</span>
+                                    <span className="font-bold text-lg text-gray-900">₹{billData.currentBill.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between border-b pb-4">
                                     <span className="text-gray-500">Payment Method</span>
-                                    <span className="uppercase font-medium">{selectedMethod}</span>
+                                    <span className="uppercase font-medium text-gray-900">{selectedMethod}</span>
                                 </div>
                             </div>
 
