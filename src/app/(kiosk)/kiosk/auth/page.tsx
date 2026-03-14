@@ -82,8 +82,9 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="flex-grow p-8 flex items-center justify-center bg-gray-50/50">
-            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden border">
+        <div className="h-full overflow-y-auto bg-gray-50/50">
+            <div className="min-h-full p-8 flex items-center justify-center">
+                <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden border">
 
                 <div className="bg-[#001f5c] p-8 text-center text-white relative">
                     <h1 className="text-3xl font-bold tracking-wider uppercase">{t('Citizen Authentication', { defaultValue: 'Citizen Authentication' })}</h1>
@@ -227,6 +228,7 @@ export default function AuthPage() {
 
                     </AnimatePresence>
                 </div>
+            </div>
             </div>
         </div>
     );

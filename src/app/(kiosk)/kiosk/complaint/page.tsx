@@ -240,7 +240,7 @@ export default function ComplaintPage() {
     }
 
     return (
-        <div className="flex-grow p-4 lg:p-8 bg-gray-50/50">
+        <div className="h-full overflow-y-auto p-4 lg:p-8 bg-gray-50/50">
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
                 {/* LEFT COLUMN: FORM */}

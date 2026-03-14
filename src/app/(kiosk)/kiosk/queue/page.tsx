@@ -105,7 +105,7 @@ export default function QueuePage() {
     const isSlaBreached = activeComplaint.slaDaysLeft <= 0;
 
     return (
-        <div className={`flex-grow p-4 lg:p-8 ${highContrast ? 'bg-black text-white' : 'bg-gray-50'}`}>
+        <div className={`h-full overflow-y-auto p-4 lg:p-8 ${highContrast ? 'bg-black text-white' : 'bg-gray-50'}`}>
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* HEADER & TABS */}

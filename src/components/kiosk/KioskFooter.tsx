@@ -6,7 +6,7 @@ import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 export function KioskFooter() {
     const { t } = useDynamicTranslation();
     return (
-        <footer className="w-full bg-[#001533] text-zinc-300 py-4 px-6 fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-700/50 flex flex-col md:flex-row items-center justify-between text-[16px]">
+        <footer className="w-full bg-[#001533] text-zinc-300 py-4 px-6 relative z-40 border-t border-zinc-700/50 flex flex-col md:flex-row items-center justify-between text-[16px]">
             <div className="flex items-center gap-4">
                 <span className="font-bold text-white">{t('Powered by C-DAC')}</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
