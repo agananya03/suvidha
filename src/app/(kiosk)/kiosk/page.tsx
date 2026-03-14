@@ -52,6 +52,13 @@ export default function KioskHome() {
             setHighContrast(false);
             setFontSize('normal');
             setISLActive(false);
+
+            // CRITICAL: Unlock the Web Speech API on user interaction
+            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                const unlock = new SpeechSynthesisUtterance('');
+                unlock.volume = 0; // Silent
+                window.speechSynthesis.speak(unlock);
+            }
         } else if (mode === 'visual') {
             setVoiceMode(false);
             setHighContrast(false);
@@ -78,7 +85,11 @@ export default function KioskHome() {
     const handleLanguageSelect = (code: string) => {
         setKioskLanguage(code);
         setGlobalLanguage(code);
-        router.push('/kiosk/auth');
+        
+        // Slight delay to allow Zustand state to propagate before route changes and triggers the VoiceNavigator effect
+        setTimeout(() => {
+            router.push('/kiosk/auth');
+        }, 100);
     };
 
     const slideVariants = {

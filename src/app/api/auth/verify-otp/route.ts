@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
         };
         const token = signToken(payload);
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             token,
             user: {
                 id: user.id,
@@ -77,6 +77,17 @@ export async function POST(req: NextRequest) {
                 accessibilityMode: user.accessibilityMode,
             },
         });
+        
+        // Set cookie for middleware
+        response.cookies.set('token', token, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            path: '/',
+        });
+
+        return response;
     } catch (error) {
         console.error('Error verifying OTP:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

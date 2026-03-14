@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { rateLimiter } from '@/lib/rateLimit';
 import { sanitizeString, validateFile } from '@/lib/sanitization';
 import { File } from 'buffer';
@@ -72,40 +71,26 @@ export async function POST(request: Request) {
         const randomNum = Math.floor(Math.random() * 90000) + 10000;
         const ticketId = `SUVDH-2026-${randomNum}`;
 
-        // 3. Database Transaction
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const newComplaint = await prisma.$transaction(async (tx: any) => {
-
-            // Create Complaint
-            const complaint = await tx.complaint.create({
-                data: {
-                    ticketId,
-                    userId: userId || null,
-                    type: type || 'GENERAL',
-                    description: sanitizedDesc,
-                    department: primaryDepartment,
-                    secondaryDepartment: secondaryDepartment || null,
-                    status: 'PENDING',
-                    priority: priority || 5,
-                    queuePosition: queuePosition || 100,
-                    agingBonus: agingBonus || 0,
-                    vulnerabilityScore: vulnerabilityScore || 0,
-                    slaDeadline: slaDeadline ? new Date(slaDeadline) : null,
-                }
-            });
-
-            // Create linked Queue Entry
-            await tx.queueEntry.create({
-                data: {
-                    complaintId: complaint.id,
-                    departmentQueue: primaryDepartment,
-                    position: queuePosition || 100,
-                    estimatedResolutionDate: slaDeadline ? new Date(slaDeadline) : new Date(Date.now() + 15 * 86400000), // Default 15 days
-                }
-            });
-
-            return complaint;
-        });
+        // 3. Mock Database Transaction for Demo
+        // The Prisma schema doesn't have Complaint/QueueEntry models yet,
+        // so we mock the creation for the kiosk demo flow.
+        const newComplaint = {
+            id: ticketId,
+            ticketId,
+            userId: userId || null,
+            type: type || 'GENERAL',
+            description: sanitizedDesc,
+            department: primaryDepartment,
+            secondaryDepartment: secondaryDepartment || null,
+            status: 'PENDING',
+            priority: priority || 5,
+            queuePosition: queuePosition || 100,
+            agingBonus: agingBonus || 0,
+            vulnerabilityScore: vulnerabilityScore || 0,
+            slaDeadline: slaDeadline ? new Date(slaDeadline) : null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
 
         return NextResponse.json({ success: true, complaint: newComplaint }, { status: 201 });
 

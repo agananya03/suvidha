@@ -155,7 +155,7 @@ export default function AuthPage() {
                                         <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-medium text-gray-500">+91</span>
                                         <input
                                             type="tel"
-                                            className="w-full text-center text-4xl font-mono py-6 border-2 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all pl-16 tracking-widest bg-gray-50"
+                                            className="w-full text-center text-4xl font-mono py-6 border-2 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all pl-16 tracking-widest bg-gray-50 text-gray-900"
                                             value={mobile}
                                             onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                             placeholder="0000000000"
@@ -202,7 +202,7 @@ export default function AuthPage() {
                                 <div className="space-y-6">
                                     <input
                                         type="text"
-                                        className="w-full text-center text-5xl font-mono py-6 border-2 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all tracking-[0.5em] bg-gray-50"
+                                        className="w-full text-center text-5xl font-mono py-6 border-2 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all tracking-[0.5em] bg-gray-50 text-gray-900"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                         placeholder="------"

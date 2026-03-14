@@ -61,7 +61,7 @@ export default function DiscoveryPage() {
                         <div className="relative max-w-xl mx-auto mb-8">
                             <input
                                 type="text"
-                                className="w-full text-xl py-6 pl-6 pr-16 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all shadow-inner"
+                                className="w-full text-xl py-6 pl-6 pr-16 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all shadow-inner text-gray-900"
                                 placeholder="E.g., 12 Civil Lines Nagpur"
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
