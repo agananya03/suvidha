@@ -88,7 +88,8 @@ export default function KioskHome() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center relative p-8">
+        <div className="h-full overflow-y-auto w-full relative">
+            <div className="min-h-full flex flex-col items-center justify-center p-8">
             <ConsentModal />
             <AnimatePresence mode="wait">
 
@@ -205,6 +206,7 @@ export default function KioskHome() {
                 )}
 
             </AnimatePresence>
+            </div>
         </div>
     );
 }

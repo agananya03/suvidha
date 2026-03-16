@@ -107,7 +107,7 @@ export default function PaymentPage() {
     };
 
     return (
-        <div className="flex-grow p-8 max-w-4xl mx-auto w-full">
+        <div className="h-full overflow-y-auto p-8 max-w-4xl mx-auto w-full">
             <h1 className="text-3xl font-bold mb-8">{t('Bill Payment Checkout')}</h1>
 
             <AnimatePresence mode="wait">
