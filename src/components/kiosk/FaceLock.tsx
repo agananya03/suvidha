@@ -97,10 +97,13 @@ export function FaceLock() {
         };
     }, [isIdle, isLoggedOut]);
 
-    const handleLogoutSequence = () => {
+    const handleLogoutSequence = async () => {
         setIsLoggedOut(true);
         logout();
         console.log("Session cleared — no data retained");
+
+        const { clearSessionData } = await import('@/lib/offlineDb');
+        await clearSessionData();
 
         // After 2 seconds, redirect to the kiosk home
         setTimeout(() => {

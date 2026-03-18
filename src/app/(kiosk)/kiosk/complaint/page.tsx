@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -15,6 +16,7 @@ import { webSpeech } from '@/lib/webSpeech';
 import { useStore } from '@/lib/store';
 import { DemoDataBadge } from '@/components/ui/EmptyState';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 // --- TYPES & INTERFACES --- //
 type ServiceType = 'ELECTRICITY' | 'GAS' | 'WATER' | 'MUNICIPAL' | 'OTHER';
@@ -36,6 +38,7 @@ export default function ComplaintPage() {
     const router = useRouter();
     const { language } = useStore();
     const { t } = useDynamicTranslation();
+    const { isOnline } = useOnlineStatus();
 
     // Form State
     const [serviceType, setServiceType] = useState<ServiceType | null>(null);
@@ -56,6 +59,52 @@ export default function ComplaintPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
 
+    // --- LOCAL OFFLINE DNA FALLBACK --- //
+    const analyzeOffline = (text: string, type: ServiceType | null): DNAAnalysis => {
+        const lower = text.toLowerCase();
+        const KEYWORDS: Record<string, string[]> = {
+            ELECTRICITY: ['power', 'electricity', 'light', 'wire', 'voltage', 'outage', 'spark', 'meter', 'electric', 'current', 'flickering'],
+            GAS: ['gas', 'leak', 'smell', 'lpg', 'cylinder', 'pipeline', 'flame', 'burner'],
+            WATER: ['water', 'pipe', 'tap', 'drainage', 'sewage', 'flood', 'leak', 'supply', 'pump', 'bore'],
+            MUNICIPAL: ['road', 'pothole', 'garbage', 'waste', 'drain', 'street', 'lamp', 'park', 'sanitation', 'dust', 'cleaning'],
+        };
+
+        const matched: { word: string; department: string; weight: number }[] = [];
+        const deptScores: Record<string, number> = {};
+
+        for (const [dept, words] of Object.entries(KEYWORDS)) {
+            for (const word of words) {
+                if (lower.includes(word)) {
+                    matched.push({ word, department: dept, weight: 1 });
+                    deptScores[dept] = (deptScores[dept] || 0) + 1;
+                }
+            }
+        }
+
+        const sorted = Object.entries(deptScores).sort((a, b) => b[1] - a[1]);
+        const primaryDepartment = sorted[0]?.[0] || type || 'GENERAL';
+        const isMultiDepartment = sorted.length > 1 && sorted[1][1] >= sorted[0][1] * 0.5;
+        const departments = sorted.map(([d]) => d);
+
+        const urgencyWords = ['urgent', 'emergency', 'immediately', 'dangerous', 'critical', 'fire', 'explode', 'dead'];
+        const hasUrgency = urgencyWords.some(w => lower.includes(w));
+        const priority = hasUrgency ? 9 : Math.min(sorted[0]?.[1] ? sorted[0][1] + 3 : 4, 8);
+        const priorityLabel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = priority >= 9 ? 'CRITICAL' : priority >= 7 ? 'HIGH' : priority >= 5 ? 'MEDIUM' : 'LOW';
+
+        return {
+            departments,
+            primaryDepartment,
+            isMultiDepartment,
+            priority,
+            priorityLabel,
+            queuePosition: Math.floor(Math.random() * 30) + 10,
+            slaDays: priorityLabel === 'CRITICAL' ? 1 : priorityLabel === 'HIGH' ? 3 : 7,
+            matchedKeywords: matched,
+            urgencyFlags: hasUrgency ? ['Urgent language detected'] : [],
+            complaintDNA: `Local analysis — ${primaryDepartment} route (offline mode)`,
+        };
+    };
+
     // --- DEBOUNCED DNA ANALYSIS --- //
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const analyzeText = useCallback(
@@ -66,18 +115,23 @@ export default function ComplaintPage() {
                 const res = await fetch('/api/complaints/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description: text, type: serviceType })
+                    body: JSON.stringify({ description: text, type: serviceType }),
+                    signal: AbortSignal.timeout(4000),
                 });
                 if (res.ok) {
                     const data = await res.json();
                     setDnaAnalysis(data);
+                } else {
+                    setDnaAnalysis(analyzeOffline(text, serviceType));
                 }
-            } catch (err) {
-                console.error("Analysis failed", err);
+            } catch {
+                // Network failure (offline) — fall back to local keyword analysis
+                setDnaAnalysis(analyzeOffline(text, serviceType));
             } finally {
                 setIsAnalyzing(false);
             }
         }, 500),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [serviceType]
     );
 
@@ -155,7 +209,61 @@ export default function ComplaintPage() {
         });
     };
 
+    // Queue helper — extracted so both paths can call it
+    const queueComplaintLocally = async (payload: {
+        serviceType: string;
+        description: string;
+        dnaAnalysis: unknown;
+    }) => {
+        const { queueAction } = await import('@/lib/offlineDb');
+        const { createSignedSyncItem } = await import('@/lib/offlineCrypto');
+        const signedItem = await createSignedSyncItem('complaint', payload);
+        await queueAction(signedItem);
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            const sw = await navigator.serviceWorker.ready;
+            // @ts-expect-error - Background Sync API types are incomplete
+            sw.sync.register('sync-complaints').catch(() => {});
+        }
+        return { queued: true as const };
+    };
+
     // --- FORM SUBMISSION --- //
+    const submitComplaintWithOfflineFallback = async (payload: {
+        serviceType: string;
+        description: string;
+        dnaAnalysis: unknown;
+    }) => {
+        // Use the React isOnline state (driven by online/offline browser events)
+        // as the primary fast-path check. Also check navigator.onLine as belt-and-suspenders.
+        if (!isOnline || !navigator.onLine) {
+            return queueComplaintLocally(payload);
+        }
+
+        // Race the submission against a hard 3-second wall-clock timeout.
+        // This covers the case where the device has a network connection but
+        // the cloud DB (Neon) is unreachable — the local Next.js server accepts
+        // the HTTP connection but Prisma hangs for 30+ seconds.
+        const submitPromise = fetch('/api/complaints/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        }).then(async (res) => {
+            if (!res.ok) throw new Error('Server error');
+            return res.json();
+        });
+
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 3000)
+        );
+
+        try {
+            return await Promise.race([submitPromise, timeoutPromise]);
+        } catch {
+            // Either network error, non-OK response, or 3s timeout — queue locally
+            return queueComplaintLocally(payload);
+        }
+    };
+
     const handleSubmit = async () => {
         if (description.length < 20) return;
         setIsSubmitting(true);
@@ -170,24 +278,28 @@ export default function ComplaintPage() {
                 slaDeadline: dnaAnalysis?.slaDays ? new Date(Date.now() + dnaAnalysis.slaDays * 86400000).toISOString() : undefined
             };
 
-            const res = await fetch('/api/complaints/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            const result = await submitComplaintWithOfflineFallback({
+                serviceType: serviceType || 'OTHER',
+                description,
+                dnaAnalysis: dnaAnalysis || null
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                setSubmittedTicket(data.complaint.ticketId);
+            if (result.queued) {
+                const { suvidhaToast } = await import('@/lib/toast');
+                suvidhaToast.success('Complaint saved — will submit automatically when connected.');
+                router.push('/kiosk/queue');
+            } else if (result.complaint?.ticketId) {
+                setSubmittedTicket(result.complaint.ticketId);
                 // Announce success
                 if (useStore.getState().voiceMode) {
-                    webSpeech.speak(`Complaint submitted successfully. Your ticket number is ${data.complaint.ticketId}`);
+                    webSpeech.speak(`Complaint submitted successfully. Your ticket number is ${result.complaint.ticketId}`);
                 }
             } else {
                 alert("Failed to submit complaint.");
             }
         } catch (err) {
             console.error(err);
+            alert("Failed to submit complaint.");
         } finally {
             setIsSubmitting(false);
         }
@@ -343,6 +455,14 @@ export default function ComplaintPage() {
                                 {description.length}/500 {t('chars (Min 20 required)')}
                             </span>
                         </div>
+
+                        {!isOnline && (
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 mt-4 mb-2">
+                                <span className="text-amber-700 text-sm">
+                                    Offline mode — complaint will be queued and submitted automatically
+                                </span>
+                            </div>
+                        )}
 
                         <Button
                             className="w-full mt-6"

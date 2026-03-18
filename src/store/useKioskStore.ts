@@ -119,7 +119,10 @@ export const useKioskStore = create<KioskState>()(
                     lastActivityTime: new Date(),
                 }),
 
-            logout: () =>
+            logout: () => {
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                }
                 set((state) => ({
                     ...initialState,
                     // Preserve preferences on logout
@@ -127,7 +130,11 @@ export const useKioskStore = create<KioskState>()(
                     accessibilityMode: state.accessibilityMode,
                     highContrast: state.highContrast,
                     fontSize: state.fontSize,
-                })),
+                }));
+                import('@/lib/offlineDb').then(({ clearSessionData }) => {
+                    clearSessionData().catch(console.error);
+                });
+            },
 
             setLanguage: (code) => set({ language: code }),
 

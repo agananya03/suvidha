@@ -38,6 +38,23 @@ export function useDynamicTranslation() {
         return () => { subscribers.delete(handler); };
     }, []);
 
+    // Load cached translations for the selected language
+    useEffect(() => {
+        if (!language || language === 'en') return;
+        import('@/lib/translationDb').then(({ getCachedTranslationsForLanguage }) => {
+            getCachedTranslationsForLanguage(language).then((cached) => {
+                let didAdd = false;
+                for (const [k, v] of Object.entries(cached)) {
+                    if (!translationCache[k] || translationCache[k] === v + '__pending') {
+                        translationCache[k] = v;
+                        didAdd = true;
+                    }
+                }
+                if (didAdd) notifyAll();
+            });
+        });
+    }, [language]);
+
     // When language changes, immediately re-render all subscribers so they
     // call t() with the new language and trigger fresh fetches as needed.
     useEffect(() => {
@@ -76,17 +93,24 @@ export function useDynamicTranslation() {
         })
         .then(res => res.json())
         .then(data => {
-            if (data.translatedText && data.translatedText !== defaultValue) {
-                translationCache[cacheKey] = data.translatedText;
-            } else {
-                // API returned same text or empty — store original so we don't refetch
-                translationCache[cacheKey] = defaultValue;
+            const translated = (data.translatedText && data.translatedText !== defaultValue) 
+                ? data.translatedText 
+                : defaultValue;
+            translationCache[cacheKey] = translated;
+            if (translated !== defaultValue) {
+                import('@/lib/translationDb').then(({ setCachedTranslation }) => {
+                    setCachedTranslation(cacheKey, translated);
+                });
             }
             notifyAll();
         })
         .catch(() => {
-            translationCache[cacheKey] = defaultValue; // Fallback on error
-            notifyAll();
+            import('@/lib/translationDb').then(({ getCachedTranslation }) => {
+                getCachedTranslation(cacheKey).then((cached) => {
+                    translationCache[cacheKey] = cached ?? defaultValue;
+                    notifyAll();
+                });
+            });
         });
 
         return defaultValue; // Show English while fetch is in-flight

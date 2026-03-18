@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Smartphone, KeyRound, ArrowRight, ShieldCheck, Zap, ChevronDown } from 'lucide-react';
+import { Smartphone, KeyRound, ArrowRight, ShieldCheck, Zap, ChevronDown, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useKioskStore } from '@/store/useKioskStore';
 import toast from 'react-hot-toast';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import AadhaarOfflineModal from '@/components/kiosk/AadhaarOfflineModal';
 
 export default function AuthPage() {
     const router = useRouter();
@@ -21,6 +22,7 @@ export default function AuthPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [demoOtp, setDemoOtp] = useState<string | null>(null);
     const [accessMode, setAccessMode] = useState<'FULL' | 'QUICK'>('FULL');
+    const [showAadhaarModal, setShowAadhaarModal] = useState(false);
 
     const handleSendOTP = async () => {
         if (mobile.length !== 10) {
@@ -70,6 +72,23 @@ export default function AuthPage() {
             if (res.ok) {
                 const data = await res.json();
                 login(data.token, data.user, 'FULL_ACCESS');
+                
+                try {
+                    const { getDb } = await import('@/lib/offlineDb');
+                    const db = await getDb();
+                    await db.put('citizen', {
+                        mobile: data.user?.mobile ?? mobile,
+                        name: data.user?.name ?? undefined,
+                        email: data.user?.email ?? undefined,
+                        cachedAt: Date.now(),
+                    });
+                } catch (err) {
+                    console.warn('[SUVIDHA] Could not cache citizen data offline:', err);
+                }
+                
+                // Set token in document.cookie so Next.js middleware can read it
+                document.cookie = `token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`;
+                
                 toast.success(t('Authentication Successful!'));
                 router.push('/kiosk/discovery');
             } else {
@@ -159,6 +178,31 @@ export default function AuthPage() {
                                     >
                                         {isLoading ? t('Sending...') : t('Get OTP')} <ArrowRight className="w-6 h-6 ml-2" />
                                     </Button>
+
+                                    <div className="flex items-center gap-3 my-4">
+                                        <div className="flex-1 h-px bg-gray-200" />
+                                        <span className="text-xs text-gray-400">or</span>
+                                        <div className="flex-1 h-px bg-gray-200" />
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowAadhaarModal(true)}
+                                        className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 text-left hover:bg-gray-100 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-lg bg-blue-50">
+                                                <QrCode className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">
+                                                    Login with Aadhaar Offline eKYC
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                    No internet required — use your UIDAI eKYC ZIP file
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </button>
                                 </div>
                             </motion.div>
                         )}
@@ -219,6 +263,44 @@ export default function AuthPage() {
                 </div>
             </div>
             </div>
+
+            {showAadhaarModal && (
+                <AadhaarOfflineModal
+                    onClose={() => setShowAadhaarModal(false)}
+                    onSuccess={async (kycData) => {
+                        try {
+                            // Write to IndexedDB citizen store
+                            const { getDb } = await import('@/lib/offlineDb');
+                            const db = await getDb();
+                            await db.put('citizen', {
+                                mobile: kycData.mobileHash, // hashed — used as key
+                                name: kycData.name,
+                                cachedAt: Date.now(),
+                            });
+
+                            // Set Zustand auth state
+                            // Create a synthetic token for the session 
+                            // *Note*: This is a local session identifier, not a server-issued JWT
+                            // (Useful placeholder for future OVSE integration mapping)
+                            const syntheticToken = `aadhaar_${kycData.referenceId}_${Date.now()}`;
+                            login(syntheticToken, {
+                                id: kycData.referenceId,
+                                mobile: kycData.mobileHash,
+                                name: kycData.name,
+                            } as Parameters<typeof login>[1], 'FULL_ACCESS');
+
+                            // Set cookie so Next.js middleware allows access to protected routes like /kiosk/discovery
+                            // This is a synthetic local session token — not a server-issued JWT.
+                            document.cookie = `token=${syntheticToken}; path=/; max-age=${60 * 60 * 8}`;
+
+                            setShowAadhaarModal(false);
+                            router.push('/kiosk/discovery');
+                        } catch (err) {
+                            console.error('eKYC session creation failed:', err);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }
