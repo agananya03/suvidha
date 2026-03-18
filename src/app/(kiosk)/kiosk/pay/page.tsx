@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     AlertTriangle,
@@ -13,7 +13,8 @@ import {
     Printer,
     ChevronDown,
     ChevronUp,
-    Building2
+    Building2,
+    Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { jsPDF } from 'jspdf';
@@ -21,10 +22,13 @@ import { useRouter } from 'next/navigation';
 
 import { DemoDataBadge } from '@/components/ui/EmptyState';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { StaleBadge } from '@/components/ui/StaleBadge';
 
 export default function PaymentPage() {
     const router = useRouter();
     const { t } = useDynamicTranslation();
+    const [cachedAt, setCachedAt] = useState<number | null>(null);
 
     // Mock Bill State representing the fetched anomaly payload
     const [billData] = useState({
@@ -52,9 +56,26 @@ export default function PaymentPage() {
     const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
 
     // UI State
-    const [view, setView] = useState<'bill' | 'dispute' | 'payment_method' | 'processing' | 'success'>('bill');
+    const [view, setView] = useState<'bill' | 'dispute' | 'payment_method' | 'processing' | 'success' | 'offline_receipt'>('bill');
     const [selectedMethod, setSelectedMethod] = useState<'upi' | 'card' | 'cash' | null>(null);
     const [disputeReason, setDisputeReason] = useState('');
+    const { isOnline } = useOnlineStatus();
+
+    useEffect(() => {
+        const loadCachedBill = async () => {
+            try {
+                const { getDb } = await import('@/lib/offlineDb');
+                const db = await getDb();
+                const cached = await db.getAll('bills');
+                if (cached.length > 0 && cached[0].data) {
+                    setCachedAt(cached[0].cachedAt);
+                }
+            } catch (err) {
+                console.warn('[SUVIDHA] Could not load cached bill:', err);
+            }
+        };
+        loadCachedBill();
+    }, []);
 
     // Receipt Data
     const [receiptData, setReceiptData] = useState({
@@ -62,6 +83,38 @@ export default function PaymentPage() {
         receiptNumber: '',
         timestamp: ''
     });
+
+    const [paymentIntent, setPaymentIntent] = useState<{
+        intentId: string;
+        consumerNumber: string;
+        amount: number;
+        generatedAt: string;
+        expiresAt: string;
+        status: 'PENDING_SYNC';
+    } | null>(null);
+
+    const generatePaymentIntent = async () => {
+        const intentId = `PI-${Date.now()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
+        const now = new Date();
+        const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+        const intent = {
+            intentId,
+            consumerNumber: billData.consumerNumber,
+            amount: billData.currentBill,
+            generatedAt: now.toISOString(),
+            expiresAt: expires.toISOString(),
+            status: 'PENDING_SYNC' as const,
+        };
+
+        const { queueAction } = await import('@/lib/offlineDb');
+        const { createSignedSyncItem } = await import('@/lib/offlineCrypto');
+        const signedItem = await createSignedSyncItem('payment_intent', intent);
+        await queueAction(signedItem);
+
+        setPaymentIntent(intent);
+        setView('offline_receipt');
+    };
 
     const handleDisputeSubmit = () => {
         // Mock saving dispute
@@ -143,7 +196,10 @@ export default function PaymentPage() {
                             <div className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div>
                                     <p className="text-gray-500 mb-1">{t('Consumer Details')}</p>
-                                    <p className="font-semibold">{billData.holderName}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-semibold">{billData.holderName}</p>
+                                        <StaleBadge lastSynced={cachedAt} />
+                                    </div>
                                     <p className="text-sm text-gray-600">{billData.address}</p>
                                 </div>
                                 <div className="text-right">
@@ -315,10 +371,110 @@ export default function PaymentPage() {
                                     {t('Click here to generate your cash payment token slip.')}
                                 </div>
                             </div>
+
+                            {!isOnline && (
+                                <motion.button
+                                    onClick={generatePaymentIntent}
+                                    className="w-full p-4 rounded-xl border-2 border-amber-300 bg-amber-50 text-left transition-all hover:border-amber-400"
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 rounded-lg bg-amber-100">
+                                            <Clock className="w-5 h-5 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-amber-900">Pay Later (Offline)</p>
+                                            <p className="text-sm text-amber-700 mt-0.5">
+                                                Generate a payment intent — complete at any SUVIDHA kiosk within 24 hours
+                                            </p>
+                                        </div>
+                                    </div>
+                                </motion.button>
+                            )}
                         </div>
 
                         <div className="pt-6">
                             <Button variant="ghost" onClick={() => setView('bill')}>{t('Back to Bill Details')}</Button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* OFFLINE RECEIPT VIEW */}
+                {view === 'offline_receipt' && paymentIntent && (
+                    <motion.div
+                        key="offline_receipt"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        className="space-y-4"
+                    >
+                        {/* Amber warning banner */}
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                            <p className="text-sm text-amber-800">
+                                This is a payment intent, not a confirmation. Present this Intent ID
+                                at any SUVIDHA kiosk within 24 hours to complete your payment.
+                            </p>
+                        </div>
+
+                        {/* Intent details card */}
+                        <div className="p-5 rounded-xl border border-gray-200 bg-white space-y-3">
+                            <div className="text-center pb-3 border-b border-gray-100">
+                                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                                    Payment Intent ID
+                                </p>
+                                <p className="text-2xl font-mono font-semibold text-gray-900 mt-1">
+                                    {paymentIntent.intentId}
+                                </p>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Consumer No.</span>
+                                <span className="font-medium">{paymentIntent.consumerNumber}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Amount Due</span>
+                                <span className="font-semibold text-gray-900">
+                                    ₹{paymentIntent.amount.toFixed(2)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Generated At</span>
+                                <span>{new Date(paymentIntent.generatedAt).toLocaleString('en-IN')}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Valid Until</span>
+                                <span className="text-amber-700 font-medium">
+                                    {new Date(paymentIntent.expiresAt).toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex gap-3">
+                            <Button
+                                className="flex-1"
+                                onClick={() => {
+                                    const doc = new jsPDF();
+                                    doc.setFontSize(18);
+                                    doc.text('SUVIDHA 2026 — Payment Intent', 20, 20);
+                                    doc.setFontSize(12);
+                                    doc.text(`Intent ID: ${paymentIntent.intentId}`, 20, 40);
+                                    doc.text(`Consumer: ${paymentIntent.consumerNumber}`, 20, 52);
+                                    doc.text(`Amount: Rs. ${paymentIntent.amount.toFixed(2)}`, 20, 64);
+                                    doc.text(`Valid Until: ${new Date(paymentIntent.expiresAt).toLocaleString('en-IN')}`, 20, 76);
+                                    doc.text('Present this at any SUVIDHA kiosk to complete payment.', 20, 96);
+                                    doc.save(`suvidha-intent-${paymentIntent.intentId}.pdf`);
+                                }}
+                            >
+                                <Download className="w-4 h-4 mr-2" />
+                                Download Intent
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => router.push('/kiosk/discovery')}
+                            >
+                                Done
+                            </Button>
                         </div>
                     </motion.div>
                 )}

@@ -91,6 +91,28 @@ export default function DashboardPage() {
         }
     }, [error, router]);
 
+    useEffect(() => {
+        if (!data?.connections) return;
+        const cacheBills = async () => {
+            try {
+                const { getDb } = await import('@/lib/offlineDb');
+                const db = await getDb();
+                for (const conn of data.connections) {
+                    if (conn.consumerNumber) {
+                        await db.put('bills', {
+                            consumerNumber: conn.consumerNumber,
+                            data: conn,
+                            cachedAt: Date.now(),
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn('[SUVIDHA] Could not cache bill data offline:', err);
+            }
+        };
+        cacheBills();
+    }, [data]);
+
     if (isLoading) return <DashboardSkeleton />;
     if (error) return <div className="p-8 text-center text-red-500 font-bold">Failed to load dashboard. {error.message}</div>;
     if (!data) return null;

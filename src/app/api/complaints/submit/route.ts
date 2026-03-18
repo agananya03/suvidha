@@ -2,15 +2,19 @@ import { NextResponse } from 'next/server';
 import { rateLimiter } from '@/lib/rateLimit';
 import { sanitizeString, validateFile } from '@/lib/sanitization';
 import { File } from 'buffer';
+import { verifyHmacSignature } from '@/lib/verifyHmac';
 
 export async function POST(request: Request) {
     try {
         let description, type, userId, primaryDepartment, secondaryDepartment, priority, queuePosition, vulnerabilityScore, agingBonus, slaDeadline;
         let file: File | null = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let parsedBody: any = null;
 
         const contentType = request.headers.get('content-type') || '';
         if (contentType.includes('application/json')) {
             const body = await request.json();
+            parsedBody = body;
             description = body.description;
             type = body.type;
             userId = body.userId;
@@ -34,6 +38,17 @@ export async function POST(request: Request) {
             agingBonus = parseInt(formData.get('agingBonus') as string);
             slaDeadline = formData.get('slaDeadline') as string;
             file = formData.get('file') as File | null;
+        }
+
+        const signature = request.headers.get('X-SUVIDHA-Signature');
+        if (signature) {
+            const isValid = verifyHmacSignature(parsedBody, signature);
+            if (!isValid) {
+                return NextResponse.json(
+                    { error: 'Invalid signature — request rejected' },
+                    { status: 401 }
+                );
+            }
         }
 
         // 1. Basic validation

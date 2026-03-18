@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'; // Assumes src/lib/prisma exports PrismaClient singleton
+import { verifyHmacSignature } from '@/lib/verifyHmac';
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { connectionId, amount, method, userId } = body;
+
+        const signature = request.headers.get('X-SUVIDHA-Signature');
+        if (signature) {
+            const isValid = verifyHmacSignature(body, signature);
+            if (!isValid) {
+                return NextResponse.json(
+                    { error: 'Invalid signature — request rejected' },
+                    { status: 401 }
+                );
+            }
+        }
 
         // 1. Basic Validation
         if (!connectionId || amount === undefined || !method) {

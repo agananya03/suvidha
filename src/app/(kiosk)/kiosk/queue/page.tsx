@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 import { useStore } from '@/lib/store';
 import { DemoDataBadge } from '@/components/ui/EmptyState';
+import { StaleBadge } from '@/components/ui/StaleBadge';
 
 // --- STUB DATA --- //
 const MOCK_COMPLAINTS = [
@@ -43,6 +44,22 @@ const MOCK_COMPLAINTS = [
         officerState: { name: 'Officer #M9', load: 45, avgLoad: 42 },
         peerState: { name: 'Officer #M2', load: 41 },
         stage: 4
+    },
+    {
+        id: 'SUVDH-2026-QUEUED',
+        department: 'Electricity',
+        position: 0,
+        total: 156,
+        status: 'PENDING SYNC',
+        priority: 8,
+        priorityLabel: 'HIGH',
+        slaDays: 7,
+        slaDaysLeft: 7,
+        submittedAt: new Date().toISOString(),
+        officerState: { name: 'Pending', load: 0, avgLoad: 0 },
+        peerState: { name: 'Pending', load: 0 },
+        stage: 1,
+        pendingSync: true,
     }
 ];
 
@@ -176,12 +193,20 @@ export default function QueuePage() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-4 items-center">
-                                        <div className={`px-4 py-2 rounded-lg font-bold text-sm tracking-widest animate-pulse ${activeComplaint.status === 'UNDER INVESTIGATION' ? 'bg-blue-100 text-blue-700' :
-                                            activeComplaint.status === 'IN PROGRESS' ? 'bg-purple-100 text-purple-700' :
-                                                'bg-gray-100 text-gray-700'
-                                            }`}>
-                                            {activeComplaint.status}
-                                        </div>
+                                        {activeComplaint.pendingSync ? (
+                                            <div className="px-4 py-2 rounded-lg font-bold text-sm tracking-widest bg-amber-100 text-amber-700 animate-pulse">
+                                                AWAITING CONNECTION
+                                            </div>
+                                        ) : (
+                                            <div className={`px-4 py-2 rounded-lg font-bold text-sm tracking-widest animate-pulse ${activeComplaint.status === 'UNDER INVESTIGATION' ? 'bg-blue-100 text-blue-700' :
+                                                activeComplaint.status === 'IN PROGRESS' ? 'bg-purple-100 text-purple-700' :
+                                                    'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                {activeComplaint.status}
+                                            </div>
+                                        )}
+
+                                        <StaleBadge lastSynced={Date.now() - 35 * 60 * 1000} />
 
                                         <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border">
                                             <span className={`text-xs font-bold px-2 py-0.5 rounded ${getPriorityColor(activeComplaint.priorityLabel)}`}>
