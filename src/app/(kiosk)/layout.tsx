@@ -3,7 +3,10 @@ import { KioskHeader } from '@/components/kiosk/KioskHeader';
 import { KioskFooter } from '@/components/kiosk/KioskFooter';
 import { FaceLock } from '@/components/kiosk/FaceLock';
 import { ConsentModal } from '@/components/kiosk/ConsentModal';
+
 import { ConnectivityBanner } from '@/components/kiosk/ConnectivityBanner';
+import { VoiceNavigator } from '@/components/kiosk/VoiceNavigator';
+
 
 export default function KioskLayout({
     children,
@@ -19,6 +22,7 @@ export default function KioskLayout({
                 {children}
                 <FaceLock />
                 <ConsentModal />
+                <VoiceNavigator />
             </main>
             <KioskFooter />
         </div>
