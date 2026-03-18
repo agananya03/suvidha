@@ -196,8 +196,7 @@ export default function DiscoveryPage() {
                                     size="lg"
                                     className="h-16 px-12 text-xl rounded-xl shadow-xl"
                                     onClick={() => {
-                                        // For demo, just link straight to the payment anomaly demo
-                                        router.push('/kiosk/pay');
+                                        router.push('/kiosk/dashboard');
                                     }}
                                 >
                                     {t('Confirm & Link Selected')} ({selectedServices.length})
