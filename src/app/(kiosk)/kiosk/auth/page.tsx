@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Smartphone, KeyRound, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { Smartphone, KeyRound, ArrowRight, ShieldCheck, Zap, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useKioskStore } from '@/store/useKioskStore';
 import toast from 'react-hot-toast';
@@ -14,15 +14,17 @@ export default function AuthPage() {
     const { login } = useKioskStore();
     const { t } = useDynamicTranslation();
 
-    const [step, setStep] = useState<'MODE_SELECT' | 'MOBILE' | 'OTP'>('MODE_SELECT');
-    const [mobile, setMobile] = useState('9876543210'); // Pre-fill for demo
+    // Start directly on MOBILE step so the phone input is immediately visible
+    const [step, setStep] = useState<'MOBILE' | 'OTP' | 'MODE_SELECT'>('MOBILE');
+    const [mobile, setMobile] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [demoOtp, setDemoOtp] = useState<string | null>(null);
+    const [accessMode, setAccessMode] = useState<'FULL' | 'QUICK'>('FULL');
 
     const handleSendOTP = async () => {
         if (mobile.length !== 10) {
-            toast.error('Please enter a valid 10-digit mobile number');
+            toast.error(t('Please enter a valid 10-digit mobile number'));
             return;
         }
 
@@ -39,13 +41,13 @@ export default function AuthPage() {
                 setStep('OTP');
                 if (data.demoOtp) {
                     setDemoOtp(data.demoOtp);
-                    toast.success(`Demo OTP is ${data.demoOtp}`, { duration: 5000 });
+                    toast.success(`Demo OTP: ${data.demoOtp}`, { duration: 8000 });
                 }
             } else {
-                toast.error(data.error || 'Failed to send OTP');
+                toast.error(data.error || t('Failed to send OTP'));
             }
-        } catch (error) {
-            toast.error('Network error');
+        } catch {
+            toast.error(t('Network error'));
         } finally {
             setIsLoading(false);
         }
@@ -53,7 +55,7 @@ export default function AuthPage() {
 
     const handleVerifyOTP = async () => {
         if (otp.length !== 6) {
-            toast.error('Please enter a 6-digit OTP');
+            toast.error(t('Please enter a 6-digit OTP'));
             return;
         }
 
@@ -68,14 +70,14 @@ export default function AuthPage() {
             if (res.ok) {
                 const data = await res.json();
                 login(data.token, data.user, 'FULL_ACCESS');
-                toast.success('Authentication Successful!');
+                toast.success(t('Authentication Successful!'));
                 router.push('/kiosk/discovery');
             } else {
                 const data = await res.json();
-                toast.error(data.error || 'Invalid OTP');
+                toast.error(data.error || t('Invalid OTP'));
             }
-        } catch (error) {
-            toast.error('Network error');
+        } catch {
+            toast.error(t('Network error'));
         } finally {
             setIsLoading(false);
         }
@@ -87,53 +89,33 @@ export default function AuthPage() {
                 <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden border">
 
                 <div className="bg-[#001f5c] p-8 text-center text-white relative">
-                    <h1 className="text-3xl font-bold tracking-wider uppercase">{t('Citizen Authentication', { defaultValue: 'Citizen Authentication' })}</h1>
-                    <p className="text-blue-200 mt-2">{t('Secure access to all your connected utilities', { defaultValue: 'Secure access to all your connected utilities' })}</p>
+                    <h1 className="text-3xl font-bold tracking-wider uppercase">{t('Citizen Authentication')}</h1>
+                    <p className="text-blue-200 mt-2">{t('Secure access to all your connected utilities')}</p>
                     <div className="absolute top-4 right-4 bg-blue-900/50 p-2 rounded-full border border-blue-400">
                         <ShieldCheck className="w-6 h-6 text-emerald-400" />
                     </div>
                 </div>
 
+                {/* Access mode pills */}
+                <div className="flex justify-center gap-3 pt-6 px-8">
+                    <button
+                        onClick={() => setAccessMode('FULL')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${accessMode === 'FULL' ? 'border-primary bg-blue-50 text-primary' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                    >
+                        <ShieldCheck className="w-4 h-4" /> {t('Full Access')}
+                    </button>
+                    <button
+                        onClick={() => setAccessMode('QUICK')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${accessMode === 'QUICK' ? 'border-yellow-500 bg-yellow-50 text-yellow-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                    >
+                        <Zap className="w-4 h-4" /> {t('Quick Pay')}
+                    </button>
+                </div>
+
                 <div className="p-8 md:p-12">
                     <AnimatePresence mode="wait">
 
-                        {/* STEP 1: MODE SELECTION */}
-                        {step === 'MODE_SELECT' && (
-                            <motion.div
-                                key="mode"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-6"
-                            >
-                                <h2 className="text-2xl font-bold mb-6 text-center">{t('Select Access Level', { defaultValue: 'Select Access Level' })}</h2>
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <button
-                                        className="group p-6 rounded-2xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left flex flex-col items-center justify-center text-center h-48"
-                                        onClick={() => {
-                                            toast(t('Quick Pay bypassed for demo flow. Using Full Access.', { defaultValue: 'Quick Pay bypassed for demo flow. Using Full Access.' }), { icon: 'ℹ️' });
-                                            setStep('MOBILE');
-                                        }}
-                                    >
-                                        <Zap className="w-12 h-12 text-yellow-500 mb-4 group-hover:scale-110 transition-transform" />
-                                        <h3 className="text-xl font-bold text-gray-800 mb-2">{t('quickPay', { defaultValue: 'Quick Pay' })}</h3>
-                                        <p className="text-sm text-gray-500">{t('Pay a bill using only standard consumer number. No history saved.', { defaultValue: 'Pay a bill using only standard consumer number. No history saved.' })}</p>
-                                    </button>
-
-                                    <button
-                                        className="group p-6 rounded-2xl border-2 border-primary bg-blue-50 hover:bg-blue-100 transition-all text-left flex flex-col items-center justify-center text-center h-48 relative overflow-hidden shadow-[0_0_20px_rgba(0,102,204,0.15)]"
-                                        onClick={() => setStep('MOBILE')}
-                                    >
-                                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-200 rounded-full opacity-50"></div>
-                                        <ShieldCheck className="w-12 h-12 text-primary mb-4 group-hover:scale-110 transition-transform relative z-10" />
-                                        <h3 className="text-xl font-bold text-primary mb-2 relative z-10">{t('fullAccess', { defaultValue: 'Full Access' })}</h3>
-                                        <p className="text-sm text-blue-700 relative z-10">{t('Access all linked services, history, and automated dispute resolution.', { defaultValue: 'Access all linked services, history, and automated dispute resolution.' })}</p>
-                                    </button>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* STEP 2: MOBILE ENTRY */}
+                        {/* STEP 1: MOBILE ENTRY — shown immediately */}
                         {step === 'MOBILE' && (
                             <motion.div
                                 key="mobile"
@@ -146,8 +128,8 @@ export default function AuthPage() {
                                     <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <Smartphone className="w-8 h-8" />
                                     </div>
-                                    <h2 className="text-2xl font-bold">{t('enterMobile', { defaultValue: 'Enter Mobile Number' })}</h2>
-                                    <p className="text-gray-500 mt-2">{t('A 6-digit OTP will be sent to this number to verify your identity.', { defaultValue: 'A 6-digit OTP will be sent to this number to verify your identity.' })}</p>
+                                    <h2 className="text-2xl font-bold">{t('Enter Mobile Number')}</h2>
+                                    <p className="text-gray-500 mt-2">{t('A 6-digit OTP will be sent to this number to verify your identity.')}</p>
                                 </div>
 
                                 <div className="space-y-6">
@@ -159,24 +141,27 @@ export default function AuthPage() {
                                             value={mobile}
                                             onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                             placeholder="0000000000"
+                                            inputMode="numeric"
                                         />
                                     </div>
+
+                                    {/* Demo helper */}
+                                    <p className="text-center text-sm text-gray-400">
+                                        {t('Demo: use any number e.g.')} <button className="text-primary font-mono underline" onClick={() => setMobile('9876543210')}>9876543210</button>
+                                    </p>
 
                                     <Button
                                         className="w-full h-16 text-xl rounded-xl"
                                         onClick={handleSendOTP}
                                         disabled={mobile.length !== 10 || isLoading}
                                     >
-                                        {isLoading ? t('Sending...', { defaultValue: 'Sending...' }) : t('Get OTP', { defaultValue: 'Get OTP' })} <ArrowRight className="w-6 h-6 ml-2" />
+                                        {isLoading ? t('Sending...') : t('Get OTP')} <ArrowRight className="w-6 h-6 ml-2" />
                                     </Button>
-                                    <div className="text-center">
-                                        <button className="text-gray-400 font-medium hover:text-gray-600" onClick={() => setStep('MODE_SELECT')}>{t('Back', { defaultValue: 'Back' })}</button>
-                                    </div>
                                 </div>
                             </motion.div>
                         )}
 
-                        {/* STEP 3: OTP VERIFICATION */}
+                        {/* STEP 2: OTP VERIFICATION */}
                         {step === 'OTP' && (
                             <motion.div
                                 key="otp"
@@ -189,8 +174,8 @@ export default function AuthPage() {
                                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <KeyRound className="w-8 h-8" />
                                     </div>
-                                    <h2 className="text-2xl font-bold">{t('enterOTP', { defaultValue: 'Enter Validation Code' })}</h2>
-                                    <p className="text-gray-500 mt-2">{t('Sent to', { defaultValue: 'Sent to' })} +91 {mobile.slice(0, 2)}******{mobile.slice(8, 10)}</p>
+                                    <h2 className="text-2xl font-bold">{t('Enter Validation Code')}</h2>
+                                    <p className="text-gray-500 mt-2">{t('Sent to')} +91 {mobile.slice(0, 2)}******{mobile.slice(8, 10)}</p>
                                 </div>
 
                                 {demoOtp && (
@@ -207,6 +192,7 @@ export default function AuthPage() {
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                         placeholder="------"
                                         autoFocus
+                                        inputMode="numeric"
                                     />
 
                                     <Button
@@ -214,13 +200,13 @@ export default function AuthPage() {
                                         onClick={handleVerifyOTP}
                                         disabled={otp.length !== 6 || isLoading}
                                     >
-                                        {isLoading ? t('Verifying...', { defaultValue: 'Verifying...' }) : t('verifyOTP', { defaultValue: 'Secure Login' })} <ShieldCheck className="w-6 h-6 ml-2" />
+                                        {isLoading ? t('Verifying...') : t('Secure Login')} <ShieldCheck className="w-6 h-6 ml-2" />
                                     </Button>
 
                                     <div className="text-center pt-4">
-                                        <button className="text-primary font-bold hover:underline" onClick={handleSendOTP}>{t('resendOTP', { defaultValue: 'Resend Code' })}</button>
+                                        <button className="text-primary font-bold hover:underline" onClick={handleSendOTP}>{t('Resend Code')}</button>
                                         <span className="mx-4 text-gray-300">|</span>
-                                        <button className="text-gray-500 font-medium hover:text-gray-800" onClick={() => setStep('MOBILE')}>{t('Change Number', { defaultValue: 'Change Number' })}</button>
+                                        <button className="text-gray-500 font-medium hover:text-gray-800" onClick={() => { setStep('MOBILE'); setOtp(''); }}>{t('Change Number')}</button>
                                     </div>
                                 </div>
                             </motion.div>
@@ -233,3 +219,4 @@ export default function AuthPage() {
         </div>
     );
 }
+
