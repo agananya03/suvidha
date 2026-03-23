@@ -1,0 +1,96 @@
+
+> suvidha@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: C:\Users\ASUS\OneDrive\Desktop\suvidhaah\public\sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+ ○ (pwa) Custom runtimeCaching array found, using it instead of the default one.
+ ✓ Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/28) ...
+Dashboard API Error: B [Error]: Dynamic server usage: Route /api/user/dashboard couldn't be rendered statically because it used `request.headers`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:21778)
+    at Object.get (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:29465)
+    at u (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\app\api\user\dashboard\route.js:1:2515)
+    at p (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\app\api\user\dashboard\route.js:1:712)
+    at C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854) {
+  description: "Route /api/user/dashboard couldn't be rendered statically because it used `request.headers`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+   Generating static pages (7/28) 
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+   Generating static pages (14/28) 
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+   Generating static pages (21/28) 
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ ✓ Generating static pages (28/28)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    11.6 kB         152 kB
+├ ○ /_not-found                          879 B          90.8 kB
+├ ƒ /api/auth/send-otp                   0 B                0 B
+├ ƒ /api/auth/verify-otp                 0 B                0 B
+├ ƒ /api/auth/verifyaadharekyc           0 B                0 B
+├ ƒ /api/bills/[consumerNumber]          0 B                0 B
+├ ƒ /api/complaints/analyze              0 B                0 B
+├ ƒ /api/complaints/submit               0 B                0 B
+├ ƒ /api/documents/retrieve/[token]      0 B                0 B
+├ ƒ /api/documents/token/[token]         0 B                0 B
+├ ƒ /api/documents/upload                0 B                0 B
+├ ƒ /api/payments/process                0 B                0 B
+├ ƒ /api/receipts/[receiptNumber]        0 B                0 B
+├ ƒ /api/translate                       0 B                0 B
+├ ƒ /api/user/dashboard                  0 B                0 B
+├ ƒ /api/user/data                       0 B                0 B
+├ ƒ /api/whatsapp/webhook                0 B                0 B
+├ ○ /dashboard                           12 kB           310 kB
+├ ○ /kiosk                               6.26 kB         159 kB
+├ ○ /kiosk/auth                          15.4 kB         182 kB
+├ ○ /kiosk/complaint                     10.7 kB         160 kB
+├ ○ /kiosk/dashboard                     4.49 kB         113 kB
+├ ○ /kiosk/discovery                     7.55 kB         171 kB
+├ ○ /kiosk/electricity                   7.47 kB         296 kB
+├ ○ /kiosk/gas                           7.95 kB         297 kB
+├ ○ /kiosk/municipal                     7.64 kB         296 kB
+├ ○ /kiosk/pay                           64 kB           362 kB
+├ ○ /kiosk/queue                         8.51 kB         176 kB
+├ ○ /pre-visit                           9.52 kB         150 kB
+└ ƒ /upload/[phone]                      2.82 kB        92.8 kB
++ First Load JS shared by all            90 kB
+  ├ chunks/1430-be611758f512d8d8.js      34.1 kB
+  ├ chunks/fd9d1056-d6cf51eaa2b66205.js  53.6 kB
+  └ other shared chunks (total)          2.21 kB
+
+
+ƒ Middleware                             26.8 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

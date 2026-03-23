@@ -479,3 +479,69 @@
 .text-size-xlarge {
   font-size: 125% !important;
 }
+
+/* ============================
+   KIOSK SPLASH SCREEN ANIMATIONS
+   ============================ */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(27, 58, 107, 0.55), 0 8px 32px rgba(27, 58, 107, 0.30);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 16px rgba(27, 58, 107, 0), 0 8px 40px rgba(27, 58, 107, 0.45);
+    transform: scale(1.015);
+  }
+}
+
+@keyframes breathe-ring {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.15; transform: scale(1.08); }
+}
+
+@keyframes splash-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes idle-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes idle-pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.splash-cta-idle {
+  animation: pulse-glow 2.4s ease-in-out infinite;
+}
+
+.splash-emblem {
+  animation: splash-fade-in 0.7s ease both;
+}
+
+.splash-title {
+  animation: splash-fade-in 0.7s 0.1s ease both;
+}
+
+.splash-subtitle {
+  animation: splash-fade-in 0.7s 0.2s ease both;
+}
+
+.splash-cta-wrap {
+  animation: splash-fade-in 0.7s 0.3s ease both;
+}
+
+.splash-sidebar {
+  animation: splash-fade-in 0.7s 0.15s ease both;
+}
+
+.idle-overlay {
+  animation: idle-fadein 0.8s ease forwards;
+}
+
+.idle-prompt-text {
+  animation: idle-pulse-text 2s ease-in-out infinite;
+}
