@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, Check, X } from 'lucide-react';
+import { ShieldCheck, Check, X, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export function ConsentModal() {
@@ -10,10 +10,8 @@ export function ConsentModal() {
     const router = useRouter();
 
     useEffect(() => {
-        // Check local storage to see if consent was already given/declined
         const consent = localStorage.getItem('suvidha_dpdp_consent');
         if (!consent) {
-            // Show modal if no consent record exists
             setIsOpen(true);
         }
     }, []);
@@ -24,8 +22,7 @@ export function ConsentModal() {
             setIsOpen(false);
         } else {
             localStorage.setItem('suvidha_dpdp_consent', 'declined');
-            // Redirect or show alternative message
-            router.push('/kiosk/counter-service');
+            router.push('/kiosk/overview');
         }
     };
 
@@ -34,46 +31,54 @@ export function ConsentModal() {
             {isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="bg-[#001f5c] border-2 border-blue-400/50 rounded-2xl shadow-2xl max-w-2xl w-full p-8 relative overflow-hidden"
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="bg-white rounded-[var(--radius-xl)] shadow-lg max-w-2xl w-full relative overflow-hidden flex flex-col"
                     >
-                        {/* Interactive Background Elements */}
-                        <div className="absolute top-0 right-0 p-12 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
+                        {/* Navy Header */}
+                        <div className="bg-[var(--irs-navy)] text-white p-6 pb-8 text-center flex flex-col items-center">
+                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                                <ShieldCheck className="w-8 h-8 text-[var(--irs-blue-mid)]" />
+                            </div>
+                            <h2 className="text-[var(--font-2xl)] font-bold mb-1">Data Privacy Consent</h2>
+                            <p className="text-[var(--font-xs)] uppercase tracking-widest font-bold opacity-80">DPDP Act 2023 Compliance</p>
+                        </div>
 
-                        <div className="relative z-10 flex flex-col items-center text-center">
-                            <div className="bg-blue-900/50 p-4 rounded-full mb-6 border border-blue-400/30">
-                                <ShieldAlert size={48} className="text-[#FF9933]" />
+                        {/* Content Body */}
+                        <div className="p-8 pb-10 flex flex-col items-center text-center -mt-6">
+                            
+                            {/* Blue Pale Terms Block */}
+                            <div className="bg-[var(--irs-blue-pale)] p-6 rounded-[var(--radius-lg)] border border-[var(--irs-blue-light)] w-full mb-8 text-left shadow-sm">
+                                <div className="flex gap-4">
+                                    <Info className="w-6 h-6 text-[var(--irs-blue-mid)] shrink-0 mt-1" />
+                                    <div className="text-[var(--irs-gray-800)] text-[var(--font-md)] space-y-3 leading-relaxed">
+                                        <p>
+                                            <strong className="text-[var(--irs-navy)]">SUVIDHA collects:</strong> mobile number, address, and payment records for verification purposes.
+                                        </p>
+                                        <p>
+                                            All personal data is <strong>encrypted securely</strong>, automatically deleted after 48-hours for documents, and never shared with third parties without your explicit consent.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <h2 className="text-3xl font-bold text-white mb-2">Data Privacy Consent</h2>
-                            <p className="text-blue-300 mb-6 font-medium tracking-wide text-sm uppercase">DPDP Act 2023 Compliance</p>
+                            <p className="text-[var(--font-lg)] font-bold text-[var(--irs-navy)] text-center mb-6">
+                                Do you consent to these terms?
+                            </p>
 
-                            <div className="bg-blue-950/50 p-6 rounded-xl border border-blue-800/50 mb-8 text-left w-full shadow-inner">
-                                <p className="text-lg text-blue-100 leading-relaxed mb-4">
-                                    <strong className="text-white">SUVIDHA collects:</strong> mobile number, address, and payment records.
-                                </p>
-                                <p className="text-lg text-blue-100 leading-relaxed mb-4">
-                                    Data is <strong className="text-emerald-400">encrypted</strong>, auto-deleted after 48-hours for documents, and never shared without consent.
-                                </p>
-                                <p className="text-xl font-bold text-white text-center mt-6">
-                                    Do you consent?
-                                </p>
-                            </div>
-
-                            <div className="flex gap-6 w-full mt-2">
+                            <div className="flex gap-4 w-full">
                                 <button
                                     onClick={() => handleConsent(false)}
-                                    className="flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-red-500/50 text-red-100 font-bold text-xl transition-all hover:bg-red-500/20 active:scale-95"
+                                    className="btn-secondary flex-1 flex items-center justify-center gap-2 h-[64px] text-[var(--font-lg)]"
                                 >
-                                    <X size={24} /> NO
+                                    <X className="w-6 h-6" /> Decline
                                 </button>
                                 <button
                                     onClick={() => handleConsent(true)}
-                                    className="flex-1 flex items-center justify-center gap-3 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all active:scale-95"
+                                    className="btn-primary flex-1 flex items-center justify-center gap-2 h-[64px] text-[var(--font-lg)]"
                                 >
-                                    <Check size={24} /> YES
+                                    <Check className="w-6 h-6" /> Accept & Continue
                                 </button>
                             </div>
                         </div>

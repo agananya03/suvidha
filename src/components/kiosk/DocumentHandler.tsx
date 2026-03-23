@@ -7,8 +7,8 @@ import {
     CheckCircle2, AlertTriangle, DownloadCloud,
     Camera, RefreshCcw, KeyRound
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 // --- MOCK DATA --- //
 const MOCK_DIGILOCKER_DOCS = [
@@ -19,6 +19,7 @@ const MOCK_DIGILOCKER_DOCS = [
 
 export default function DocumentHandler() {
     const { highContrast } = useStore();
+    const { t } = useDynamicTranslation();
     const [activeTab, setActiveTab] = useState<'digilocker' | 'scanner' | 'token'>('digilocker');
 
     // DigiLocker State
@@ -44,7 +45,6 @@ export default function DocumentHandler() {
 
     const handleDigiLockerOTP = () => {
         setDlStatus('loading');
-        // Simulate delay for fetching from DigiLocker
         setTimeout(() => {
             setDlStatus('success');
         }, 1500);
@@ -59,7 +59,6 @@ export default function DocumentHandler() {
         setScanStatus('scanning');
         setScanProgress(0);
 
-        // Simulate scanning progress
         const interval = setInterval(() => {
             setScanProgress(prev => {
                 if (prev >= 100) {
@@ -98,120 +97,123 @@ export default function DocumentHandler() {
 
 
     return (
-        <div className={`w-full rounded-3xl border shadow-sm overflow-hidden ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <div className={`w-full rounded-[var(--radius-xl)] bg-transparent`}>
 
-            {/* TABS HEADER */}
-            <div className={`flex border-b ${highContrast ? 'border-gray-800' : 'border-gray-100'} overflow-x-auto scrollbar-hide`}>
+            {/* HEADER METHOD CARDS */}
+            <h2 className="text-[var(--font-xl)] font-bold text-[var(--irs-navy)] mb-6 text-center">
+                {t('Upload Document')}
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <button
                     onClick={() => setActiveTab('digilocker')}
-                    className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide whitespace-nowrap transition-colors flex items-center justify-center gap-2 ${activeTab === 'digilocker' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}
+                    className={`p-6 rounded-[var(--radius-lg)] border-2 transition-all flex flex-col items-center gap-3 shadow-sm ${activeTab === 'digilocker' ? 'border-[var(--irs-blue-mid)] bg-[var(--irs-blue-pale)] text-[var(--irs-navy)]' : 'border-[var(--irs-gray-200)] bg-white hover:bg-[var(--irs-gray-50)] text-[var(--irs-gray-600)]'}`}
                 >
-                    <DownloadCloud className="w-4 h-4" /> DigiLocker
+                    <DownloadCloud className={`w-8 h-8 ${activeTab === 'digilocker' ? 'text-[var(--irs-blue-mid)]' : 'text-[var(--irs-gray-400)]'}`} />
+                    <span className="font-bold tracking-wide">{t('DigiLocker')}</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('scanner')}
-                    className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide whitespace-nowrap transition-colors flex items-center justify-center gap-2 ${activeTab === 'scanner' ? 'bg-green-50 text-green-700 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}
+                    className={`p-6 rounded-[var(--radius-lg)] border-2 transition-all flex flex-col items-center gap-3 shadow-sm ${activeTab === 'scanner' ? 'border-[var(--irs-blue-mid)] bg-[var(--irs-blue-pale)] text-[var(--irs-navy)]' : 'border-[var(--irs-gray-200)] bg-white hover:bg-[var(--irs-gray-50)] text-[var(--irs-gray-600)]'}`}
                 >
-                    <ScanLine className="w-4 h-4" /> Scanner
+                    <ScanLine className={`w-8 h-8 ${activeTab === 'scanner' ? 'text-[var(--irs-blue-mid)]' : 'text-[var(--irs-gray-400)]'}`} />
+                    <span className="font-bold tracking-wide">{t('Scanner')}</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('token')}
-                    className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide whitespace-nowrap transition-colors flex items-center justify-center gap-2 ${activeTab === 'token' ? 'bg-purple-50 text-purple-700 border-b-2 border-purple-600' : 'text-gray-500 hover:bg-gray-50'}`}
+                    className={`p-6 rounded-[var(--radius-lg)] border-2 transition-all flex flex-col items-center gap-3 shadow-sm ${activeTab === 'token' ? 'border-[var(--irs-blue-mid)] bg-[var(--irs-blue-pale)] text-[var(--irs-navy)]' : 'border-[var(--irs-gray-200)] bg-white hover:bg-[var(--irs-gray-50)] text-[var(--irs-gray-600)]'}`}
                 >
-                    <KeyRound className="w-4 h-4" /> Web Token
+                    <KeyRound className={`w-8 h-8 ${activeTab === 'token' ? 'text-[var(--irs-blue-mid)]' : 'text-[var(--irs-gray-400)]'}`} />
+                    <span className="font-bold tracking-wide">{t('Web Token')}</span>
                 </button>
             </div>
 
-            {/* TAB CONTENT */}
-            <div className="p-6 md:p-8 min-h-[400px] flex flex-col justify-center">
+            {/* TAB CONTENT IN A UNIFIED CARD */}
+            <div className="p-8 min-h-[400px] flex flex-col justify-center bg-white border border-[var(--irs-gray-200)] rounded-[var(--radius-xl)] shadow-sm">
                 <AnimatePresence mode="wait">
 
                     {/* --- TAB 1: DIGILOCKER --- */}
                     {activeTab === 'digilocker' && (
-                        <motion.div key="dl" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-md mx-auto w-full space-y-6">
+                        <motion.div key="dl" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-md mx-auto w-full space-y-6">
 
-                            <div className="text-center mb-8">
-                                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <DownloadCloud className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold">Fetch from DigiLocker</h3>
-                                <p className="text-sm text-gray-500 mt-2">Securely import your verified government documents directly.</p>
+                            <div className="text-center mb-10">
+                                <h3 className="text-[var(--font-lg)] font-bold text-[var(--irs-navy)]">{t('Fetch from DigiLocker')}</h3>
+                                <p className="text-[var(--font-sm)] text-[var(--irs-gray-600)] mt-2 font-medium">{t('Securely import verified government documents.')}</p>
                             </div>
 
                             {dlStatus === 'idle' && (
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Aadhaar Number</label>
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="kiosk-label text-center block mb-4">{t('AADHAAR NUMBER')}</label>
                                         <input
                                             type="text"
                                             placeholder="XXXX XXXX XXXX"
                                             maxLength={12}
                                             value={aadhaar}
                                             onChange={(e) => setAadhaar(e.target.value.replace(/\D/g, ''))}
-                                            className="w-full text-xl font-mono p-4 bg-gray-50 border rounded-xl outline-none focus:border-blue-500 text-center tracking-widest"
+                                            className="kiosk-input text-center tracking-widest font-mono text-[var(--font-xl)]"
                                         />
                                     </div>
-                                    <Button className="w-full text-lg" disabled={aadhaar.length !== 12} onClick={handleDigiLockerRequest}>
-                                        Request OTP
-                                    </Button>
+                                    <button className="btn-primary w-full h-[64px]" disabled={aadhaar.length !== 12} onClick={handleDigiLockerRequest}>
+                                        {t('Request OTP')}
+                                    </button>
                                 </div>
                             )}
 
                             {dlStatus === 'otp' && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                                    <div className="p-4 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200 text-sm flex items-start gap-3">
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                                    <div className="kiosk-banner warning">
                                         <Smartphone className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                        <p>An OTP has been sent to your Aadhaar-linked mobile number finishing in <b>*8912</b>.</p>
+                                        <p>An OTP has been sent to your Aadhaar-linked mobile number finishing in <strong className="font-bold">*8912</strong>.</p>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Enter 6-digit OTP</label>
+                                    <div>
+                                        <label className="kiosk-label text-center block mb-4">{t('ENTER 6-DIGIT OTP')}</label>
                                         <input
                                             type="text" placeholder="------" maxLength={6}
-                                            className="w-full text-2xl font-mono p-4 bg-gray-50 border rounded-xl outline-none focus:border-blue-500 text-center tracking-[1em]"
+                                            className="kiosk-input text-center tracking-[1em] font-mono text-[var(--font-xl)]"
                                         />
                                     </div>
-                                    <Button className="w-full text-lg" onClick={handleDigiLockerOTP}>Verify & Fetch</Button>
+                                    <button className="btn-primary w-full h-[64px]" onClick={handleDigiLockerOTP}>{t('Verify & Fetch')}</button>
                                 </motion.div>
                             )}
 
                             {dlStatus === 'loading' && (
-                                <div className="py-12 flex flex-col items-center justify-center text-blue-500 space-y-4">
+                                <div className="py-12 flex flex-col items-center justify-center text-[var(--irs-blue-mid)] space-y-4">
                                     <RefreshCcw className="w-10 h-10 animate-spin" />
-                                    <p className="font-bold animate-pulse">Connecting to DigiLocker API...</p>
+                                    <p className="font-bold animate-pulse text-[var(--font-lg)]">Connecting to DigiLocker...</p>
                                 </div>
                             )}
 
                             {dlStatus === 'success' && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
-                                    <div className="flex items-center gap-2 text-green-600 font-bold mb-4 justify-center">
-                                        <CheckCircle2 className="w-5 h-5" /> Account Linked Successfully
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                                    <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
+                                        <CheckCircle2 className="w-6 h-6 shrink-0" />
+                                        <strong>Account Linked Successfully</strong>
                                     </div>
-                                    <p className="text-sm font-bold text-gray-500">Select documents to attach:</p>
+                                    <p className="kiosk-label">{t('SELECT DOCUMENTS TO ATTACH')}:</p>
                                     <div className="space-y-3">
                                         {MOCK_DIGILOCKER_DOCS.map(doc => (
                                             <div
                                                 key={doc.id}
                                                 onClick={() => toggleDocSelection(doc.id)}
-                                                className={`p-4 border-2 rounded-xl cursor-pointer transition-colors flex items-center justify-between ${selectedDocs.includes(doc.id) ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'
-                                                    }`}
+                                                className={`p-4 border-2 rounded-[var(--radius-lg)] cursor-pointer transition-colors flex items-center justify-between ${selectedDocs.includes(doc.id) ? 'border-[var(--irs-blue-mid)] bg-[var(--irs-blue-pale)]' : 'border-[var(--irs-gray-200)] hover:bg-[var(--irs-gray-50)]'}`}
                                             >
                                                 <div className="flex items-center gap-4">
-                                                    <FileText className={`w-8 h-8 ${selectedDocs.includes(doc.id) ? 'text-primary' : 'text-gray-400'}`} />
+                                                    <FileText className={`w-8 h-8 ${selectedDocs.includes(doc.id) ? 'text-[var(--irs-blue-mid)]' : 'text-[var(--irs-gray-400)]'}`} />
                                                     <div>
-                                                        <p className="font-bold">{doc.name}</p>
-                                                        <p className="text-xs text-gray-500">{doc.type} • Updated {doc.date}</p>
+                                                        <p className="font-bold text-[var(--font-md)] text-[var(--irs-navy)]">{doc.name}</p>
+                                                        <p className="text-[var(--font-xs)] text-[var(--irs-gray-600)] font-medium">{doc.type} • Updated {doc.date}</p>
                                                     </div>
                                                 </div>
-                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedDocs.includes(doc.id) ? 'border-primary bg-primary text-white' : 'border-gray-300'
-                                                    }`}>
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedDocs.includes(doc.id) ? 'border-[var(--irs-blue-mid)] bg-[var(--irs-blue-mid)] text-white' : 'border-[var(--irs-gray-300)] bg-white'}`}>
                                                     {selectedDocs.includes(doc.id) && <CheckCircle2 className="w-4 h-4" />}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-                                    <Button className="w-full mt-4" size="lg" disabled={selectedDocs.length === 0} onClick={() => alert('Documents attached!')}>
-                                        Attach {selectedDocs.length} Document(s)
-                                    </Button>
+                                    <button className="btn-primary w-full h-[64px]" disabled={selectedDocs.length === 0} onClick={() => alert('Documents attached!')}>
+                                        Attach {selectedDocs.length} Document{selectedDocs.length !== 1 && 's'}
+                                    </button>
                                 </motion.div>
                             )}
                         </motion.div>
@@ -219,154 +221,155 @@ export default function DocumentHandler() {
 
                     {/* --- TAB 2: SCANNER --- */}
                     {activeTab === 'scanner' && (
-                        <motion.div key="scan" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-md mx-auto w-full space-y-8 flex flex-col items-center">
+                        <motion.div key="scan" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-md mx-auto w-full space-y-8 flex flex-col items-center">
 
                             <div className="text-center">
-                                <h3 className="text-xl font-bold mb-2">Physical Scanner</h3>
-                                <p className="text-sm text-gray-500">Place your document face down on the glass scanner below.</p>
+                                <h3 className="text-[var(--font-lg)] font-bold text-[var(--irs-navy)] mb-2">{t('Physical Scanner')}</h3>
+                                <p className="text-[var(--font-sm)] text-[var(--irs-gray-600)] font-medium">Place your document face down on the glass scanner below.</p>
                             </div>
 
                             {/* SCANNER VISUAL */}
-                            <div className="relative w-full aspect-video bg-gray-100 rounded-xl overflow-hidden shadow-inner border border-gray-200">
-                                {/* The scanning bar */}
+                            <div className="relative w-full aspect-video bg-[var(--irs-gray-100)] rounded-[var(--radius-lg)] overflow-hidden shadow-inner border-2 border-[var(--irs-gray-300)]">
                                 {scanStatus === 'scanning' && (
                                     <motion.div
-                                        className="absolute top-0 bottom-0 w-2 bg-green-400 shadow-[0_0_20px_rgba(74,222,128,0.8)] z-10"
+                                        className="absolute top-0 bottom-0 w-1.5 bg-[var(--irs-success)] shadow-[0_0_20px_rgba(40,167,69,0.8)] z-10"
                                         initial={{ left: '0%' }}
                                         animate={{ left: '100%' }}
                                         transition={{ duration: 2, ease: "linear", repeat: Infinity, repeatType: "reverse" }}
                                     />
                                 )}
-                                {/* Document stub */}
                                 {(scanStatus === 'scanning' || scanStatus === 'success') && (
                                     <div className="absolute inset-4 bg-white shadow-sm border p-4 opacity-50 flex flex-col gap-2">
-                                        <div className="h-4 bg-gray-200 rounded w-1/3" />
-                                        <div className="h-4 bg-gray-200 rounded w-1/2" />
-                                        <div className="h-24 bg-gray-200 rounded w-24 mt-4" />
+                                        <div className="h-4 bg-[var(--irs-gray-200)] rounded w-1/3" />
+                                        <div className="h-4 bg-[var(--irs-gray-200)] rounded w-1/2" />
+                                        <div className="h-24 bg-[var(--irs-gray-200)] rounded w-24 mt-4" />
                                     </div>
                                 )}
-                                {/* Center Icon */}
                                 {scanStatus === 'idle' && (
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400 flex-col gap-2">
-                                        <Camera className="w-12 h-12" />
-                                        <span className="font-bold">Ready</span>
+                                    <div className="absolute inset-0 flex items-center justify-center text-[var(--irs-gray-500)] flex-col gap-2">
+                                        <Camera className="w-12 h-12 mb-2 opacity-50" />
+                                        <span className="font-bold uppercase tracking-widest">{t('Ready to Scan')}</span>
                                     </div>
                                 )}
                             </div>
 
                             {scanStatus === 'idle' && (
-                                <Button size="lg" className="w-full max-w-xs text-lg" onClick={startScan}>
-                                    <ScanLine className="w-5 h-5 mr-2" /> Start Scan
-                                </Button>
+                                <button className="btn-primary w-full max-w-xs h-[64px]" onClick={startScan}>
+                                    <ScanLine className="w-6 h-6 mr-2 inline-block -mt-1" /> {t('Start Scan')}
+                                </button>
                             )}
 
                             {scanStatus === 'scanning' && (
                                 <div className="w-full space-y-2">
-                                    <div className="flex justify-between text-sm font-bold text-green-600">
-                                        <span>Scanning in progress...</span>
+                                    <div className="flex justify-between text-[var(--font-sm)] font-bold text-[var(--irs-success)]">
+                                        <span>{t('Scanning in progress...')}</span>
                                         <span>{scanProgress}%</span>
                                     </div>
-                                    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                                        <div className="h-full bg-green-500 transition-all duration-100" style={{ width: `${scanProgress}%` }} />
+                                    <div className="w-full h-3 bg-[var(--irs-gray-200)] rounded-full overflow-hidden">
+                                        <div className="h-full bg-[var(--irs-success)] transition-all duration-100" style={{ width: `${scanProgress}%` }} />
                                     </div>
                                 </div>
                             )}
 
                             {scanStatus === 'success' && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4 text-left">
-                                    <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3 text-green-800">
-                                        <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-6 text-left">
+                                    <div className="kiosk-banner success">
+                                        <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
                                         <div>
-                                            <p className="font-bold">Scan Complete</p>
-                                            <p className="text-sm">Document OCR successful.</p>
+                                            <strong>{t('Scan Complete')}</strong><br/>
+                                            {t('Document OCR successful.')}
                                         </div>
                                     </div>
-                                    <div className="bg-gray-800 text-green-400 p-4 rounded-xl font-mono text-sm leading-relaxed overflow-hidden">
-                                        <p className="text-gray-500 text-xs mb-2">--- EXTRACTED TEXT ---</p>
-                                        <p>NAME: RAMESH KUMAR</p>
-                                        <p>DOC ID: PAN-XXXX-8912</p>
-                                        <p>DOB: 12/05/1980</p>
-                                        <p>VALID UPTO: N/A</p>
-                                        <p className="text-gray-500 text-xs mt-2">--- END OF OCR ---</p>
+                                    <div className="bg-[var(--irs-gray-100)] text-[var(--irs-gray-800)] border border-[var(--irs-gray-300)] p-5 rounded-[var(--radius-lg)] font-mono text-[var(--font-sm)] leading-relaxed">
+                                        <p className="text-[var(--irs-gray-500)] text-xs mb-3 font-bold tracking-widest">--- EXTRACTED TEXT ---</p>
+                                        <p><strong>NAME:</strong> RAMESH KUMAR</p>
+                                        <p><strong>DOC ID:</strong> PAN-XXXX-8912</p>
+                                        <p><strong>DOB:</strong> 12/05/1980</p>
+                                        <p><strong>VALID UPTO:</strong> N/A</p>
+                                        <p className="text-[var(--irs-gray-500)] text-xs mt-3 font-bold tracking-widest">--- END OF OCR ---</p>
                                     </div>
-                                    <Button className="w-full" size="lg" onClick={() => alert('Attached scanned file!')}>Attach Extracted File</Button>
-                                    <Button variant="outline" className="w-full" onClick={() => setScanStatus('idle')}>Scan Another</Button>
+                                    <div className="flex gap-4">
+                                        <button className="btn-secondary w-full h-[64px]" onClick={() => setScanStatus('idle')}>{t('Rescan')}</button>
+                                        <button className="btn-primary w-full h-[64px]" onClick={() => alert('Attached scanned file!')}>{t('Attach File')}</button>
+                                    </div>
                                 </motion.div>
                             )}
                         </motion.div>
                     )}
 
-                    {/* --- TAB 3: WEB TOKEN (PRE-UPLOADED) --- */}
+                    {/* --- TAB 3: WEB TOKEN --- */}
                     {activeTab === 'token' && (
-                        <motion.div key="token" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-md mx-auto w-full space-y-6">
+                        <motion.div key="token" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-2xl mx-auto w-full space-y-8">
 
-                            <div className="text-center mb-8">
-                                <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <KeyRound className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold">Import via Web Token</h3>
-                                <p className="text-sm text-gray-500 mt-2">Already uploaded files from your phone at home? Enter the 6-character retrieval token below.</p>
+                            <div className="text-center mb-10">
+                                <h3 className="text-[var(--font-lg)] font-bold text-[var(--irs-navy)]">{t('Import via Web Token')}</h3>
+                                <p className="text-[var(--font-sm)] text-[var(--irs-gray-600)] mt-2 font-medium">Already uploaded files from your phone? Enter the 6-character retrieval token below.</p>
                             </div>
 
                             {tokenStatus !== 'success' && (
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center block">6-Char Secure Token</label>
+                                <div className="space-y-6 max-w-lg mx-auto">
+                                    <label className="kiosk-label text-center block mb-4">{t('6-CHAR SECURE TOKEN')}</label>
+                                    
+                                    <div className="flex gap-4 items-center">
                                         <input
                                             type="text"
                                             placeholder="XXXXXX"
                                             maxLength={6}
                                             value={token}
                                             onChange={(e) => setToken(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                                            className="w-full text-4xl font-mono p-6 bg-gray-50 border-2 rounded-2xl outline-none focus:border-purple-500 text-center tracking-[0.5em] font-black"
+                                            className="kiosk-input tracking-[1em] font-mono text-[var(--font-xl)] text-center flex-1 h-[72px]"
                                         />
+                                        <button
+                                            className="btn-primary shrink-0 px-8 h-[72px]"
+                                            disabled={token.length !== 6 || tokenStatus === 'loading'}
+                                            onClick={handleTokenSubmit}
+                                        >
+                                            {tokenStatus === 'loading' ? <RefreshCcw className="w-6 h-6 animate-spin mx-auto" /> : t('Verify')}
+                                        </button>
                                     </div>
 
                                     {tokenError && (
-                                        <p className="text-red-500 text-sm font-bold text-center flex items-center justify-center gap-1">
-                                            <AlertTriangle className="w-4 h-4" /> {tokenError}
+                                        <p className="text-[var(--irs-error)] text-[var(--font-sm)] font-bold text-center flex items-center justify-center gap-2 mt-4">
+                                            <AlertTriangle className="w-5 h-5" /> {tokenError}
                                         </p>
                                     )}
 
-                                    <Button
-                                        className="w-full text-lg bg-purple-600 hover:bg-purple-700 h-14"
-                                        disabled={token.length !== 6 || tokenStatus === 'loading'}
-                                        onClick={handleTokenSubmit}
-                                    >
-                                        {tokenStatus === 'loading' ? <RefreshCcw className="w-5 h-5 animate-spin" /> : 'Retrieve Document'}
-                                    </Button>
-
-                                    <div className="pt-6 border-t mt-6 flex gap-3 text-sm text-gray-500 items-start">
-                                        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-yellow-500" />
-                                        <p>Files expire automatically after 48 hours. They remain strictly encrypted until token redemption.</p>
+                                    <div className="pt-6 border-t border-[var(--irs-gray-200)] mt-10 flex gap-3 text-[var(--font-sm)] text-[var(--irs-gray-600)] items-start">
+                                        <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-[var(--irs-warning)]" />
+                                        <p className="font-medium">Files expire automatically after 48 hours. They remain strictly encrypted until token redemption.</p>
                                     </div>
                                 </div>
                             )}
 
                             {tokenStatus === 'success' && tokenData && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-                                    <div className="flex flex-col items-center justify-center p-6 bg-green-50 border border-green-200 rounded-2xl text-center space-y-2">
-                                        <CheckCircle2 className="w-12 h-12 text-green-500 mb-2" />
-                                        <h4 className="font-bold text-green-900 text-lg">Token Verified</h4>
-                                        <p className="text-sm text-green-700">{tokenData.message}</p>
-                                    </div>
-
-                                    <div className="border rounded-xl p-4 flex items-center gap-4 bg-gray-50">
-                                        <div className="w-12 h-12 bg-white rounded shadow-sm flex items-center justify-center border">
-                                            <FileText className="w-6 h-6 text-gray-400" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-sm tracking-wide">{tokenData.fileName}</p>
-                                            <p className="text-xs text-gray-500">{tokenData.mimeType} • {(tokenData.fileSize / 1024).toFixed(1)} KB</p>
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 max-w-md mx-auto">
+                                    <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
+                                        <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
+                                        <div className="font-bold">
+                                            {t('Token Verified')}<br/>
+                                            <span className="font-normal text-[var(--font-sm)]">{tokenData.message}</span>
                                         </div>
                                     </div>
 
-                                    <Button className="w-full h-14 text-lg bg-primary" onClick={() => alert('Consent Verified. Document Attached!')}>
-                                        Confirm & Attach
-                                    </Button>
-                                    <Button variant="outline" className="w-full" onClick={() => { setTokenStatus('idle'); setToken(''); }}>
-                                        Enter Another Token
-                                    </Button>
+                                    <div className="bg-[var(--irs-gray-50)] border-2 border-[var(--irs-gray-200)] rounded-[var(--radius-lg)] p-5 flex items-center gap-5">
+                                        <div className="w-14 h-14 bg-white rounded shadow-sm flex items-center justify-center border border-[var(--irs-gray-200)] shrink-0">
+                                            <FileText className="w-8 h-8 text-[var(--irs-gray-400)]" />
+                                        </div>
+                                        <div className="flex-1 overflow-hidden">
+                                            <p className="font-bold text-[var(--font-md)] text-[var(--irs-navy)] truncate">{tokenData.fileName}</p>
+                                            <p className="text-[var(--font-sm)] text-[var(--irs-gray-500)] font-medium mt-1">{tokenData.mimeType} • {(tokenData.fileSize / 1024).toFixed(1)} KB</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 mt-8">
+                                        <button className="btn-secondary w-full h-[64px]" onClick={() => { setTokenStatus('idle'); setToken(''); }}>
+                                            {t('Use Another')}
+                                        </button>
+                                        <button className="btn-primary w-full h-[64px]" onClick={() => alert('Consent Verified. Document Attached!')}>
+                                            {t('Confirm & Attach')}
+                                        </button>
+                                    </div>
+                                    
                                 </motion.div>
                             )}
                         </motion.div>

@@ -7,9 +7,9 @@ import { useKioskStore, AccessibilityMode } from '@/store/useKioskStore';
 import { useStore } from '@/lib/store';
 import { Ear, Eye, ALargeSmall, UserRound } from 'lucide-react';
 import { ConsentModal } from '@/components/kiosk/ConsentModal';
-import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
-type Step = 'ACCESSIBILITY' | 'LANGUAGE';
+type Step = 'WELCOME' | 'LANGUAGE';
+type Flow = 'QUICK_PAY' | 'FULL_ACCESS';
 
 const LANGUAGES = [
     { code: 'en', name: 'English', native: 'English' },
@@ -36,15 +36,14 @@ const LANGUAGES = [
 
 export default function KioskHome() {
     const router = useRouter();
-    const { t } = useDynamicTranslation();
     const { setAccessibilityMode, setLanguage: setKioskLanguage } = useKioskStore();
     const { setLanguage: setGlobalLanguage, setVoiceMode, setHighContrast, setFontSize, setISLActive } = useStore();
 
-    const [currentStep, setCurrentStep] = useState<Step>('ACCESSIBILITY');
-    const [selectedAccMode, setSelectedAccMode] = useState<AccessibilityMode | null>(null);
+    const [currentStep, setCurrentStep] = useState<Step>('WELCOME');
+    const [selectedFlow, setSelectedFlow] = useState<Flow | null>(null);
+    const [selectedLang, setSelectedLang] = useState<string>('');
 
     const handleAccessibilitySelect = (mode: AccessibilityMode) => {
-        setSelectedAccMode(mode);
         setAccessibilityMode(mode);
 
         if (mode === 'voice') {
@@ -53,10 +52,9 @@ export default function KioskHome() {
             setFontSize('normal');
             setISLActive(false);
 
-            // CRITICAL: Unlock the Web Speech API on user interaction
             if (typeof window !== 'undefined' && window.speechSynthesis) {
                 const unlock = new SpeechSynthesisUtterance('');
-                unlock.volume = 0; // Silent
+                unlock.volume = 0;
                 window.speechSynthesis.speak(unlock);
             }
         } else if (mode === 'visual') {
@@ -75,108 +73,103 @@ export default function KioskHome() {
             setFontSize('normal');
             setISLActive(false);
         }
-
-        // Auto-advance after 300ms for visual feedback
-        setTimeout(() => {
-            setCurrentStep('LANGUAGE');
-        }, 300);
     };
 
-    const handleLanguageSelect = (code: string) => {
-        setKioskLanguage(code);
-        setGlobalLanguage(code);
+    const handleFlow = (flow: Flow) => {
+        setSelectedFlow(flow);
+        setCurrentStep('LANGUAGE');
+    };
+
+    const handleLanguageConfirm = () => {
+        if (!selectedLang) return;
+        setKioskLanguage(selectedLang);
+        setGlobalLanguage(selectedLang);
         
-        // Slight delay to allow Zustand state to propagate before route changes and triggers the VoiceNavigator effect
         setTimeout(() => {
-            router.push('/kiosk/auth');
+            if (selectedFlow === 'QUICK_PAY') {
+                router.push('/kiosk/dashboard');
+            } else {
+                router.push('/kiosk/auth');
+            }
         }, 100);
     };
 
     const slideVariants = {
-        enter: { x: 1000, opacity: 0 },
+        enter: { x: 50, opacity: 0 },
         center: { x: 0, opacity: 1 },
-        exit: { x: -1000, opacity: 0 },
+        exit: { x: -50, opacity: 0 },
     };
 
     return (
-        <div className="h-full overflow-y-auto w-full relative">
-            <div className="min-h-full flex flex-col items-center justify-center p-8">
+        <div className="kiosk-page flex flex-col relative w-full h-full overflow-hidden">
             <ConsentModal />
             <AnimatePresence mode="wait">
-
-                {/* STEP 1: ACCESSIBILITY SELECTION */}
-                {currentStep === 'ACCESSIBILITY' && (
+                
+                {/* STEP 1: WELCOME SCREEN */}
+                {currentStep === 'WELCOME' && (
                     <motion.div
-                        key="step-accessibility"
+                        key="step-welcome"
                         variants={slideVariants}
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="w-full max-w-6xl flex flex-col items-center"
+                        transition={{ duration: 0.2 }}
+                        className="flex-1 flex flex-col items-center justify-center w-full"
                     >
-                        <h2 className="text-4xl md:text-5xl font-bold mb-4 text-center">{t('Select Interface Mode')}</h2>
-                        <p className="text-xl text-blue-200 mb-12 text-center">{t('Choose the experience that best suits your needs.')}</p>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-
-                            {/* Standard Mode */}
-                            <button
-                                onClick={() => handleAccessibilitySelect('standard')}
-                                className={`flex flex-col items-start text-left p-8 rounded-2xl border-4 transition-all duration-300 min-h-[160px] relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] ${selectedAccMode === 'standard' ? 'border-[#FF9933] bg-blue-900/40 shadow-[0_0_30px_rgba(255,153,51,0.3)]' : 'border-zinc-700/50 bg-[#001f5c]/50 hover:bg-[#002b80] hover:border-blue-400/50'}`}
-                            >
-                                <div className="bg-blue-500/20 text-blue-300 p-4 rounded-full mb-6 group-hover:bg-blue-500/40 transition-colors">
-                                    <UserRound size={48} strokeWidth={2} />
-                                </div>
-                                <h3 className="text-3xl font-bold mb-2">{t('Standard Mode')}</h3>
-                                <p className="text-xl text-blue-200">{t('Default touchscreen interface and experience')}</p>
+                        <h1 className="text-[var(--font-2xl)] font-bold text-[var(--irs-navy)] mb-2">
+                            नमस्ते / Welcome
+                        </h1>
+                        <h2 className="text-[var(--font-lg)] text-[var(--irs-gray-600)] mb-12">
+                            Government Services — Simplified
+                        </h2>
+                        
+                        <div className="flex gap-6 mb-16">
+                            <button className="btn-secondary" onClick={() => handleFlow('QUICK_PAY')}>
+                                Quick Pay (No Login)
                             </button>
+                            <button className="btn-primary" onClick={() => handleFlow('FULL_ACCESS')}>
+                                Full Access (OTP Login)
+                            </button>
+                        </div>
 
-                            {/* Voice Mode */}
-                            <button
+                        {/* Accessibility bottom strip */}
+                        <div className="absolute bottom-8 left-0 w-full flex justify-center gap-6">
+                            <button 
                                 onClick={() => handleAccessibilitySelect('voice')}
-                                className={`flex flex-col items-start text-left p-8 rounded-2xl border-4 transition-all duration-300 min-h-[160px] relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] ${selectedAccMode === 'voice' ? 'border-[#FF9933] bg-blue-900/40 shadow-[0_0_30px_rgba(255,153,51,0.3)]' : 'border-zinc-700/50 bg-[#001f5c]/50 hover:bg-[#002b80] hover:border-blue-400/50'}`}
+                                className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
                             >
-                                <div className="absolute top-6 right-6 bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-bold border border-emerald-500/30">
-                                    JAWS Compatible
+                                <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <Ear size={28} />
                                 </div>
-                                <div className="bg-emerald-500/20 text-emerald-400 p-4 rounded-full mb-6 group-hover:bg-emerald-500/40 transition-colors">
-                                    <Ear size={48} strokeWidth={2} />
-                                </div>
-                                <h3 className="text-3xl font-bold mb-2">{t('Voice / Audio Mode')}</h3>
-                                <p className="text-xl text-blue-200">{t('Screen reader + Braille keypad + Audio guidance')}</p>
+                                <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Voice</span>
                             </button>
-
-                            {/* Visual Mode */}
-                            <button
+                            <button 
                                 onClick={() => handleAccessibilitySelect('visual')}
-                                className={`flex flex-col items-start text-left p-8 rounded-2xl border-4 transition-all duration-300 min-h-[160px] relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] ${selectedAccMode === 'visual' ? 'border-[#FF9933] bg-blue-900/40 shadow-[0_0_30px_rgba(255,153,51,0.3)]' : 'border-zinc-700/50 bg-[#001f5c]/50 hover:bg-[#002b80] hover:border-blue-400/50'}`}
+                                className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
                             >
-                                <div className="absolute top-6 right-6 bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm font-bold border border-purple-500/30">
-                                    ISL Supported
+                                <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <Eye size={28} />
                                 </div>
-                                <div className="bg-purple-500/20 text-purple-300 p-4 rounded-full mb-6 group-hover:bg-purple-500/40 transition-colors">
-                                    <Eye size={48} strokeWidth={2} />
-                                </div>
-                                <h3 className="text-3xl font-bold mb-2">{t('Visual Mode')}</h3>
-                                <p className="text-xl text-blue-200">{t('ISL video instructions + Visual alerts + No audio')}</p>
+                                <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Visual</span>
                             </button>
-
-                            {/* Simplified Mode */}
-                            <button
+                            <button 
                                 onClick={() => handleAccessibilitySelect('simplified')}
-                                className={`flex flex-col items-start text-left p-8 rounded-2xl border-4 transition-all duration-300 min-h-[160px] relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] ${selectedAccMode === 'simplified' ? 'border-[#FF9933] bg-blue-900/40 shadow-[0_0_30px_rgba(255,153,51,0.3)]' : 'border-zinc-700/50 bg-[#001f5c]/50 hover:bg-[#002b80] hover:border-blue-400/50'}`}
+                                className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
                             >
-                                <div className="absolute top-6 right-6 bg-[#FF9933]/20 text-[#FF9933] px-3 py-1 rounded-full text-sm font-bold border border-[#FF9933]/30">
-                                    Senior Friendly
+                                <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <ALargeSmall size={28} />
                                 </div>
-                                <div className="bg-[#FF9933]/20 text-[#FF9933] p-4 rounded-full mb-6 group-hover:bg-[#FF9933]/40 transition-colors">
-                                    <ALargeSmall size={48} strokeWidth={2} />
-                                </div>
-                                <h3 className="text-3xl font-bold mb-2">{t('Simplified Mode')}</h3>
-                                <p className="text-xl text-blue-200">{t('Extra large text + High contrast + Step by step')}</p>
+                                <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Simplified</span>
                             </button>
-
+                            <button 
+                                onClick={() => handleAccessibilitySelect('standard')}
+                                className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
+                            >
+                                <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <UserRound size={28} />
+                                </div>
+                                <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Standard</span>
+                            </button>
                         </div>
                     </motion.div>
                 )}
@@ -189,35 +182,43 @@ export default function KioskHome() {
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="w-full max-w-7xl flex flex-col items-center"
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col w-full h-full"
                     >
-                        <h2 className="text-5xl font-bold mb-12 text-center text-white drop-shadow-md">
-                            अपनी भाषा चुनें / Select Your Language
-                        </h2>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 w-full px-4 mb-16">
-                            {LANGUAGES.map((lang) => (
-                                <button
-                                    key={lang.code}
-                                    onClick={() => handleLanguageSelect(lang.code)}
-                                    className="bg-[#001f5c]/60 hover:bg-[#003087] border border-blue-800 hover:border-blue-400 group transition-all duration-200 rounded-xl p-6 min-h-[120px] shadow-lg flex flex-col items-center justify-center hover:scale-[1.03] active:scale-[0.97]"
-                                >
-                                    <span className="text-3xl font-bold text-white mb-2">{lang.native}</span>
-                                    <span className="text-lg text-blue-200 font-medium group-hover:text-white transition-colors">{lang.name}</span>
-                                </button>
-                            ))}
+                        <h1 className="kiosk-page-title">Choose Your Language</h1>
+                        
+                        <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto py-4">
+                            <div className="lang-grid">
+                                {LANGUAGES.map((lang) => (
+                                    <button
+                                        key={lang.code}
+                                        onClick={() => setSelectedLang(lang.code)}
+                                        className={`lang-btn flex-col gap-1 ${selectedLang === lang.code ? 'selected' : ''}`}
+                                    >
+                                        <span className="text-[var(--font-md)] font-bold">{lang.native}</span>
+                                        <span className="text-[var(--font-xs)] opacity-80">{lang.name}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-blue-900/30 px-6 py-3 rounded-full border border-blue-800/50">
-                            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span className="text-lg text-blue-100 font-medium">{t('22+ Officially Supported Languages')}</span>
+                        <div className="flex justify-between items-center mt-8 px-4 w-full max-w-5xl mx-auto">
+                            <button className="btn-secondary" onClick={() => setCurrentStep('WELCOME')}>
+                                Back
+                            </button>
+                            <button 
+                                className="btn-primary" 
+                                disabled={!selectedLang} 
+                                onClick={handleLanguageConfirm}
+                                style={{ opacity: selectedLang ? 1 : 0.5, cursor: selectedLang ? 'pointer' : 'not-allowed' }}
+                            >
+                                Continue
+                            </button>
                         </div>
                     </motion.div>
                 )}
 
             </AnimatePresence>
-            </div>
         </div>
     );
 }

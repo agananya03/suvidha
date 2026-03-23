@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Public_Sans } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { AccessibilityToolbar } from "@/components/accessibility/AccessibilityToolbar";
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Unified self-service government kiosk for citizens.",
 };
 
-const inter = Inter({ subsets: ["latin"] });
+const publicSans = Public_Sans({ subsets: ["latin"], weight: ['300', '400', '500', '600', '700'] });
 
 export default function RootLayout({
   children,
@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased bg-gray-50 text-dark min-h-screen flex flex-col`}>
+      <body className={`${publicSans.className} antialiased bg-gray-50 text-dark min-h-screen flex flex-col`}>
         <I18nProvider>
           {/* GLOBAL DEMO MODE BANNER */}
           <DemoBanner />

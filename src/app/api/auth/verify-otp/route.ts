@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { signToken } from '@/lib/auth';
 import { rateLimiter } from '@/lib/rateLimit';
+import { withDbRetry } from '@/lib/db-retry';
 
 export async function POST(req: NextRequest) {
     try {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Find OTPSession: mobile match, otp match, not used, not expired
-        const session = await prisma.oTPSession.findFirst({
+        const session = await withDbRetry(() => prisma.oTPSession.findFirst({
             where: {
                 mobile,
                 otp,
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
             orderBy: {
                 createdAt: 'desc',
             },
-        });
+        }));
 
         if (!session) {
             return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { rateLimiter } from '@/lib/rateLimit';
+import { withDbRetry } from '@/lib/db-retry';
 
 const DEMO_MODE = true; // Forced for E2E testing
 
@@ -26,14 +27,14 @@ export async function POST(req: NextRequest) {
 
         // DB Level Rate limit (fallback): max 5 OTPs per mobile per hour
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        const recentOtps = await prisma.oTPSession.count({
+        const recentOtps = await withDbRetry(() => prisma.oTPSession.count({
             where: {
                 mobile,
                 createdAt: {
                     gte: oneHourAgo,
                 },
             },
-        });
+        }));
 
         if (recentOtps >= 5) {
             return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 });
