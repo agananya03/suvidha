@@ -42,3 +42,17 @@ model ServiceRequest {
 
   user        User     @relation(fields: [userId], references: [id])
 }
+
+model DocumentToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  expiresAt   DateTime
+  used        Boolean  @default(false)
+  fileName      String?
+  fileSize      Int?
+  mimeType      String?
+  cloudinaryUrl String?
+  cloudinaryId  String?
+  serviceType   String?  // 'electricity' | 'gas' | 'water' | 'complaint'
+  uploadedAt    DateTime @default(now())
+}

@@ -19,6 +19,54 @@ import {
 import { Button } from '@/components/ui/button';
 import { jsPDF } from 'jspdf';
 import { useRouter } from 'next/navigation';
+import { QRCodeSVG } from 'qrcode.react';
+import { Receipt, type ReceiptData } from '@/components/payment/Receipt';
+import { useKioskStore } from '@/store/useKioskStore';
+
+const BILLERS = [
+  {
+    id: 'msedcl', name: 'MSEDCL (Maharashtra)', category: 'electricity' as const,
+    state: 'Maharashtra', consumerNumberFormat: '12-digit Consumer Number',
+    consumerNumberRegex: '^[0-9]{12}$',
+    billerVpa: 'msedcl@ybl'
+  },
+  {
+    id: 'bses_delhi', name: 'BSES Delhi', category: 'electricity' as const,
+    state: 'Delhi', consumerNumberFormat: '10-digit CA Number',
+    consumerNumberRegex: '^[0-9]{10}$',
+    billerVpa: 'bses@hdfcbank'
+  },
+  {
+    id: 'bescom', name: 'BESCOM (Karnataka)', category: 'electricity' as const,
+    state: 'Karnataka', consumerNumberFormat: 'RR Number (e.g. 007890123456)',
+    consumerNumberRegex: '^[0-9]{12}$',
+    billerVpa: 'bescom@sbi'
+  },
+  {
+    id: 'mgl', name: 'Mahanagar Gas (Mumbai)', category: 'gas' as const,
+    state: 'Maharashtra', consumerNumberFormat: '9-digit BP Number',
+    consumerNumberRegex: '^[0-9]{9}$',
+    billerVpa: 'mahanagargas@icici'
+  },
+  {
+    id: 'igl', name: 'Indraprastha Gas (Delhi)', category: 'gas' as const,
+    state: 'Delhi', consumerNumberFormat: '10-digit BP Number',
+    consumerNumberRegex: '^[0-9]{10}$',
+    billerVpa: 'igl@axisbank'
+  },
+  {
+    id: 'nmmc', name: 'NMMC Water (Navi Mumbai)', category: 'water' as const,
+    state: 'Maharashtra', consumerNumberFormat: '8-digit Property ID',
+    consumerNumberRegex: '^[0-9]{8}$',
+    billerVpa: 'nmmc@upi'
+  },
+];
+
+const CATEGORY_ICONS: Record<string, string> = {
+  electricity: '⚡',
+  gas: '🔥',
+  water: '💧',
+};
 
 import { DemoDataBadge } from '@/components/ui/EmptyState';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
@@ -30,33 +78,41 @@ export default function PaymentPage() {
     const { t } = useDynamicTranslation();
     const [cachedAt, setCachedAt] = useState<number | null>(null);
 
-    // Mock Bill State representing the fetched anomaly payload
-    const [billData] = useState({
-        consumerNumber: 'MH-NP-2024-001247',
-        providerName: 'Maharashtra State Electricity Board',
-        holderName: 'Rahul Sharma',
-        address: 'B-104, Sunrise Apartments, Pune',
-        currentBill: 1247.50,
-        lastBill: 540.00,
-        dueDate: new Date(Date.now() + 15 * 86400000).toISOString(),
-        billPeriod: 'Feb 2026',
-        anomaly: {
-            flagged: true,
-            ratio: 2.31,
-            message: 'This bill is 2.31x higher than your usual amount'
-        },
-        breakdown: {
-            fixed: 499.00,
-            variable: 561.37,
-            taxes: 124.75,
-            surcharges: 62.38
-        }
-    });
+    // UI State
+    const [view, setView] = useState<
+        'biller_select' | 'consumer_input' | 'bill' | 'dispute' |
+        'payment_method' | 'upi_qr' | 'processing' | 'success' | 'offline_receipt'
+    >('biller_select');
+    
+    const [selectedBiller, setSelectedBiller] = useState<{
+        id: string;
+        name: string;
+        category: 'electricity' | 'gas' | 'water';
+        state: string;
+        consumerNumberFormat: string;
+        consumerNumberRegex: string;
+        billerVpa: string;
+    } | null>(null);
+
+    const [consumerNumberInput, setConsumerNumberInput] = useState('');
+    const [isFetchingBill, setIsFetchingBill] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+
+    const [billData, setBillData] = useState<{
+        consumerNumber: string;
+        connectionId?: string;
+        providerName: string;
+        holderName: string;
+        address: string;
+        currentBill: number;
+        lastBill: number;
+        dueDate: string;
+        billPeriod: string;
+        anomaly: { flagged: boolean; ratio: number; message: string };
+        breakdown: { fixed: number; variable: number; taxes: number; surcharges: number };
+    } | null>(null);
 
     const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
-
-    // UI State
-    const [view, setView] = useState<'bill' | 'dispute' | 'payment_method' | 'processing' | 'success' | 'offline_receipt'>('bill');
     const [selectedMethod, setSelectedMethod] = useState<'upi' | 'card' | 'cash' | null>(null);
     const [disputeReason, setDisputeReason] = useState('');
     const { isOnline } = useOnlineStatus();
@@ -78,7 +134,12 @@ export default function PaymentPage() {
     }, []);
 
     // Receipt Data
-    const [receiptData, setReceiptData] = useState({
+    const [receiptData, setReceiptData] = useState<{
+        transactionId: string;
+        receiptNumber: string;
+        timestamp: string;
+        bbpsRefNumber?: string;
+    }>({
         transactionId: '',
         receiptNumber: '',
         timestamp: ''
@@ -94,6 +155,7 @@ export default function PaymentPage() {
     } | null>(null);
 
     const generatePaymentIntent = async () => {
+        if (!billData) return;
         const intentId = `PI-${Date.now()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
         const now = new Date();
         const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -122,41 +184,58 @@ export default function PaymentPage() {
         router.push('/kiosk'); // Return to home
     };
 
-    const simulatePayment = async (method: string) => {
+    const processPayment = async (method: 'upi' | 'card' | 'cash') => {
+        if (!billData) return;
         setView('processing');
-        setSelectedMethod(method as 'upi' | 'card' | 'cash');
+        setSelectedMethod(method);
 
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        try {
+            const { token, user } = useKioskStore.getState();
 
-        // Mock Success Response
-        setReceiptData({
-            transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-            receiptNumber: `RCPT-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-            timestamp: new Date().toLocaleString()
-        });
+            const res = await fetch('/api/payments/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({
+                    connectionId: billData.connectionId,
+                    amount: billData.currentBill,
+                    method,
+                    userId: user?.id,
+                }),
+            });
 
-        setView('success');
-    };
+            const data = await res.json();
 
-    const generatePDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(22);
-        doc.text('SUVIDHA PAYMENT RECEIPT', 20, 20);
+            if (!res.ok) {
+                // Fall back to local receipt on API failure
+                setReceiptData({
+                    transactionId: `TXN-${Date.now()}-OFFLINE`,
+                    receiptNumber: `RCPT-2026-OFFLINE`,
+                    timestamp: new Date().toLocaleString(),
+                });
+                setView('success');
+                return;
+            }
 
-        doc.setFontSize(12);
-        doc.text(`Transaction ID: ${receiptData.transactionId}`, 20, 40);
-        doc.text(`Receipt Number: ${receiptData.receiptNumber}`, 20, 50);
-        doc.text(`Date & Time: ${receiptData.timestamp}`, 20, 60);
+            setReceiptData({
+                transactionId: data.receipt.transactionId,
+                receiptNumber: data.receipt.receiptNumber,
+                timestamp: new Date(data.receipt.date).toLocaleString(),
+                bbpsRefNumber: data.receipt.bbpsRefNumber,
+            });
+            setView('success');
 
-        doc.text(`Consumer Number: ${billData.consumerNumber}`, 20, 80);
-        doc.text(`Name: ${billData.holderName}`, 20, 90);
-        doc.text(`Provider: ${billData.providerName}`, 20, 100);
-
-        doc.setFontSize(16);
-        doc.text(`Amount Paid: Rs. ${billData.currentBill.toFixed(2)}`, 20, 120);
-
-        doc.save(`${receiptData.receiptNumber}.pdf`);
+        } catch {
+            // Network error — still show receipt for offline scenario
+            setReceiptData({
+                transactionId: `TXN-${Date.now()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`,
+                receiptNumber: `RCPT-2026-${Math.random().toString(36).slice(2,8).toUpperCase()}`,
+                timestamp: new Date().toLocaleString(),
+            });
+            setView('success');
+        }
     };
 
     return (
@@ -165,8 +244,141 @@ export default function PaymentPage() {
 
             <AnimatePresence mode="wait">
 
+                {/* BILLER SELECT VIEW */}
+                {view === 'biller_select' && (
+                  <motion.div key="biller_select" initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -50 }}
+                    className="space-y-6"
+                  >
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">{t('Select Your Service Provider')}</h2>
+                      <p className="text-gray-500 text-sm">{t('Choose the utility you want to pay')}</p>
+                    </div>
+
+                    {(['electricity', 'gas', 'water'] as const).map(category => (
+                      <div key={category}>
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase
+                                       tracking-wider mb-3 flex items-center gap-2">
+                          <span>{CATEGORY_ICONS[category]}</span>
+                          {t(category.charAt(0).toUpperCase() + category.slice(1))}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {BILLERS.filter(b => b.category === category).map(biller => (
+                            <button
+                              key={biller.id}
+                              onClick={() => { setSelectedBiller(biller); setView('consumer_input'); }}
+                              className="w-full p-4 rounded-xl border border-gray-200 bg-white
+                                         text-left hover:border-blue-400 hover:shadow-md
+                                         transition-all group"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center
+                                                justify-center text-lg group-hover:bg-blue-100 transition-colors">
+                                  {CATEGORY_ICONS[biller.category]}
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-gray-900">{biller.name}</p>
+                                  <p className="text-xs text-gray-500">{biller.state}</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+
+                {/* CONSUMER INPUT VIEW */}
+                {view === 'consumer_input' && selectedBiller && (
+                  <motion.div key="consumer_input" initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -50 }}
+                    className="max-w-lg mx-auto space-y-6"
+                  >
+                    <div className="flex items-center gap-3 p-4 bg-blue-50
+                                    rounded-xl border border-blue-100">
+                      <span className="text-3xl">{CATEGORY_ICONS[selectedBiller.category]}</span>
+                      <div>
+                        <p className="font-bold text-blue-900">{selectedBiller.name}</p>
+                        <p className="text-sm text-blue-700">{selectedBiller.state}</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t('Enter Consumer Number')}
+                        </label>
+                        <input
+                          type="text"
+                          value={consumerNumberInput}
+                          onChange={(e) => {
+                            setConsumerNumberInput(e.target.value);
+                            setFetchError(null);
+                          }}
+                          placeholder={selectedBiller.consumerNumberFormat}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl
+                                     text-lg font-mono focus:outline-none focus:ring-2
+                                     focus:ring-blue-500 focus:border-transparent"
+                          maxLength={20}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Format: {selectedBiller.consumerNumberFormat}
+                        </p>
+                      </div>
+
+                      {fetchError && (
+                        <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg
+                                        border border-red-200 text-red-700 text-sm">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          {fetchError}
+                        </div>
+                      )}
+
+                      <Button
+                        className="w-full"
+                        size="lg"
+                        disabled={isFetchingBill || !consumerNumberInput.trim()}
+                        onClick={async () => {
+                          if (!consumerNumberInput.trim()) return;
+                          setIsFetchingBill(true);
+                          setFetchError(null);
+                          try {
+                            const res = await fetch(
+                              `/api/bills/${encodeURIComponent(consumerNumberInput.trim())}`
+                            );
+                            const data = await res.json();
+                            if (!res.ok) {
+                              setFetchError(data.error || t('Bill not found. Check your consumer number.'));
+                              return;
+                            }
+                            setBillData(data);
+                            setView('bill');
+                          } catch {
+                            setFetchError(t('Network error. Please try again.'));
+                          } finally {
+                            setIsFetchingBill(false);
+                          }
+                        }}
+                      >
+                        {isFetchingBill ? (
+                          <span className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent
+                                            rounded-full animate-spin" />
+                            {t('Fetching Bill...')}
+                          </span>
+                        ) : t('Fetch My Bill')}
+                      </Button>
+                    </div>
+
+                    <Button variant="ghost" onClick={() => setView('biller_select')}>
+                      ← {t('Change Provider')}
+                    </Button>
+                  </motion.div>
+                )}
+
                 {/* BILL DETAILS & ANOMALY WARNING VIEW */}
-                {view === 'bill' && (
+                {view === 'bill' && billData && (
                     <motion.div
                         key="bill-view"
                         initial={{ opacity: 0, y: 20 }}
@@ -174,6 +386,11 @@ export default function PaymentPage() {
                         exit={{ opacity: 0, x: -50 }}
                         className="space-y-6 relative"
                     >
+                        <div className="mb-2">
+                            <Button variant="ghost" onClick={() => setView('consumer_input')}>
+                                ← {t('Back')}
+                            </Button>
+                        </div>
                         <DemoDataBadge />
                         {/* SECTION 1: Bill Details Card */}
                         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -316,7 +533,7 @@ export default function PaymentPage() {
                 )}
 
                 {/* SECTION 3: PAYMENT METHOD SELECTION */}
-                {view === 'payment_method' && (
+                {view === 'payment_method' && billData && (
                     <motion.div
                         key="payment-method"
                         initial={{ opacity: 0, y: 20 }}
@@ -330,7 +547,7 @@ export default function PaymentPage() {
 
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* UPI Card */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" onClick={() => simulatePayment('upi')}>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" onClick={() => setView('upi_qr')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-green-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <Smartphone className="w-10 h-10 text-green-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('UPI Payment')}</h3>
@@ -344,7 +561,7 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Card Payment */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative" onClick={() => simulatePayment('card')}>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('card')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <CreditCard className="w-10 h-10 text-blue-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('Card Payment')}</h3>
@@ -362,7 +579,7 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Cash Payment */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative" onClick={() => simulatePayment('cash')}>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('cash')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-orange-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <Banknote className="w-10 h-10 text-orange-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('Cash at Counter')}</h3>
@@ -493,99 +710,92 @@ export default function PaymentPage() {
                     </motion.div>
                 )}
 
+                {/* UPI QR VIEW */}
+                {view === 'upi_qr' && billData && selectedBiller && (
+                  <motion.div key="upi_qr" initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-sm mx-auto space-y-6 text-center py-10"
+                  >
+                    <h2 className="text-2xl font-bold">{t('Scan to Pay')}</h2>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                      <p className="text-gray-500 text-sm mb-4">
+                        {t('Open any UPI app and scan this QR code')}
+                      </p>
+
+                      <div className="flex justify-center mb-4">
+                        <div className="p-4 border-2 border-gray-200 rounded-xl bg-white">
+                          <QRCodeSVG
+                            value={`upi://pay?pa=${selectedBiller.billerVpa}&pn=${encodeURIComponent(selectedBiller.name)}&am=${billData.currentBill.toFixed(2)}&tn=${encodeURIComponent('Consumer: ' + billData.consumerNumber)}&cu=INR`}
+                            size={200}
+                            level="H"
+                            includeMargin={false}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">{t('Pay To')}</span>
+                          <span className="font-medium">{selectedBiller.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">{t('Amount')}</span>
+                          <span className="font-bold text-lg">₹{billData.currentBill.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">{t('UPI ID')}</span>
+                          <span className="font-mono text-xs">{selectedBiller.billerVpa}</span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-gray-400 mt-3">
+                        {t('Accepts: PhonePe, Google Pay, Paytm, BHIM, and all UPI apps')}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Button className="w-full" size="lg" onClick={() => processPayment('upi')}>
+                        ✅ {t('I have completed the payment')}
+                      </Button>
+                      <Button variant="ghost" onClick={() => setView('payment_method')}>
+                        ← {t('Back')}
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* SECTION 4: PAYMENT SUCCESS */}
-                {view === 'success' && (
-                    <motion.div
-                        key="success"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-2xl mx-auto border"
-                    >
-                        <div className="bg-green-500 p-10 text-center text-white relative flex flex-col items-center justify-center h-64">
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1, rotate: 360 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.2 }}
-                                className="bg-white text-green-500 rounded-full w-24 h-24 flex items-center justify-center shadow-lg mb-6 z-10"
-                            >
-                                <CheckCircle2 className="w-16 h-16" />
-                            </motion.div>
-                            <motion.h2
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.5 }}
-                                className="text-3xl font-bold relative z-10"
-                            >
-                                {t('Payment Successful!')}
-                            </motion.h2>
+                {view === 'success' && billData && (
+                  <motion.div key="success" initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}>
 
-                            {/* Simple CSS Confetti Mock */}
-                            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
-                                {[...Array(20)].map((_, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{
-                                            y: -50,
-                                            x: '50%',
-                                            left: `${Math.random() * 100}%`,
-                                            backgroundColor: ['#fff', '#fbbf24', '#60a5fa'][Math.floor(Math.random() * 3)]
-                                        }}
-                                        animate={{
-                                            y: 300,
-                                            rotate: Math.random() * 360,
-                                            opacity: [1, 1, 0]
-                                        }}
-                                        transition={{
-                                            duration: 2 + Math.random() * 2,
-                                            ease: "linear",
-                                            delay: Math.random() * 0.5
-                                        }}
-                                        className="absolute w-3 h-3 rounded-sm"
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                    <Receipt data={{
+                      receiptNumber: receiptData.receiptNumber,
+                      transactionId: receiptData.transactionId,
+                      bbpsRefNumber: receiptData.bbpsRefNumber,
+                      dateTime: new Date().toISOString(),
+                      method: selectedMethod ?? 'upi',
+                      status: 'SUCCESS',
+                      serviceDetails: {
+                        provider: billData.providerName,
+                        consumerNumber: billData.consumerNumber,
+                        billingPeriod: billData.billPeriod,
+                      },
+                      breakdown: {
+                        baseAmount: billData.breakdown.fixed + billData.breakdown.variable,
+                        taxes: billData.breakdown.taxes,
+                        surcharges: billData.breakdown.surcharges,
+                        total: billData.currentBill,
+                      },
+                    } satisfies ReceiptData} />
 
-                        <div className="p-8">
-                            <div className="space-y-4 mb-8">
-                                <div className="flex justify-between border-b pb-4">
-                                    <span className="text-gray-500">{t('Transaction ID')}</span>
-                                    <span className="font-mono font-medium text-gray-900">{receiptData.transactionId}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-4">
-                                    <span className="text-gray-500">{t('Receipt Number')}</span>
-                                    <span className="font-mono font-medium text-gray-900">{receiptData.receiptNumber}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-4">
-                                    <span className="text-gray-500">{t('Date & Time')}</span>
-                                    <span className="text-gray-900">{receiptData.timestamp}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-4">
-                                    <span className="text-gray-500">{t('Amount Paid')}</span>
-                                    <span className="font-bold text-lg text-gray-900">₹{billData.currentBill.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-4">
-                                    <span className="text-gray-500">{t('Payment Method')}</span>
-                                    <span className="uppercase font-medium text-gray-900">{selectedMethod}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Button onClick={generatePDF} className="flex-1 gap-2" variant="outline">
-                                    <Download className="w-4 h-4" /> {t('Download Receipt')}
-                                </Button>
-                                <Button onClick={() => window.print()} className="flex-1 gap-2" variant="outline">
-                                    <Printer className="w-4 h-4" /> {t('Print Receipt')}
-                                </Button>
-                            </div>
-
-                            <div className="mt-6 text-center">
-                                <Button onClick={() => router.push('/kiosk')} className="w-full sm:w-auto" size="lg">
-                                    {t('Return to Services')}
-                                </Button>
-                            </div>
-                        </div>
-                    </motion.div>
+                    <div className="mt-6 text-center">
+                      <Button onClick={() => router.push('/kiosk')} size="lg">
+                        {t('Return to Services')}
+                      </Button>
+                    </div>
+                  </motion.div>
                 )}
 
             </AnimatePresence>

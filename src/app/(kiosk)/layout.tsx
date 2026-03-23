@@ -1,7 +1,8 @@
 import React from 'react';
 import { KioskHeader } from '@/components/kiosk/KioskHeader';
 import { KioskFooter } from '@/components/kiosk/KioskFooter';
-import { FaceLock } from '@/components/kiosk/FaceLock';
+import dynamic from 'next/dynamic';
+const FaceLock = dynamic(() => import('@/components/kiosk/FaceLock').then((mod) => mod.FaceLock), { ssr: false });
 import { ConsentModal } from '@/components/kiosk/ConsentModal';
 
 import { ConnectivityBanner } from '@/components/kiosk/ConnectivityBanner';

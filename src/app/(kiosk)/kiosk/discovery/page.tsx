@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { MapPin, Search, Building2, Zap, Flame, Droplets, Trash2, ArrowRight, ShieldCheck, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import toast from 'react-hot-toast';
 
 export default function DiscoveryPage() {
     const router = useRouter();
@@ -13,6 +14,16 @@ export default function DiscoveryPage() {
     const [address, setAddress] = useState('12 Civil Lines Nagpur');
     const [status, setStatus] = useState<'INPUT' | 'SEARCHING' | 'FOUND'>('INPUT');
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    
+    const [documentToken, setDocumentToken] = useState('');
+    const [tokenDocument, setTokenDocument] = useState<{
+        fileName: string;
+        fileSize: number;
+        serviceType: string | null;
+        mimeType?: string;
+    } | null>(null);
+    const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+    const [documentLoaded, setDocumentLoaded] = useState(false);
 
     const services = [
         { id: 'S1', type: 'ELECTRICITY', name: 'MSEDCL Power', icon: Zap, consumerNo: 'MH-NP-2024-001247', amount: 1247.50, due: 'May 15', color: 'bg-yellow-100 text-yellow-600', border: 'border-yellow-200' },
@@ -35,6 +46,26 @@ export default function DiscoveryPage() {
     const handleLinkAndContinue = () => {
         // Link logic happens in real app
         router.push('/kiosk/dashboard'); // Will need to build or redirect to kiosk home with linked state
+    };
+
+    const handleTokenLookup = async () => {
+        try {
+            const res = await fetch(`/api/documents/token/${documentToken}`);
+            if (res.ok) {
+                const data = await res.json();
+                setTokenDocument({
+                    fileName: data.fileName,
+                    fileSize: data.fileSize,
+                    serviceType: data.serviceType,
+                    mimeType: data.mimeType,
+                });
+                toast.success('Document loaded successfully');
+            } else {
+                toast.error('Token not found or expired');
+            }
+        } catch {
+            toast.error('Could not verify token');
+        }
     };
 
     return (
@@ -189,6 +220,92 @@ export default function DiscoveryPage() {
                                         </div>
                                     </motion.div>
                                 ))}
+                            </div>
+
+                            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+                                <h3 className="font-bold text-purple-900 mb-2">
+                                    📎 Have a pre-upload token?
+                                </h3>
+                                <p className="text-sm text-purple-700 mb-3">
+                                    Enter the 6-character token from your WhatsApp to load your document
+                                </p>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. A7X3K9"
+                                        maxLength={6}
+                                        value={documentToken}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && documentToken.length === 6) {
+                                                e.preventDefault();
+                                                handleTokenLookup();
+                                            }
+                                        }}
+                                        onChange={(e) => {
+                                            setDocumentToken(e.target.value.toUpperCase());
+                                            setTokenDocument(null);
+                                            setDocumentUrl(null);
+                                            setDocumentLoaded(false);
+                                        }}
+                                        className="flex-1 px-3 py-2 border rounded-lg font-mono text-lg uppercase focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                                    />
+                                    <Button type="button" onClick={handleTokenLookup} disabled={documentToken.length !== 6}>
+                                        Load
+                                    </Button>
+                                </div>
+                                {tokenDocument && (
+  <div className="mt-3 space-y-3">
+    <div className="flex items-center gap-2 p-3 bg-green-50
+                    rounded-xl border border-green-200">
+      <span className="text-xl">✅</span>
+      <div className="flex-1">
+        <p className="font-medium text-green-900">{tokenDocument.fileName}</p>
+        <p className="text-xs text-green-700">
+          {(tokenDocument.fileSize / 1024).toFixed(1)} KB ·
+          Uploaded via WhatsApp · Expires in 48 hrs
+        </p>
+      </div>
+    </div>
+
+    {!documentLoaded && (
+      <Button type="button" className="w-full" onClick={async () => {
+        const res = await fetch(
+          `/api/documents/retrieve/${documentToken}`,
+          { method: 'POST' }
+        );
+        if (res.ok) {
+          const data = await res.json() as { cloudinaryUrl: string };
+          setDocumentUrl(data.cloudinaryUrl);
+          setDocumentLoaded(true);
+        }
+      }}>
+        ✅ Confirm & Load Document
+      </Button>
+    )}
+
+    {documentLoaded && documentUrl && (
+      <div className="border rounded-xl overflow-hidden">
+        {tokenDocument.mimeType?.startsWith('image/') ? (
+          <img
+            src={documentUrl}
+            alt={tokenDocument.fileName}
+            className="w-full max-h-64 object-contain bg-gray-50"
+          />
+        ) : (
+          <a
+            href={documentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-4 bg-gray-50
+                       hover:bg-gray-100 text-blue-600 font-medium"
+          >
+            📄 Open {tokenDocument.fileName}
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+)}
                             </div>
 
                             <div className="flex justify-end pt-6 border-t border-gray-100">

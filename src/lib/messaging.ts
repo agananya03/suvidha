@@ -1,13 +1,38 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function sendWhatsAppMessage(phone: string, _template: string, _variables: unknown) {
-    // Mock WhatsApp API call
-    console.log(`Sending WhatsApp message to ${phone}`);
+import twilio from 'twilio';
+
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID!,
+  process.env.TWILIO_AUTH_TOKEN!
+);
+
+const FROM = process.env.TWILIO_WHATSAPP_NUMBER!; // whatsapp:+14155238886
+
+export async function sendWhatsAppMessage(
+  toPhone: string,
+  message: string
+): Promise<boolean> {
+  try {
+    const to = toPhone.startsWith('whatsapp:')
+      ? toPhone
+      : `whatsapp:${toPhone}`;
+
+    await client.messages.create({
+      from: FROM,
+      to,
+      body: message,
+    });
     return true;
+  } catch (err) {
+    console.error('[SUVIDHA WhatsApp] Send failed:', err);
+    return false;
+  }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function sendArattaiMessage(phone: string, _text: string) {
-    // Mock Arattai Messenger API call
-    console.log(`Sending Arattai message to ${phone}`);
-    return true;
+export async function sendArattaiMessage(
+  phone: string,
+  text: string
+): Promise<boolean> {
+  // Arattai integration — stub until API key available
+  console.log(`[Arattai] To ${phone}: ${text}`);
+  return true;
 }

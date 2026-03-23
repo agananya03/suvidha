@@ -103,7 +103,119 @@ const SUCCESS_TOKEN_MSG: React.ReactNode = (
     </div>
 );
 
+const GAS_REQ_MSG: React.ReactNode = (
+  <div className="space-y-3">
+    <p>For gas bill payment you need:</p>
+    <ul className="text-sm space-y-1 bg-green-50/50 p-2 rounded-lg border border-green-100">
+      <li className="flex gap-2"><span className="text-green-600">✅</span> <b>Customer ID or registered mobile</b> (mandatory)</li>
+      <li className="flex gap-2"><span className="text-gray-400">📄</span> Last gas bill copy (optional — for disputes)</li>
+      <li className="flex gap-2"><span className="text-gray-400">🆔</span> Aadhaar copy (only for new connection)</li>
+    </ul>
+    <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100 text-sm space-y-2">
+      <h4 className="font-bold text-blue-900 border-b border-blue-200 pb-1 flex items-center gap-1">
+        <Clock className="w-4 h-4" /> Current Queue Status
+      </h4>
+      <div className="flex justify-between items-center">
+        <span>Load:</span>
+        <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs font-bold">MEDIUM (15-20m wait)</span>
+      </div>
+      <div className="flex justify-between items-center text-xs">
+        <span>Best time to visit:</span>
+        <span className="font-bold">11 AM - 1 PM</span>
+      </div>
+      <div className="flex items-start gap-1 text-xs text-blue-700 mt-2">
+        <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <span><b>Nearest kiosk:</b> Civil Lines Office, 0.8 km away</span>
+      </div>
+    </div>
+    <p className="font-bold text-green-800">Would you like to pre-upload your documents?</p>
+  </div>
+);
 
+const WATER_REQ_MSG: React.ReactNode = (
+  <div className="space-y-3">
+    <p>For water / municipal services you need:</p>
+    <ul className="text-sm space-y-1 bg-green-50/50 p-2 rounded-lg border border-green-100">
+      <li className="flex gap-2"><span className="text-green-600">✅</span> <b>Property ID or address proof</b> (mandatory)</li>
+      <li className="flex gap-2"><span className="text-gray-400">📄</span> Previous water bill (optional — for disputes)</li>
+    </ul>
+    <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100 text-sm space-y-2">
+      <h4 className="font-bold text-blue-900 border-b border-blue-200 pb-1 flex items-center gap-1">
+        <Clock className="w-4 h-4" /> Current Queue Status
+      </h4>
+      <div className="flex justify-between items-center">
+        <span>Load:</span>
+        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">LOW (5-10m wait)</span>
+      </div>
+      <div className="flex justify-between items-center text-xs">
+        <span>Best time to visit:</span>
+        <span className="font-bold">9 AM - 11 AM</span>
+      </div>
+      <div className="flex items-start gap-1 text-xs text-blue-700 mt-2">
+        <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <span><b>Nearest kiosk:</b> Civil Lines Office, 0.8 km away</span>
+      </div>
+    </div>
+    <p className="font-bold text-green-800">Would you like to pre-upload your documents?</p>
+  </div>
+);
+
+const COMPLAINT_REQ_MSG: React.ReactNode = (
+  <div className="space-y-3">
+    <p>To file a complaint you need:</p>
+    <ul className="text-sm space-y-1 bg-green-50/50 p-2 rounded-lg border border-green-100">
+      <li className="flex gap-2"><span className="text-green-600">✅</span> <b>No documents required</b> — walk in directly</li>
+      <li className="flex gap-2"><span className="text-gray-400">📸</span> Photo evidence (optional — speeds up resolution)</li>
+    </ul>
+    <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100 text-sm space-y-2">
+      <h4 className="font-bold text-blue-900 border-b border-blue-200 pb-1 flex items-center gap-1">
+        <Clock className="w-4 h-4" /> Complaint Queue
+      </h4>
+      <div className="flex justify-between items-center">
+        <span>Active complaints ahead:</span>
+        <span className="font-bold">47</span>
+      </div>
+      <div className="flex justify-between items-center text-xs">
+        <span>Estimated resolution:</span>
+        <span className="font-bold">7–15 days (SLA enforced)</span>
+      </div>
+    </div>
+    <p className="font-bold text-green-800">
+      Want to pre-upload photo evidence to speed up resolution?
+    </p>
+  </div>
+);
+
+const QUEUE_STATUS_MSG: React.ReactNode = (
+  <div className="space-y-3">
+    <p className="font-bold">📊 Live Queue Status — All Services</p>
+    <div className="text-sm space-y-2 bg-gray-50 p-3 rounded-xl border">
+      <div className="flex justify-between items-center border-b pb-2">
+        <span className="flex items-center gap-1">⚡ Electricity</span>
+        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">LOW — 8 min (23 people)</span>
+      </div>
+      <div className="flex justify-between items-center border-b pb-2">
+        <span className="flex items-center gap-1">🔥 Gas</span>
+        <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs font-bold">MEDIUM — 18 min (41 people)</span>
+      </div>
+      <div className="flex justify-between items-center border-b pb-2">
+        <span className="flex items-center gap-1">💧 Water</span>
+        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">LOW — 5 min (12 people)</span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="flex items-center gap-1">📋 Complaints</span>
+        <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs font-bold">MEDIUM — 15 min (34 people)</span>
+      </div>
+    </div>
+    <div className="flex items-start gap-1 text-xs text-blue-700">
+      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+      <span><b>Nearest kiosk:</b> Civil Lines Office, 0.8 km away</span>
+    </div>
+    <p className="text-sm text-gray-500">
+      Type <b>MENU</b> to go back or choose another service.
+    </p>
+  </div>
+);
 
 export default function PreVisitChatPage() {
     const router = useRouter();
@@ -114,7 +226,9 @@ export default function PreVisitChatPage() {
     const [messages, setMessages] = useState<Message[]>([
         { id: '1', text: INITIAL_BOT_MSG, sender: 'bot', timestamp: new Date() }
     ]);
+    type ServiceType = 'electricity' | 'gas' | 'water' | 'complaint' | 'queue' | null;
     const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
+    const [selectedService, setSelectedService] = useState<ServiceType>(null);
     // 0: Initial
     // 1: Requirements Sent
     // 2: Waiting for Upload
@@ -136,28 +250,165 @@ export default function PreVisitChatPage() {
     };
 
     const handleSend = () => {
-        if (!input.trim() && step !== 2) return; // Attachment handles step 2 empty texts
-        if (input.trim()) {
-            const userMsg: Message = { id: Date.now().toString(), text: input.trim(), sender: 'user', timestamp: new Date(), status: 'read' };
-            setMessages(prev => [...prev, userMsg]);
-            setInput('');
-        }
+      if (!input.trim() && step !== 2) return;
+      const lower = input.toLowerCase().trim();
+ 
+      if (input.trim()) {
+        const userMsg: Message = {
+          id: Date.now().toString(),
+          text: input.trim(),
+          sender: 'user',
+          timestamp: new Date(),
+          status: 'read'
+        };
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+      }
+ 
+      // MENU reset from any step
+      if (lower === 'menu' || lower === 'restart') {
+        setStep(0);
+        setSelectedService(null);
+        addBotMessageWithDelay(INITIAL_BOT_MSG, 600);
+        return;
+      }
+ 
+      if (step === 0 || (step === 1 && selectedService === null)) {
+        // Detect service
+        let service: ServiceType = null;
+        if (lower === '1' || lower.includes('electric') || lower.includes('bijli') || lower.includes('power'))
+          service = 'electricity';
+        else if (lower === '2' || lower.includes('gas') || lower.includes('lpg'))
+          service = 'gas';
+        else if (lower === '3' || lower.includes('water') || lower.includes('municipal') || lower.includes('paani'))
+          service = 'water';
+        else if (lower === '4' || lower.includes('complaint') || lower.includes('problem') || lower.includes('issue'))
+          service = 'complaint';
+        else if (lower === '5' || lower.includes('queue') || lower.includes('status') || lower.includes('wait'))
+          service = 'queue';
+ 
+        if (!service) {
+          if (step === 0) {
+            const id = Date.now().toString();
+            setMessages(prev => [...prev, {
+              id, text: '...', sender: 'bot',
+              timestamp: new Date(), isTyping: true
+            }]);
 
-        const lower = input.toLowerCase();
+            try {
+              fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
+                },
+                body: JSON.stringify({
+                  model: 'meta-llama/llama-3.1-8b-instruct:free',
+                  messages: [
+                    {
+                      role: 'system',
+                      content: `You are SUVIDHA Bot on WhatsApp — India's civic services assistant.
+The citizen typed something in the pre-visit chat simulator.
+Identify if they want: electricity(1), gas(2), water(3), complaint(4), or queue(5).
+Reply in the SAME LANGUAGE they used. Max 2-3 short lines.
+If you can identify the service, confirm it warmly.
+If unclear, ask them to choose from the 5 options.
+Plain text only — no markdown, no asterisks, no bullet points.`
+                    },
+                    { role: 'user', content: input },
+                  ],
+                  max_tokens: 150,
+                  temperature: 0.5,
+                }),
+              }).then(res => res.json()).then(data => {
+                const reply = (data.choices?.[0]?.message?.content as string | undefined)
+                  ?? 'Please choose: 1-Electricity, 2-Gas, 3-Water, 4-Complaint, 5-Queue';
 
-        // --- STATE MACHINE --- //
-        if (step === 0 && (lower === '1' || lower.includes('electricity') || lower.includes('pay'))) {
-            setStep(1);
-            addBotMessageWithDelay(REQ_CHECK_MSG, 1200);
+                setMessages(prev => prev.map(m =>
+                  m.id === id ? { ...m, text: reply, isTyping: false } : m
+                ));
+              }).catch(() => {
+                setMessages(prev => prev.map(m =>
+                  m.id === id ? {
+                    ...m,
+                    text: 'Please choose: 1-Electricity, 2-Gas, 3-Water, 4-Complaint, 5-Queue',
+                    isTyping: false
+                  } : m
+                ));
+              });
+            } catch {
+              setMessages(prev => prev.map(m =>
+                m.id === id ? {
+                  ...m,
+                  text: 'Please choose: 1-Electricity, 2-Gas, 3-Water, 4-Complaint, 5-Queue',
+                  isTyping: false
+                } : m
+              ));
+            }
+          } else {
+            addBotMessageWithDelay(
+              <p>I didn&#x2019;t understand that. Please reply with a number (1-5) or describe your need.</p>,
+              800
+            );
+          }
+          return;
         }
-        else if (step === 1 && (lower.includes('yes') || lower.includes('upload') || lower.includes('sure') || lower === 'y')) {
-            setStep(2);
-            addBotMessageWithDelay(ATTACHMENT_PROMPT_MSG, 800);
+ 
+        setSelectedService(service);
+ 
+        // Queue is info-only — no upload needed
+        if (service === 'queue') {
+          setStep(3);
+          addBotMessageWithDelay(QUEUE_STATUS_MSG, 1000);
+          return;
         }
-        else if (step === 2) {
-            // They typed something instead of attaching, politely remind them
-            addBotMessageWithDelay("Please use the paperclip icon to select your document file.", 1000);
+ 
+        setStep(1);
+        const msgMap: Record<string, React.ReactNode> = {
+          electricity: REQ_CHECK_MSG,
+          gas: GAS_REQ_MSG,
+          water: WATER_REQ_MSG,
+          complaint: COMPLAINT_REQ_MSG,
+        };
+        addBotMessageWithDelay(msgMap[service], 1200);
+        return;
+      }
+ 
+      if (step === 1) {
+        const isYes = ['yes', 'y', 'haan', 'sure', 'ok', 'upload'].includes(lower);
+        const isNo = ['no', 'n', 'nahi', 'nope', 'skip'].includes(lower);
+ 
+        if (isYes) {
+          setStep(2);
+          addBotMessageWithDelay(ATTACHMENT_PROMPT_MSG, 800);
+        } else if (isNo) {
+          setStep(3);
+          addBotMessageWithDelay(
+            <div className="space-y-2">
+              <p>No problem! 👍 Just walk in to any SUVIDHA kiosk.</p>
+              <div className="flex items-start gap-1 text-xs text-blue-700 bg-blue-50 p-2 rounded-lg border border-blue-100">
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span><b>Nearest:</b> Civil Lines Office — open 8 AM to 8 PM</span>
+              </div>
+              <p className="text-sm text-gray-500">Type <b>MENU</b> for another service.</p>
+            </div>,
+            800
+          );
+        } else {
+          addBotMessageWithDelay(
+            <p>Please reply <b>YES</b> to pre-upload your documents or <b>NO</b> to visit directly.</p>,
+            700
+          );
         }
+        return;
+      }
+ 
+      if (step === 2) {
+        addBotMessageWithDelay(
+          <p>Please use the <b>📎 paperclip icon</b> to attach your document file.</p>,
+          700
+        );
+      }
     };
 
     const handleAttach = (e: React.ChangeEvent<HTMLInputElement>) => {

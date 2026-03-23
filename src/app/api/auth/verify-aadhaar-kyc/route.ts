@@ -11,17 +11,15 @@ const Minizip = require('minizip-asm.js');
 // https://uidai.gov.in/images/uidai_offline_publickey_26022019.cer
 // For demo, signature verification is attempted but may fail on sample data.
 // In production, C-DAC onboards SUVIDHA as an OVSE and provides the cert.
-const UIDAI_PUBLIC_CERT = `-----BEGIN CERTIFICATE-----
-MIIEMjCCAxqgAwIBAgIGAWA3hQb5MA0GCSqGSIb3DQEBCwUAMIGjMQswCQYDVQQG
-EwJJTjESMBAGA1UECAwJS2FybmF0YWthMRIwEAYDVQQHDAlCYW5nYWxvcmUxDzAN
-BgNVBAoMBlVJREFJMQ8wDQYDVQQLDAZVSURBSTEXMBUGA1UEAwwOdWlkYWkuZ292
-LmluMSEwHwYJKoZIhvcNAQkBFhJjb250YWN0QHVpZGFpLm5ldC5pbjAeFw0xOTAy
-MjYwNjAzNDZaFw0yOTAyMjMwNjAzNDZaMIGjMQswCQYDVQQGEwJJTjESMBAGA1UE
-CAwJS2FybmF0YWthMRIwEAYDVQQHDAlCYW5nYWxvcmUxDzANBgNVBAoMBlVJREFJ
-MQ8wDQYDVQQLDAZVSURBSTEXMBUGA1UEAwwOdWlkYWkuZ292LmluMSEwHwYJKoZI
-hvcNAQkBFhJjb250YWN0QHVpZGFpLm5ldC5pbjCCASIwDQYJKoZIhvcNAQEBBQAD
-ggEPADCCAQoCggEBAMDSBRKKFNDT9XyVQNDSBRKKFNDT9XyVQMIIEMjCCAxqgAA==
------END CERTIFICATE-----`;
+const UIDAI_PUBLIC_CERT = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxqBN1T5zQqMdQfURN1Y1
+BT93VrydSHiI0fc/dH/dDi9NJZRk67HMGtDkt/8UOPWAHRMoM4fizFOp0QIqUadO
+VhlbgRyTd/CiDIcBD/B3pca/jxCmnw1jZk/60ufQ6kWyTooxt9cKQ0cSEkgbE5IT
+uyJWtSoimZdZAQIIsZCIWvaUk7XHSU7scAgs19TPPEnnawUiiE4a2lYk+z9TSoA2
+fbZeeEze+D7d7nTZw4JdfxNNagGIIlbTxoB29cngVlsc1O1IrjaWQc3c9a12asul
+q0LggEN2WYlJxWXCtFQLW3/cl7DQzMNFd8pInbc9qkN/0++9yN+2B4jbIv8fhCds
+PQIDAQAB
+-----END PUBLIC KEY-----`;
 
 export async function POST(request: Request) {
     try {
@@ -77,7 +75,7 @@ export async function POST(request: Request) {
                 signatureVerified = verifier.verify(UIDAI_PUBLIC_CERT, signatureValue, 'base64');
             }
         } catch (err) {
-            console.warn('[SUVIDHA] XMLDSig Verification Exception:', err);
+            console.warn('[SUVIDHA] XMLDSig Verification Exception:', err instanceof Error ? err.message : err);
             signatureVerified = false;
         }
 
