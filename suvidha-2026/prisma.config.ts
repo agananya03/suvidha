@@ -6,7 +6,7 @@ import { config } from 'dotenv'
 config({ path: path.resolve(__dirname, '.env') })
 
 export default defineConfig({
-    earlyAccess: true,
+    // earlyAccess: true,
     schema: path.resolve(__dirname, 'prisma/schema.prisma'),
     migrations: {
         seed: 'tsx ./prisma/seed.ts',

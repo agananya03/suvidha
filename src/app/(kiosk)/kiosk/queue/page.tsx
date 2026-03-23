@@ -122,27 +122,27 @@ export default function QueuePage() {
     const isSlaBreached = activeComplaint.slaDaysLeft <= 0;
 
     return (
-        <div className={`h-full overflow-y-auto p-4 lg:p-8 ${highContrast ? 'bg-black text-white' : 'bg-gray-50'}`}>
+        <div className={`h-full overflow-y-auto p-6 pl-24 md:p-8 md:pl-28 max-w-5xl mx-auto w-full ${highContrast ? 'bg-black text-white' : 'bg-[#F0F7FF]'}`}>
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* HEADER & TABS */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold mb-2">{t('Live Queue Tracker')}</h1>
-                        <p className={`text-sm ${highContrast ? 'text-gray-300' : 'text-gray-500'}`}>{t('Real-time transparency into your municipal requests.')}</p>
+                        <h1 className="text-3xl font-black text-[#0A1628] mb-2">{t('Live Queue Tracker')}</h1>
+                        <p className={`text-sm ${highContrast ? 'text-gray-300' : 'text-[#4A6FA5]'}`}>{t('Real-time transparency into your municipal requests.')}</p>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 border-b border-gray-200">
                         {complaints.map((c, idx) => (
                             <button
                                 key={c.id}
                                 onClick={() => setActiveTab(idx)}
-                                className={`px-6 py-3 font-semibold text-sm whitespace-nowrap transition-colors border-b-2 ${activeTab === idx
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                className={`px-6 py-3 font-semibold text-sm whitespace-nowrap transition-colors border-b-4 ${activeTab === idx
+                                    ? 'border-[#004085] text-[#004085]'
+                                    : 'border-transparent text-[#4A6FA5] hover:text-[#004085]'
                                     }`}
                             >
                                 {idx === 0 ? t('Latest Complaint') : `${t('Complaint')} ${idx + 1}`}
-                                <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                                <span className="ml-2 px-2 py-0.5 bg-[#E8F4FD] text-[#004085] rounded-full text-xs font-bold px-2 py-0.5">
                                     #{c.position}
                                 </span>
                             </button>
@@ -158,12 +158,12 @@ export default function QueuePage() {
                     <div className="lg:col-span-8 space-y-6">
 
                         {/* MAIN QUEUE VISUAL */}
-                        <div className={`p-8 rounded-3xl shadow-sm border ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-100'}`}>
+                        <div className={`p-8 rounded-3xl shadow-sm border-2 ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-[#BEE3F8]'}`}>
                             <div className="flex flex-col md:flex-row justify-between items-start gap-8">
 
                                 <div className="space-y-6 flex-1">
                                     <div>
-                                        <p className="text-sm font-bold tracking-widest text-gray-400 uppercase mb-1">{t('Active Ticket')}</p>
+                                        <p className="text-sm font-bold tracking-widest text-[#4A6FA5] uppercase mb-1">{t('Active Ticket')}</p>
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-2xl font-mono font-bold">{activeComplaint.id}</h2>
                                             <span className={`px-3 py-1 text-xs font-bold rounded-full border border-current ${activeComplaint.department === 'Electricity' ? 'text-yellow-600 bg-yellow-50' :
@@ -183,13 +183,13 @@ export default function QueuePage() {
                                                     initial={{ y: -20, opacity: 0 }}
                                                     animate={{ y: 0, opacity: 1 }}
                                                     exit={{ y: 20, opacity: 0, position: 'absolute' }}
-                                                    className={`text-7xl font-black tabular-nums tracking-tighter ${highContrast ? 'text-white' : 'text-gray-900'}`}
+                                                    className={`text-7xl font-black tabular-nums tracking-tighter ${highContrast ? 'text-white' : 'text-[#0A1628]'}`}
                                                 >
                                                     #{activeComplaint.position}
                                                 </motion.h1>
                                             </AnimatePresence>
                                         </div>
-                                        <p className="text-gray-500 mb-2 whitespace-nowrap">{t('of')} {activeComplaint.total} {t('total complaints in queue')}</p>
+                                        <p className="text-[#4A6FA5] mb-2 whitespace-nowrap">{t('of')} {activeComplaint.total} {t('total complaints in queue')}</p>
                                     </div>
 
                                     <div className="flex flex-wrap gap-4 items-center">
@@ -198,9 +198,9 @@ export default function QueuePage() {
                                                 AWAITING CONNECTION
                                             </div>
                                         ) : (
-                                            <div className={`px-4 py-2 rounded-lg font-bold text-sm tracking-widest animate-pulse ${activeComplaint.status === 'UNDER INVESTIGATION' ? 'bg-blue-100 text-blue-700' :
-                                                activeComplaint.status === 'IN PROGRESS' ? 'bg-purple-100 text-purple-700' :
-                                                    'bg-gray-100 text-gray-700'
+                                            <div className={`px-4 py-2 rounded-lg font-bold text-sm tracking-widest animate-pulse ${activeComplaint.status === 'UNDER INVESTIGATION' ? 'bg-[#EBF8FF] text-[#1E4DB7] border border-[#90CDF4]' :
+                                                activeComplaint.status === 'IN PROGRESS' ? 'bg-[#F5F3FF] text-[#5B21B6] border border-[#DDD6FE]' :
+                                                    'bg-white border border-[#90CDF4] text-[#4A6FA5]'
                                                 }`}>
                                                 {activeComplaint.status}
                                             </div>
@@ -208,7 +208,7 @@ export default function QueuePage() {
 
                                         <StaleBadge lastSynced={Date.now() - 35 * 60 * 1000} />
 
-                                        <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border">
+                                        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border-2 border-[#BEE3F8]">
                                             <span className={`text-xs font-bold px-2 py-0.5 rounded ${getPriorityColor(activeComplaint.priorityLabel)}`}>
                                                 {t(activeComplaint.priorityLabel)} {t('PRIORITY')}
                                             </span>
@@ -220,7 +220,7 @@ export default function QueuePage() {
                                 </div>
 
                                 {/* SLA RING RIGHT ALIGNED ON DESKTOP */}
-                                <div className="flex flex-col items-center justify-center bg-gray-50 p-6 rounded-2xl border min-w-[200px]">
+                                <div className="flex flex-col items-center justify-center bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] min-w-[200px]">
                                     <div className="relative w-32 h-32 flex items-center justify-center mb-4">
                                         <svg className="w-32 h-32 transform -rotate-90">
                                             <circle cx="64" cy="64" r="45" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-200" />
@@ -240,11 +240,11 @@ export default function QueuePage() {
                                             <span className={`text-3xl font-black ${isSlaBreached ? 'text-red-600' : 'text-gray-900'}`}>
                                                 {activeComplaint.slaDaysLeft}
                                             </span>
-                                            <span className="text-xs uppercase font-bold text-gray-500">{t('Days Left')}</span>
+                                            <span className="text-xs uppercase font-bold text-[#4A6FA5]">{t('Days Left')}</span>
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">{t('SLA Deadline')}</p>
+                                        <p className="text-xs text-[#4A6FA5] font-bold uppercase tracking-wide">{t('SLA Deadline')}</p>
                                         <p className={`text-sm font-semibold ${isSlaBreached ? 'text-red-500' : 'text-gray-900'}`}>
                                             {new Date(Date.now() + activeComplaint.slaDaysLeft * 86400000).toLocaleDateString()}
                                         </p>
@@ -254,23 +254,23 @@ export default function QueuePage() {
                         </div>
 
                         {/* ANTI-CORRUPTION PANEL */}
-                        <div className={`p-6 rounded-3xl shadow-sm border ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-gradient-to-br from-white to-gray-50/50 border-gray-100'}`}>
+                        <div className={`p-6 rounded-3xl shadow-md border-2 ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-[#BEE3F8]'}`}>
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
                                     <ShieldCheck className="w-6 h-6 text-green-500" />
                                     {t('Department Accountability Interface')}
                                 </h3>
-                                <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                <div className="bg-[#F0FFF4] text-[#1A6B35] border border-[#9AE6B4] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                                     <CheckCircle2 className="w-4 h-4" /> {t('No queue jumps detected')}
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-500 mb-6">{t('Queue Transparency: All positions are sequentially bound and public. Officer workloads are balanced to prevent artificial delays.')}</p>
+                            <p className="text-sm text-[#4A6FA5] mb-6">{t('Queue Transparency: All positions are sequentially bound and public. Officer workloads are balanced to prevent artificial delays.')}</p>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {/* Officer Workload Comparison */}
                                 <div>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <p className="text-xs font-bold text-[#4A6FA5] uppercase tracking-widest mb-4 flex items-center gap-2">
                                         <Activity className="w-4 h-4" /> {t('Workload Balancing')}
                                     </p>
 
@@ -278,7 +278,7 @@ export default function QueuePage() {
                                         <div>
                                             <div className="flex justify-between text-sm mb-1">
                                                 <span className="font-semibold">{t(activeComplaint.officerState.name)} ({t('Assigned')})</span>
-                                                <span className="text-gray-500">{activeComplaint.officerState.load} {t('active tickets')}</span>
+                                                <span className="text-[#4A6FA5]">{activeComplaint.officerState.load} {t('active tickets')}</span>
                                             </div>
                                             <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                                                 <div className="bg-blue-500 h-full" style={{ width: `${(activeComplaint.officerState.load / 60) * 100}%` }} />
@@ -286,8 +286,8 @@ export default function QueuePage() {
                                         </div>
                                         <div>
                                             <div className="flex justify-between text-sm mb-1">
-                                                <span className="text-gray-500">{t(activeComplaint.peerState.name)} ({t('Available Peer')})</span>
-                                                <span className="text-gray-500">{activeComplaint.peerState.load} {t('active tickets')}</span>
+                                                <span className="text-[#4A6FA5]">{t(activeComplaint.peerState.name)} ({t('Available Peer')})</span>
+                                                <span className="text-[#4A6FA5]">{activeComplaint.peerState.load} {t('active tickets')}</span>
                                             </div>
                                             <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                                                 <div className="bg-gray-400 h-full" style={{ width: `${(activeComplaint.peerState.load / 60) * 100}%` }} />
@@ -332,19 +332,19 @@ export default function QueuePage() {
                                         </div>
                                         <div>
                                             <h4 className={`text-sm font-bold ${item.active ? 'text-primary' : ''}`}>{t(item.title)}</h4>
-                                            <p className="text-xs text-gray-500 mt-1">{item.date === 'Pending' || item.date === 'Pending Completion' || item.date === 'Active Phase' ? t(item.date) : item.date}</p>
+                                            <p className="text-xs text-[#4A6FA5] mt-1">{item.date === 'Pending' || item.date === 'Pending Completion' || item.date === 'Active Phase' ? t(item.date) : item.date}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="mt-8 pt-8 border-t space-y-3">
-                                <Button className="w-full" asChild>
+                                <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" asChild>
                                     <a href="/kiosk/complaint">
                                         <PlusCircle className="w-4 h-4 mr-2" /> {t('File New Complaint')}
                                     </a>
                                 </Button>
-                                <Button variant="outline" className="w-full" asChild>
+                                <Button variant="outline" className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" asChild>
                                     <a href="/kiosk">
                                         <Home className="w-4 h-4 mr-2" /> {t('Return Home')}
                                     </a>

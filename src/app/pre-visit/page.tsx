@@ -122,7 +122,7 @@ function KioskMapCard({
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-gray-900 truncate">
+          <p className="text-xs font-bold text-[#0A1628] truncate">
             {name}
           </p>
           <p className="text-xs text-green-600 font-medium">
@@ -319,7 +319,7 @@ const QUEUE_STATUS_MSG: React.ReactNode = (
       distance="0.8 km"
       walkTime="~10 min walk"
     />
-    <p className="text-sm text-gray-500">
+    <p className="text-sm text-[#4A6FA5]">
       Type <b>MENU</b> to go back or choose another service.
     </p>
   </div>

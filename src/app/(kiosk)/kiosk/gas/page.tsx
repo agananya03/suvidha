@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Flame, ArrowLeft, Calendar, CheckCircle2, AlertTriangle,
   Download, MapPin, Phone, FileText, Gift, Package,
@@ -59,8 +59,17 @@ const SLOTS = ['9:00 AM – 12:00 PM', '12:00 PM – 3:00 PM', '3:00 PM – 6:00
 
 export default function GasPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useDynamicTranslation();
-  const [activeTab, setActiveTab] = useState<Tab>('refill');
+  const initialTab = (searchParams.get('tab') as Tab) ?? 'refill';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab') as Tab;
+    if (tab && TABS.some(t => t.id === tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const [refillDate, setRefillDate] = useState('');
   const [refillSlot, setRefillSlot] = useState('');
   const [refillBooked, setRefillBooked] = useState(false);

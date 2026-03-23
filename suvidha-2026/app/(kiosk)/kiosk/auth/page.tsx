@@ -172,14 +172,14 @@ export default function KioskAuthPage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-4xl mx-auto"
+      className="w-full max-w-6xl mx-auto"
     >
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Suvidha Kiosk</h1>
         <p className="text-gray-600">Choose how you'd like to proceed</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         {/* PATH A: Quick Pay */}
         <motion.div
           variants={cardVariants}
@@ -240,6 +240,39 @@ export default function KioskAuthPage() {
               </ul>
               <Button className="w-full bg-orange-500 hover:bg-orange-600">
                 Login with OTP <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* PATH C: Aadhaar eKYC */}
+        <motion.div
+          variants={cardVariants}
+          initial="initial"
+          animate="animate"
+          whileHover="hover"
+          whileTap="tap"
+          transition={{ delay: 0.2 }}
+        >
+          <Card
+            className="cursor-pointer border-2 hover:border-emerald-400 transition-colors h-full"
+            onClick={() => router.push('/kiosk/aadhaar')}
+          >
+            <CardHeader className="text-center pb-2">
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-emerald-600" />
+              </div>
+              <CardTitle className="text-xl">Aadhaar eKYC Login</CardTitle>
+              <CardDescription>Offline XML ZIP verification via UIDAI</CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <ul className="text-sm text-gray-600 space-y-2 mb-4">
+                <li>✓ Ultra-secure identity check</li>
+                <li>✓ No phone number needed</li>
+                <li>✓ Perfect for full account access</li>
+              </ul>
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                Verify Identity <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </CardContent>
           </Card>
@@ -468,7 +501,6 @@ export default function KioskAuthPage() {
                     onComplete={handleVerifyOTP}
                     disabled={isLoading}
                     error={error}
-                    className="bg-white text-gray-900 border-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
                   />
                 </div>
 

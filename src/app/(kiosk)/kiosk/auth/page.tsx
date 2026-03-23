@@ -116,14 +116,14 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="kiosk-page flex items-center justify-center">
+        <div className="h-full flex items-center justify-center p-6">
             
-            <div className="bg-white border border-[var(--irs-gray-200)] rounded-[var(--radius-xl)] shadow-lg w-full max-w-[480px] p-8 md:p-10 relative overflow-hidden">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 max-w-lg mx-auto border-2 border-[#BEE3F8] w-full relative">
                 
                 {/* Government Header inside card */}
-                <div className="text-center mb-8 border-b-4 border-[var(--irs-blue-mid)] pb-6">
-                    <h2 className="text-[var(--font-xl)] font-bold text-[var(--irs-navy)]">{t('Citizen Authentication')}</h2>
-                    <p className="text-[var(--font-sm)] text-[var(--irs-gray-600)] mt-2">{t('Secure access to SUVIDHA services')}</p>
+                <div className="text-center mb-0 pb-0 border-0 flex flex-col items-center">
+                    <div className="w-20 h-20 bg-[#002868] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><span className="text-white text-3xl font-black">auth</span></div><h2 className="text-3xl font-black text-[#0A1628] text-center mb-2">{t('Citizen Authentication')}</h2>
+                    <p className="text-[#4A6FA5] text-lg text-center mb-8">{t('Secure access to SUVIDHA services')}</p>
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -137,12 +137,12 @@ export default function AuthPage() {
                             className="flex flex-col gap-6"
                         >
                             <div>
-                                <label className="kiosk-label">{t('Mobile Number')}</label>
+                                <label className="text-base font-semibold text-[#2C5282] block mb-2">{t('Mobile Number')}</label>
                                 <div className="relative flex items-center">
-                                    <span className="absolute left-4 text-[var(--font-md)] font-bold text-[var(--irs-gray-600)]">+91</span>
+                                    <span className="absolute left-0 top-0 bottom-0 bg-[#E8F4FD] border-r-2 border-[#90CDF4] px-4 py-4 text-[#002868] font-bold text-xl rounded-l-xl flex items-center">+91</span>
                                     <input
                                         type="tel"
-                                        className="kiosk-input pl-14 tracking-widest"
+                                        className="bg-white border-2 border-[#90CDF4] rounded-xl pl-20 pr-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] focus:outline-none focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] tracking-widest"
                                         value={mobile}
                                         onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                         placeholder="XXXXXXXXXX"
@@ -152,7 +152,7 @@ export default function AuthPage() {
                             </div>
 
                             <button
-                                className="btn-primary w-full mt-2"
+                                className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full mt-2"
                                 onClick={handleSendOTP}
                                 disabled={mobile.length !== 10 || isLoading}
                             >
@@ -161,9 +161,22 @@ export default function AuthPage() {
 
                             <button 
                                 onClick={() => router.push('/kiosk')}
-                                className="text-[var(--irs-blue-mid)] text-center w-full font-semibold underline underline-offset-4 mt-4"
+                                className="text-[#004085] hover:bg-[#E8F4FD] active:bg-[#BEE3F8] font-medium text-base min-h-[48px] px-5 rounded-xl transition-all mt-4 w-full"
                             >
                                 {t('Cancel and return to Home')}
+                            </button>
+
+                            {/* ─── Aadhaar eKYC alternate entry ─── */}
+                            <div className="flex items-center gap-3 my-1">
+                                <div className="flex-1 h-px bg-[#BEE3F8]" />
+                                <span className="text-[#4A6FA5] text-sm font-medium">or</span>
+                                <div className="flex-1 h-px bg-[#BEE3F8]" />
+                            </div>
+                            <button
+                                onClick={() => router.push('/kiosk/aadhaar')}
+                                className="border-2 border-[#004085] text-[#004085] hover:bg-[#E8F4FD] font-bold text-base min-h-[56px] px-5 rounded-2xl transition-all w-full flex items-center justify-center gap-2"
+                            >
+                                🆔 {t('Use Aadhaar Offline eKYC instead')}
                             </button>
                         </motion.div>
                     )}
@@ -177,7 +190,7 @@ export default function AuthPage() {
                             className="flex flex-col gap-6"
                         >
                             <div className="text-center">
-                                <label className="kiosk-label mb-4 text-center">{t('Enter 6-Digit Code')}</label>
+                                <label className="text-base font-semibold text-[#2C5282] block mb-4 text-center">{t('Enter 6-Digit Code')}</label>
                                 <p className="text-[var(--font-sm)] text-[var(--irs-gray-600)] mb-6">
                                     {t('Sent to')} +91 {mobile.slice(0, 2)}******{mobile.slice(8, 10)}
                                 </p>
@@ -189,7 +202,7 @@ export default function AuthPage() {
                                             ref={(el) => { otpRefs.current[i] = el; }}
                                             type="text"
                                             inputMode="numeric"
-                                            className="w-[70px] h-[80px] text-center text-[var(--font-2xl)] font-bold border-2 border-[var(--irs-gray-400)] rounded-[var(--radius-md)] focus:border-[var(--irs-blue-mid)] focus:bg-[var(--irs-blue-pale)] outline-none transition-all shadow-sm"
+                                            className="w-14 h-16 text-center text-3xl font-black border-2 border-[#BEE3F8] rounded-xl text-[#0A1628] bg-white focus:border-[#004085] focus:ring-4 focus:ring-[#E8F4FD] outline-none transition-all"
                                             value={digit}
                                             onChange={(e) => handleOtpChange(i, e.target.value)}
                                             onKeyDown={(e) => handleOtpKeyDown(i, e)}
@@ -212,7 +225,7 @@ export default function AuthPage() {
                             </div>
 
                             <button
-                                className="btn-primary w-full mt-2"
+                                className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full mt-2"
                                 onClick={handleVerifyOTP}
                                 disabled={otp.join('').length !== 6 || isLoading}
                             >
@@ -241,9 +254,9 @@ export default function AuthPage() {
             </div>
             
             {demoOtp && step === 'OTP' && (
-                <div className="fixed top-24 right-8 bg-[#fff8e6] border-l-4 border-[var(--irs-warning)] text-[#4a3000] p-4 shadow-lg rounded-r-[var(--radius-md)] z-50">
-                    <p className="font-bold text-[var(--font-sm)] uppercase mb-1">Demo Mode</p>
-                    <p className="text-[var(--font-lg)] font-mono tracking-widest">{demoOtp}</p>
+                <div className="fixed top-24 right-8 bg-[#EBF8FF] border-2 border-[#90CDF4] text-[#002868] rounded-2xl p-4 shadow-lg z-50 min-h-[72px] flex flex-col items-center justify-center">
+                    <p className="text-sm border-b border-[#90CDF4] pb-1 font-bold uppercase mb-1">Demo Mode</p>
+                    <p className="text-lg font-mono text-center font-bold tracking-widest">{demoOtp}</p>
                 </div>
             )}
         </div>

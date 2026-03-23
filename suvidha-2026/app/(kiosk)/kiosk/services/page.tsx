@@ -15,6 +15,8 @@ import {
   Check,
   AlertCircle,
   Link as LinkIcon,
+  ShieldCheck,
+  FileText,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -96,10 +98,7 @@ export default function ServicesPage() {
   // Handle voice input (Web Speech API)
   const handleVoiceInput = () => {
     // Check for Web Speech API support
-    const windowWithSpeech = window as typeof window & {
-      SpeechRecognition?: typeof window.SpeechRecognition
-      webkitSpeechRecognition?: typeof window.SpeechRecognition
-    }
+    const windowWithSpeech = window as any
     
     const SpeechRecognitionAPI = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition
     
@@ -117,7 +116,7 @@ export default function ServicesPage() {
     recognition.onstart = () => setIsListening(true)
     recognition.onend = () => setIsListening(false)
     
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
       setAddress(transcript)
     }
@@ -490,6 +489,66 @@ export default function ServicesPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* More Services - Add-on */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 mb-8"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <h2 className="text-xl font-bold text-gray-900 border-b-2 border-orange-200 pb-2 flex-grow">
+              More Kiosk Services
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card 
+              className="cursor-pointer border-2 hover:border-purple-400 transition-all hover:shadow-md"
+              onClick={() => router.push('/kiosk/dashboard')}
+            >
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Account Dashboard</h3>
+                  <p className="text-xs text-gray-500">View bills & history</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer border-2 hover:border-blue-400 transition-all hover:shadow-md"
+              onClick={() => router.push('/kiosk/documents')}
+            >
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Upload Documents</h3>
+                  <p className="text-xs text-gray-500">Scanner & DigiLocker</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer border-2 hover:border-emerald-400 transition-all hover:shadow-md"
+              onClick={() => router.push('/kiosk/aadhaar')}
+            >
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Aadhaar eKYC</h3>
+                  <p className="text-xs text-gray-500">Offline verification</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Flame, Zap, Building2, FileText, PlusCircle, AlertTriangle, Search, ShieldCheck, MapPin, UploadCloud, Fingerprint, LayoutDashboard, ExternalLink } from 'lucide-react';
-import { useKioskStore } from '@/store/useKioskStore';
+import { useAuthStore } from '@/lib/auth-store';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 import { BackButton } from '@/components/kiosk/BackButton';
 
@@ -188,8 +188,8 @@ function LiveImpactCounter() {
 export default function DashboardPage() {
     const router = useRouter();
     const { t } = useDynamicTranslation();
-    const user = useKioskStore(state => state.user);
-    const discoveredServices = useKioskStore(state => state.discoveredServices);
+    const user = useAuthStore(state => state.user);
+    const discoveredServices = user?.connections || [];
     // Demo-ready: uses static hardcoded service tiles — no API fetch required
     const [activeTab, setActiveTab] = useState<'electricity' | 'gas' | 'municipal'>('electricity');
 

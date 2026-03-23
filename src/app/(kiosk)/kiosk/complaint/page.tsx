@@ -319,7 +319,7 @@ export default function ComplaintPage() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="kiosk-page p-4 lg:p-8 overflow-y-auto"
+                className="h-full overflow-y-auto p-6 pl-24 md:p-8 md:pl-28"
             >
                 <div className="max-w-3xl mx-auto space-y-6">
 
@@ -475,14 +475,14 @@ export default function ComplaintPage() {
     }
 
     return (
-        <div className="kiosk-page p-4 lg:p-8">
-            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+        <div className="h-full overflow-y-auto p-6 pl-24 md:p-8 md:pl-28">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 w-full">
 
                 {/* LEFT COLUMN: FORM */}
                 <div className="flex-1 space-y-8">
                     <div>
-                        <h1 className="kiosk-page-title mb-2">{t('Register Complaint')}</h1>
-                        <p className="text-[var(--font-md)] text-[var(--irs-gray-600)] font-medium">{t('Our AI routing system will automatically assign the correct departments.')}</p>
+                        <h1 className="text-3xl font-black text-white mb-6">{t('Register Complaint')}</h1>
+                        <p className="text-lg text-blue-200 font-medium mb-6 hidden">{t('Our AI routing system will automatically assign the correct departments.')}</p>
                     </div>
 
                     {/* Step 1: Service Type */}
@@ -504,8 +504,8 @@ export default function ComplaintPage() {
                                         : 'border-[var(--irs-gray-200)] bg-white hover:border-[var(--irs-blue-light)] hover:bg-[var(--irs-gray-100)]'
                                         }`}
                                 >
-                                    <btn.icon className={`w-8 h-8 mb-2 ${serviceType === btn.id ? 'text-[var(--irs-blue-mid)]' : 'text-[var(--irs-gray-500)]'}`} />
-                                    <span className="text-[var(--font-sm)] font-bold">{t(btn.label)}</span>
+                                    <btn.icon className={`text-2xl w-8 h-8 ${serviceType === btn.id ? 'text-[#004085]' : 'text-[#0A1628]'}`} />
+                                    <span className="text-lg font-bold text-[#0A1628]">{t(btn.label)}</span>
                                 </button>
                             ))}
                         </div>
@@ -554,11 +554,11 @@ export default function ComplaintPage() {
                     {/* Step 4: Description Form */}
                     <div className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)]">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="kiosk-label">{t('DESCRIBE THE ISSUE')}</h2>
+                            <h2 className="text-xl font-bold text-[#0A1628] mb-3">{t('DESCRIBE THE ISSUE')}</h2>
                             
                             <button
                                 onClick={toggleRecording}
-                                className={`flex items-center gap-2 px-4 py-2 font-bold rounded-[var(--radius-md)] border-2 transition-all ${isRecording ? 'bg-[#fef0d9] border-[#d54309] text-[#d54309] animate-pulse' : 'bg-white border-[var(--irs-gray-300)] text-[var(--irs-gray-700)]'}`}
+                                className={`transition-all ${isRecording ? 'bg-[#FFF5F5] border-2 border-[#FEB2B2] text-[#9B1C1C] rounded-2xl px-6 py-4 min-h-[56px] animate-pulse flex items-center gap-3 text-lg font-semibold' : 'bg-white border-2 border-[#90CDF4] hover:bg-[#E8F4FD] text-[#004085] rounded-2xl px-6 py-4 min-h-[56px] flex items-center gap-3 text-lg font-semibold active:scale-95'}`}
                             >
                                 <Mic className={`w-4 h-4 ${isRecording ? 'animate-bounce' : ''}`} />
                                 {isRecording ? t('Listening...') : t('Dictate')}
@@ -566,7 +566,7 @@ export default function ComplaintPage() {
                         </div>
 
                         <textarea
-                            className="kiosk-input min-h-[200px] resize-none"
+                            className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl text-[#0A1628] font-medium min-h-[140px] resize-none w-full placeholder:text-[#4A6FA5] focus:outline-none focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8]"
                             placeholder={t('Please describe the problem in detail. The smart routing system analyzes your text as you type...')}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
@@ -579,7 +579,7 @@ export default function ComplaintPage() {
                         </div>
 
                         {!isOnline && (
-                            <div className="mt-4 kiosk-banner">
+                            <div className="bg-[#FFFBEB] border-2 border-[#FBD38D] rounded-2xl p-4 text-[#7B4A0A] text-lg flex items-center gap-3 font-medium mt-4">
                                 <AlertTriangle className="w-5 h-5 shrink-0" />
                                 <div>
                                     <strong>Offline mode</strong> — complaint will be queued and submitted automatically when connected.
@@ -588,7 +588,7 @@ export default function ComplaintPage() {
                         )}
 
                         <button
-                            className="btn-primary w-full mt-6 h-[64px] text-[var(--font-lg)]"
+                            className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full mt-6"
                             disabled={description.length < 20 || isSubmitting}
                             onClick={handleSubmit}
                         >
@@ -599,7 +599,7 @@ export default function ComplaintPage() {
 
                 {/* RIGHT COLUMN: LIVE DNA PANEL */}
                 <div className="w-full lg:w-[450px]">
-                    <div className="sticky top-8 bg-white border-2 border-[var(--irs-gray-200)] rounded-[var(--radius-xl)] p-6 shadow-md relative overflow-hidden">
+                    <div className="bg-white rounded-2xl border-2 border-[#BEE3F8] shadow-lg p-6 sticky top-8">
                         
                         <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-[var(--irs-gray-200)]">
                             <h2 className="text-[var(--font-lg)] font-bold flex items-center gap-2 text-[var(--irs-navy)]">
@@ -629,7 +629,7 @@ export default function ComplaintPage() {
                                     className="space-y-6"
                                 >
                                     
-                                    <div className="kiosk-banner block-banner bg-[var(--irs-blue-pale)] border-[var(--irs-blue-light)] shadow-none">
+                                    <div className="bg-[#EBF8FF] text-[#1E4DB7] border border-[#90CDF4] px-4 py-3 rounded-xl mb-4">
                                         <p className="kiosk-label uppercase mb-2">{t('Calculated Routing')}</p>
                                         <div className="flex items-center gap-4">
                                             {dnaAnalysis.isMultiDepartment ? (
@@ -651,7 +651,7 @@ export default function ComplaintPage() {
                                     <div className="p-4 bg-[var(--irs-gray-100)] rounded-[var(--radius-lg)] border border-[var(--irs-gray-200)]">
                                         <div className="flex justify-between items-end mb-2">
                                             <p className="kiosk-label">{t('Priority Classification')}</p>
-                                            <span className={`text-[var(--font-sm)] font-bold px-3 py-1 rounded-[var(--radius-sm)] shadow-sm tracking-widest ${getPriorityColor(dnaAnalysis.priorityLabel)}`}>
+                                            <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${dnaAnalysis.priorityLabel === 'CRITICAL' || dnaAnalysis.priorityLabel === 'HIGH' ? 'bg-[#FFF5F5] text-[#9B1C1C] border border-[#FEB2B2]' : dnaAnalysis.priorityLabel === 'MEDIUM' ? 'bg-[#FFFBEB] text-[#7B4A0A] border border-[#FBD38D]' : 'bg-[#F0FFF4] text-[#1A6B35] border border-[#9AE6B4]'}`}>
                                                 {dnaAnalysis.priorityLabel}
                                             </span>
                                         </div>
@@ -668,11 +668,11 @@ export default function ComplaintPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-4 bg-white rounded-[var(--radius-lg)] border-2 border-[var(--irs-gray-200)] text-center shadow-sm">
                                             <p className="kiosk-label text-[var(--font-xs)]">{t('Est. Queue')}</p>
-                                            <p className="text-[var(--font-xl)] font-bold font-mono text-[var(--irs-navy)] mt-1">#{dnaAnalysis.queuePosition}</p>
+                                            <p className="text-5xl font-black text-[#004085]">#{dnaAnalysis.queuePosition}</p>
                                         </div>
                                         <div className="p-4 bg-white rounded-[var(--radius-lg)] border-2 border-[var(--irs-gray-200)] text-center shadow-sm">
                                             <p className="kiosk-label text-[var(--font-xs)]">{t('SLA Target')}</p>
-                                            <div className="flex items-center justify-center gap-1 text-[var(--font-xl)] font-bold text-[var(--irs-blue-mid)] mt-1">
+                                            <div className="text-lg text-[#2C5282] mt-2 flex items-center justify-center">
                                                 <Clock className="w-5 h-5" /> {dnaAnalysis.slaDays} {t('Days')}
                                             </div>
                                         </div>

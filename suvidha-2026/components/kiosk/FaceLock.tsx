@@ -43,6 +43,29 @@ export function FaceLock() {
         initModel();
     }, []);
 
+    // Reset the inactivity timer when the user interacts
+    const handleUserActivity = useCallback(() => {
+        if (isLoggedOut) return;
+
+        // If we're currently idle, reset the idle state and countdown
+        if (isIdle) {
+            setIsIdle(false);
+            setCountdown(COUNTDOWN_SECONDS);
+        }
+
+        updateLastActivity();
+
+        // Clear existing inactivity timer
+        if (activityTimerRef.current) clearTimeout(activityTimerRef.current);
+        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+
+        // Set a new timer to mark as idle after INACTIVITY_THRESHOLD_MS
+        activityTimerRef.current = setTimeout(() => {
+            setIsIdle(true);
+        }, INACTIVITY_THRESHOLD_MS);
+
+    }, [isIdle, isLoggedOut, updateLastActivity]);
+
     // Run face detection periodically
     useEffect(() => {
         let animationFrameId: number;
@@ -85,28 +108,7 @@ export function FaceLock() {
         };
     }, [isAuthenticated, isLoggedOut, handleUserActivity]);
 
-    // Reset the inactivity timer when the user interacts
-    const handleUserActivity = useCallback(() => {
-        if (isLoggedOut) return;
-
-        // If we're currently idle, reset the idle state and countdown
-        if (isIdle) {
-            setIsIdle(false);
-            setCountdown(COUNTDOWN_SECONDS);
-        }
-
-        updateLastActivity();
-
-        // Clear existing inactivity timer
-        if (activityTimerRef.current) clearTimeout(activityTimerRef.current);
-        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-
-        // Set a new timer to mark as idle after INACTIVITY_THRESHOLD_MS
-        activityTimerRef.current = setTimeout(() => {
-            setIsIdle(true);
-        }, INACTIVITY_THRESHOLD_MS);
-
-    }, [isIdle, isLoggedOut, updateLastActivity]);
+    // handleUserActivity moved up
 
     // Set up event listeners for user activity
     useEffect(() => {

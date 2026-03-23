@@ -181,7 +181,7 @@ export default function DiscoveryPage() {
     };
 
     return (
-        <div className="h-full overflow-y-auto p-4 md:p-8 bg-gray-50 flex flex-col items-center">
+        <div className="h-full overflow-y-auto p-6 pl-24 md:p-8 md:pl-28 flex flex-col items-center">
             {/* Back button — shown on INPUT and FOUND; hidden on SEARCHING (loading) */}
             {status === 'INPUT' && <BackButton onClick={() => router.back()} variant="light" />}
             {status === 'FOUND' && <BackButton onClick={() => setStatus('INPUT')} variant="light" />}
@@ -194,13 +194,13 @@ export default function DiscoveryPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        className="w-full max-w-3xl bg-white p-8 md:p-12 rounded-3xl shadow-xl border mt-10 md:mt-20 text-center"
+                        className="w-full max-w-3xl flex flex-col text-center"
                     >
                         <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                             <MapPin className="w-10 h-10" />
                         </div>
-                        <h1 className="text-3xl font-black text-gray-900 mb-4">{t('Address-Based Service Discovery')}</h1>
-                        <p className="text-lg text-gray-500 mb-10 max-w-lg mx-auto">
+                        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">{t('Address-Based Service Discovery')}</h1>
+                        <p className="text-blue-200 text-lg mb-6 max-w-lg mx-auto">
                             {t('Enter your address. Our AI will normalize the format and securely fetch all government service connections linked to this property.')}
                         </p>
 
@@ -318,10 +318,10 @@ export default function DiscoveryPage() {
                             </motion.p>
                         )}
 
-                        <div className="relative max-w-xl mx-auto mb-8">
+                        <div className="bg-white rounded-2xl p-2 shadow-xl border-2 border-white/40 flex items-center gap-2 max-w-xl mx-auto mb-8">
                             <input
                                 type="text"
-                                className="w-full text-xl py-6 pl-6 pr-16 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all shadow-inner text-gray-900"
+                                className="flex-1 bg-transparent px-5 py-4 text-xl text-[#0A1628] font-medium outline-none min-h-[60px] placeholder:text-[#4A6FA5]"
                                 placeholder="E.g., 12 Civil Lines Nagpur"
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
@@ -332,7 +332,7 @@ export default function DiscoveryPage() {
                         </div>
 
                         <Button
-                            className="h-16 px-12 text-xl rounded-xl shadow-[0_10px_20px_rgba(0,102,204,0.2)]"
+                            className="bg-[#004085] hover:bg-[#002868] text-white px-6 py-4 rounded-xl font-bold text-lg min-h-[56px] transition-all"
                             onClick={handleSearch}
                             disabled={address.length < 5}
                         >
@@ -387,20 +387,20 @@ export default function DiscoveryPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="w-full max-w-5xl mt-8"
                     >
-                        <div className="bg-white p-8 rounded-3xl shadow-xl border">
+                        <div className="bg-transparent">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-gray-100 pb-6">
                                 <div>
                                     <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full font-bold text-sm mb-4">
                                         <ShieldCheck className="w-4 h-4" /> {t('Address Verified')}
                                     </div>
-                                    <h2 className="text-3xl font-black text-gray-900">{t('4 Utility Connections Found')}</h2>
-                                    <p className="text-gray-500 mt-1 flex items-center gap-2">
+                                    <h2 className="text-3xl font-black text-white mb-2">{t('4 Utility Connections Found')}</h2>
+                                    <p className="text-blue-200 text-lg flex items-center gap-2">
                                         <MapPin className="w-4 h-4" /> 12 Civil Lines, Nagpur, MH 440001
                                     </p>
                                 </div>
                                 <div className="mt-4 md:mt-0 text-right">
-                                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">{t('Total Outstanding')}</p>
-                                    <p className="text-4xl font-black text-gray-900">₹{services.reduce((a, b) => a + b.amount, 0).toLocaleString('en-IN')}</p>
+                                    <p className="text-sm font-bold text-blue-200 uppercase tracking-wider mb-1">{t('Total Outstanding')}</p>
+                                    <p className="text-4xl font-black text-white">₹{services.reduce((a, b) => a + b.amount, 0).toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
 
@@ -445,25 +445,25 @@ export default function DiscoveryPage() {
                                             }`}
                                     >
                                         <div className="flex items-start gap-4">
-                                            <div className={`w-14 h-14 rounded-2xl ${service.color} ${service.border} border flex items-center justify-center shrink-0`}>
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${service.color}`}>
                                                 <service.icon className="w-7 h-7" />
                                             </div>
                                             <div className="flex-grow">
-                                                <h3 className="font-bold text-lg text-gray-900">{service.name}</h3>
-                                                <p className="text-sm text-gray-500 font-mono tracking-wider">{service.consumerNo}</p>
+                                                <h3 className="text-lg font-bold text-[#0A1628]">{service.name}</h3>
+                                                <p className="font-mono text-sm text-[#4A6FA5] font-bold">{service.consumerNo}</p>
                                                 <div className="flex justify-between items-end mt-4">
                                                     <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase">{t('Due Date')}</p>
+                                                        <p className="text-sm text-[#4A6FA5]">{t('Due Date')}</p>
                                                         <p className="font-semibold">{service.due}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-2xl font-black">₹{service.amount.toLocaleString('en-IN')}</p>
+                                                        <p className="text-xl font-black text-[#004085]">₹{service.amount.toLocaleString('en-IN')}</p>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Custom Checkbox */}
-                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedServices.includes(service.id) ? 'bg-primary border-primary text-white' : 'border-gray-300'
+                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedServices.includes(service.id) ? 'bg-[#004085] border-[#004085] text-white' : 'border-[#BEE3F8] bg-white'
                                                 }`}>
                                                 {selectedServices.includes(service.id) && <ShieldCheck className="w-4 h-4 outline-none" />}
                                             </div>
@@ -472,11 +472,11 @@ export default function DiscoveryPage() {
                                 ))}
                             </div>
 
-                            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
-                                <h3 className="font-bold text-purple-900 mb-2">
+                            <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-5 mt-4 mb-6 text-white">
+                                <h3 className="font-bold text-white mb-2 text-xl">
                                     📎 Have a pre-upload token?
                                 </h3>
-                                <p className="text-sm text-purple-700 mb-3">
+                                <p className="text-lg text-blue-100 mb-3">
                                     Enter the 6-character token from your WhatsApp to load your document
                                 </p>
                                 <div className="flex gap-2">
@@ -497,11 +497,11 @@ export default function DiscoveryPage() {
                                             setDocumentUrl(null);
                                             setDocumentLoaded(false);
                                         }}
-                                        className="flex-1 px-3 py-2 border rounded-lg font-mono text-lg uppercase focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                                        className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl font-mono min-h-[60px] text-[#0A1628] focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] uppercase flex-1 outline-none"
                                     />
-                                    <Button type="button" onClick={handleTokenLookup} disabled={documentToken.length !== 6}>
+                                    <button type="button" className="bg-[#004085] hover:bg-[#002868] text-white px-6 py-4 rounded-xl font-bold min-h-[60px] disabled:opacity-50 transition-all" onClick={handleTokenLookup} disabled={documentToken.length !== 6}>
                                         Load
-                                    </Button>
+                                    </button>
                                 </div>
                                 {tokenDocument && (
   <div className="mt-3 space-y-3">
@@ -561,7 +561,7 @@ export default function DiscoveryPage() {
                             <div className="flex justify-end pt-6 border-t border-gray-100">
                                 <Button
                                     size="lg"
-                                    className="h-16 px-12 text-xl rounded-xl shadow-xl"
+                                    className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full"
                                     onClick={() => {
                                         router.push('/kiosk/dashboard');
                                     }}

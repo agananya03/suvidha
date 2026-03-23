@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Zap, ArrowLeft, CreditCard, CheckCircle2, AlertTriangle,
   Download, MapPin, FileText, Gift, ChevronRight, Clock,
@@ -203,8 +203,17 @@ function AnomalyBarChart() {
 
 export default function ElectricityPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useDynamicTranslation();
-  const [activeTab, setActiveTab] = useState<Tab>('bill');
+  const initialTab = (searchParams.get('tab') as Tab) ?? 'bill';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab') as Tab;
+    if (tab && TABS.some(t => t.id === tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const [rechargeAmount, setRechargeAmount] = useState('');
   const [rechargeDone, setRechargeDone] = useState(false);
   const [connectionSubmitted, setConnectionSubmitted] = useState(false);
@@ -230,8 +239,8 @@ export default function ElectricityPage() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-gray-50">
-      <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-6 py-4 flex items-center gap-4 shrink-0">
+    <div className="h-full flex flex-col overflow-hidden bg-[#F0F7FF]">
+      <div className="bg-gradient-to-r from-[#002868] to-[#004085] text-white px-6 py-6 flex items-center gap-4 shrink-0 shadow-md">
         <button onClick={() => router.push('/kiosk/dashboard')} className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -250,7 +259,7 @@ export default function ElectricityPage() {
           const active = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded-xl font-semibold text-sm transition-all shrink-0 ${active ? 'bg-yellow-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-yellow-50 hover:text-yellow-700'}`}>
+              className={`flex items-center gap-2 whitespace-nowrap px-5 py-3 rounded-xl font-bold text-base transition-all shrink-0 ${active ? 'bg-[#004085] text-white shadow-md' : 'bg-white text-[#4A6FA5] hover:bg-[#E8F4FD] hover:text-[#002868] border border-[#BEE3F8]'}`}>
               <Icon className="w-4 h-4" />
               {t(tab.label)}
             </button>
@@ -265,7 +274,7 @@ export default function ElectricityPage() {
             {activeTab === 'bill' && (
               <div className="space-y-5">
                 <AnomalyBarChart />
-                <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-6">
+                <div className="bg-[#FFFBEB] border-2 border-[#FBD38D] rounded-3xl p-6">
                   <div className="flex items-start gap-4">
                     <AlertTriangle className="w-8 h-8 text-amber-600 shrink-0 mt-1" />
                     <div className="flex-grow">
@@ -278,7 +287,7 @@ export default function ElectricityPage() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-[#BEE3F8]">
                   <h2 className="text-xl font-black mb-4">{t('Bill Details — Feb 2026')}</h2>
                   {[{ l: 'Consumer No.', v: 'MH-NP-2024-001247' }, { l: 'Provider', v: 'MSEDCL' }, { l: 'Units Consumed', v: '540 kWh' }, { l: 'Fixed Charges', v: '₹499.00' }, { l: 'Variable', v: '₹561.37' }, { l: 'Taxes', v: '₹187.13' }, { l: 'Total Due', v: '₹1,247.50' }, { l: 'Due Date', v: 'May 15, 2026' }].map((r) => (
                     <div key={r.l} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
@@ -286,7 +295,7 @@ export default function ElectricityPage() {
                       <span className="font-semibold text-gray-900">{r.v}</span>
                     </div>
                   ))}
-                  <Button className="w-full mt-4 bg-yellow-500 hover:bg-yellow-600 text-white" onClick={() => router.push('/kiosk/pay')}>
+                  <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full mt-4" onClick={() => router.push('/kiosk/pay')}>
                     <CreditCard className="w-4 h-4 mr-2" />{t('Proceed to Payment')}
                   </Button>
                 </div>
@@ -294,9 +303,9 @@ export default function ElectricityPage() {
             )}
 
             {activeTab === 'history' && (
-              <div className="bg-white rounded-3xl p-8 shadow-sm border">
+              <div className="bg-white rounded-3xl p-8 shadow-md border-2 border-[#BEE3F8]">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-black flex items-center gap-3"><Clock className="w-7 h-7 text-yellow-500" />{t('Bill History — Last 12 Months')}</h2>
+                  <h2 className="text-2xl font-black flex items-center gap-3"><Clock className="w-7 h-7 text-[#004085]" />{t('Bill History — Last 12 Months')}</h2>
                   <Button onClick={downloadHistory} variant="outline" className="gap-2 shrink-0"><Download className="w-4 h-4" />{t('PDF')}</Button>
                 </div>
                 <div className="overflow-x-auto">
@@ -323,8 +332,8 @@ export default function ElectricityPage() {
             )}
 
             {activeTab === 'connection' && (
-              <div className="bg-white rounded-3xl p-8 shadow-sm border">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><Plus className="w-7 h-7 text-yellow-500" />{t('New Electricity Connection Request')}</h2>
+              <div className="bg-white rounded-3xl p-8 shadow-md border-2 border-[#BEE3F8]">
+                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><Plus className="w-7 h-7 text-[#004085]" />{t('New Electricity Connection Request')}</h2>
                 {connectionSubmitted ? (
                   <div className="text-center py-10">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle2 className="w-10 h-10 text-green-600" /></div>
@@ -339,7 +348,7 @@ export default function ElectricityPage() {
                     {[{ label: 'Applicant Name', type: 'text', placeholder: 'Full name as on Aadhaar' }, { label: 'Property Address', type: 'text', placeholder: 'Full address with PIN code' }, { label: 'Mobile Number', type: 'tel', placeholder: '10-digit mobile' }, { label: 'Estimated Load Required (kW)', type: 'number', placeholder: 'e.g. 2' }].map((f) => (
                       <div key={f.label}>
                         <label className="block text-sm font-semibold mb-2">{t(f.label)}</label>
-                        <input type={f.type} placeholder={t(f.placeholder)} className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 outline-none" />
+                        <input type={f.type} placeholder={t(f.placeholder)} className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] transition-all focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] outline-none" />
                       </div>
                     ))}
                     <div>
@@ -349,15 +358,15 @@ export default function ElectricityPage() {
                         <p className="text-gray-500 text-sm">{t('Tap to upload via DigiLocker or Scanner')}</p>
                       </div>
                     </div>
-                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white" onClick={() => setConnectionSubmitted(true)}>{t('Submit New Connection Request')}</Button>
+                    <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" onClick={() => setConnectionSubmitted(true)}>{t('Submit New Connection Request')}</Button>
                   </div>
                 )}
               </div>
             )}
 
             {activeTab === 'load' && (
-              <div className="bg-white rounded-3xl p-8 shadow-sm border">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><Zap className="w-7 h-7 text-yellow-500" />{t('Load Change Application')}</h2>
+              <div className="bg-white rounded-3xl p-8 shadow-md border-2 border-[#BEE3F8]">
+                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><Zap className="w-7 h-7 text-[#004085]" />{t('Load Change Application')}</h2>
                 <div className="space-y-5">
                   <div className="p-4 bg-gray-50 rounded-2xl border">
                     <p className="text-sm font-bold text-gray-500 mb-1">{t('Current Sanctioned Load')}</p>
@@ -367,7 +376,7 @@ export default function ElectricityPage() {
                     <p className="font-semibold mb-3">{t('Type of Change')}</p>
                     <div className="grid grid-cols-2 gap-3">
                       {(['increase', 'decrease'] as const).map((type) => (
-                        <button key={type} onClick={() => setLoadType(type)} className={`p-4 rounded-2xl border-2 font-bold transition-all ${loadType === type ? 'border-yellow-500 bg-yellow-50 text-yellow-700' : 'border-gray-200'}`}>
+                        <button key={type} onClick={() => setLoadType(type)} className={`p-4 rounded-2xl border-2 font-bold transition-all ${loadType === type ? 'border-[#004085] bg-[#EBF8FF] text-[#004085] shadow-sm' : 'border-gray-200'}`}>
                           {type === 'increase' ? '⬆️' : '⬇️'} {t(type === 'increase' ? 'Increase Load' : 'Decrease Load')}
                         </button>
                       ))}
@@ -375,16 +384,16 @@ export default function ElectricityPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">{t('Requested Load (kW)')}</label>
-                    <input type="number" min="0.5" max="50" step="0.5" placeholder="e.g. 5" className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 outline-none" value={loadValue} onChange={(e) => setLoadValue(e.target.value)} />
+                    <input type="number" min="0.5" max="50" step="0.5" placeholder="e.g. 5" className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] transition-all focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] outline-none" value={loadValue} onChange={(e) => setLoadValue(e.target.value)} />
                   </div>
-                  <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white" disabled={!loadType || !loadValue} onClick={() => alert(t('Load change application submitted. Processing time: 15 days.'))}>{t('Submit Load Change Request')}</Button>
+                  <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" disabled={!loadType || !loadValue} onClick={() => alert(t('Load change application submitted. Processing time: 15 days.'))}>{t('Submit Load Change Request')}</Button>
                 </div>
               </div>
             )}
 
             {activeTab === 'outage' && (
-              <div className="bg-white rounded-3xl p-8 shadow-sm border">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><AlertTriangle className="w-7 h-7 text-yellow-500" />{t('Outage Complaint')}</h2>
+              <div className="bg-white rounded-3xl p-8 shadow-md border-2 border-[#BEE3F8]">
+                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><AlertTriangle className="w-7 h-7 text-[#004085]" />{t('Outage Complaint')}</h2>
                 {outageDone ? (
                   <div className="text-center py-10">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle2 className="w-10 h-10 text-green-600" /></div>
@@ -397,7 +406,7 @@ export default function ElectricityPage() {
                     <div>
                       <label className="block text-sm font-semibold mb-2">{t('Location / Area Affected')}</label>
                       <div className="flex gap-3">
-                        <input type="text" placeholder={t('Enter area / street name')} className="flex-1 p-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 outline-none" />
+                        <input type="text" placeholder={t('Enter area / street name')} className="flex-1 p-3 border-2 border-gray-200 rounded-xl focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] outline-none" />
                         <button className="bg-yellow-100 text-yellow-700 px-4 rounded-xl font-semibold flex items-center gap-2 border-2 border-yellow-200">
                           <MapPin className="w-4 h-4" />{t('Pin')}
                         </button>
@@ -405,21 +414,21 @@ export default function ElectricityPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold mb-2">{t('Describe the outage')}</label>
-                      <textarea className="w-full border-2 border-gray-200 rounded-xl p-3 min-h-[120px] focus:border-yellow-400 outline-none resize-none" placeholder={t('Complete outage / flickering? Since when? Any visible damage?')} value={outageText} onChange={(e) => setOutageText(e.target.value)} />
+                      <textarea className="w-full border-2 border-gray-200 rounded-xl p-3 min-h-[120px] focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] outline-none resize-none" placeholder={t('Complete outage / flickering? Since when? Any visible damage?')} value={outageText} onChange={(e) => setOutageText(e.target.value)} />
                     </div>
                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:bg-gray-50">
                       <ImageIcon className="w-6 h-6 text-gray-400 mx-auto mb-1" />
                       <p className="text-sm text-gray-500">{t('Attach photo (optional)')}</p>
                     </div>
-                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white" disabled={outageText.length < 10} onClick={() => setOutageDone(true)}>{t('Submit Outage Complaint')}</Button>
+                    <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" disabled={outageText.length < 10} onClick={() => setOutageDone(true)}>{t('Submit Outage Complaint')}</Button>
                   </div>
                 )}
               </div>
             )}
 
             {activeTab === 'meter' && (
-              <div className="bg-white rounded-3xl p-8 shadow-sm border">
-                <h2 className="text-2xl font-black mb-2 flex items-center gap-3"><Zap className="w-7 h-7 text-yellow-500" />{t('Meter Complaint')}</h2>
+              <div className="bg-white rounded-3xl p-8 shadow-md border-2 border-[#BEE3F8]">
+                <h2 className="text-2xl font-black mb-2 flex items-center gap-3"><Zap className="w-7 h-7 text-[#004085]" />{t('Meter Complaint')}</h2>
                 <p className="text-gray-500 mb-6">{t('Fast-track escalation to DISCOM Meter Division.')}</p>
                 {meterDone ? (
                   <div className="text-center py-10">
@@ -431,27 +440,27 @@ export default function ElectricityPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold mb-2">{t('Meter Issue Type')}</label>
-                      <select className="w-full p-3 border-2 border-gray-200 rounded-xl outline-none focus:border-yellow-400">
+                      <select className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] transition-all outline-none focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8]">
                         {['Running fast / slow', 'Meter not working / blank', 'Incorrect reading', 'Damaged meter box', 'Meter tampered'].map(o => <option key={o}>{t(o)}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold mb-2">{t('Meter Serial Number')}</label>
-                      <input type="text" placeholder="e.g. MSB-2024-XXXXX" className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 outline-none font-mono" />
+                      <input type="text" placeholder="e.g. MSB-2024-XXXXX" className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] transition-all focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] outline-none font-mono" />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold mb-2">{t('Additional Details')}</label>
-                      <textarea className="w-full border-2 border-gray-200 rounded-xl p-3 min-h-[100px] focus:border-yellow-400 outline-none resize-none" value={meterText} onChange={(e) => setMeterText(e.target.value)} placeholder={t('Any other details about the meter issue...')} />
+                      <textarea className="w-full border-2 border-gray-200 rounded-xl p-3 min-h-[100px] focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] outline-none resize-none" value={meterText} onChange={(e) => setMeterText(e.target.value)} placeholder={t('Any other details about the meter issue...')} />
                     </div>
-                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white" onClick={() => setMeterDone(true)}>{t('Escalate to DISCOM Meter Division')}</Button>
+                    <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" onClick={() => setMeterDone(true)}>{t('Escalate to DISCOM Meter Division')}</Button>
                   </div>
                 )}
               </div>
             )}
 
             {activeTab === 'prepaid' && (
-              <div className="bg-white rounded-3xl p-8 shadow-sm border">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><Smartphone className="w-7 h-7 text-yellow-500" />{t('Prepaid Meter Recharge')}</h2>
+              <div className="bg-white rounded-3xl p-8 shadow-md border-2 border-[#BEE3F8]">
+                <h2 className="text-2xl font-black mb-6 flex items-center gap-3"><Smartphone className="w-7 h-7 text-[#004085]" />{t('Prepaid Meter Recharge')}</h2>
                 {rechargeDone ? (
                   <div className="text-center py-10">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle2 className="w-10 h-10 text-green-600" /></div>
@@ -471,14 +480,14 @@ export default function ElectricityPage() {
                       <label className="block text-sm font-semibold mb-2">{t('Select Recharge Amount')}</label>
                       <div className="grid grid-cols-3 gap-3 mb-4">
                         {['100', '200', '500', '1000', '2000', '5000'].map((amt) => (
-                          <button key={amt} onClick={() => setRechargeAmount(amt)} className={`p-3 rounded-xl border-2 font-bold transition-all ${rechargeAmount === amt ? 'border-yellow-500 bg-yellow-50 text-yellow-700' : 'border-gray-200 hover:border-yellow-300'}`}>
+                          <button key={amt} onClick={() => setRechargeAmount(amt)} className={`p-3 rounded-xl border-2 font-bold transition-all ${rechargeAmount === amt ? 'border-[#004085] bg-[#EBF8FF] text-[#004085] shadow-sm' : 'border-gray-200 hover:border-yellow-300'}`}>
                             ₹{amt}
                           </button>
                         ))}
                       </div>
-                      <input type="number" placeholder={t('Or enter custom amount')} className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 outline-none" value={rechargeAmount} onChange={(e) => setRechargeAmount(e.target.value)} />
+                      <input type="number" placeholder={t('Or enter custom amount')} className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] transition-all focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] outline-none" value={rechargeAmount} onChange={(e) => setRechargeAmount(e.target.value)} />
                     </div>
-                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-lg py-6" disabled={!rechargeAmount || Number(rechargeAmount) < 10} onClick={() => router.push('/kiosk/pay')}>{t('Proceed to Pay')} {rechargeAmount && `₹${rechargeAmount}`}</Button>
+                    <Button className="w-full bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] shadow-md text-white text-lg py-6" disabled={!rechargeAmount || Number(rechargeAmount) < 10} onClick={() => router.push('/kiosk/pay')}>{t('Proceed to Pay')} {rechargeAmount && `₹${rechargeAmount}`}</Button>
                   </div>
                 )}
               </div>
@@ -486,9 +495,9 @@ export default function ElectricityPage() {
 
             {activeTab === 'track' && (
               <div className="space-y-5">
-                <h2 className="text-2xl font-black flex items-center gap-3"><Clock className="w-7 h-7 text-yellow-500" />{t('Complaint Tracking')}</h2>
+                <h2 className="text-2xl font-black flex items-center gap-3"><Clock className="w-7 h-7 text-[#004085]" />{t('Complaint Tracking')}</h2>
                 {[{ id: 'TKT-ELEC-2026-8821', type: 'Outage', dept: 'MSEDCL Distribution', pos: 12, sla: '4 hrs', status: 'In Progress' }, { id: 'TKT-ELEC-2026-7654', type: 'Bill Dispute', dept: 'MSEDCL Billing', pos: 4, sla: '48 hrs', status: 'Under Review' }].map((ticket) => (
-                  <div key={ticket.id} className="bg-white rounded-2xl p-6 shadow-sm border">
+                  <div key={ticket.id} className="bg-white rounded-2xl p-8 shadow-md border-2 border-[#BEE3F8]">
                     <div className="flex items-start justify-between mb-4">
                       <div><p className="font-mono font-bold text-gray-900">{ticket.id}</p><p className="text-gray-500 text-sm">{t(ticket.type)} · {ticket.dept}</p></div>
                       <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{t(ticket.status)}</span>
@@ -511,7 +520,7 @@ export default function ElectricityPage() {
 
             {activeTab === 'policy' && (
               <div className="space-y-5">
-                <h2 className="text-2xl font-black flex items-center gap-3"><Gift className="w-7 h-7 text-yellow-500" />{t('Policy Benefits & Schemes')}</h2>
+                <h2 className="text-2xl font-black flex items-center gap-3"><Gift className="w-7 h-7 text-[#004085]" />{t('Policy Benefits & Schemes')}</h2>
                 {POLICIES.map((p) => (
                   <div key={p.title} className={`rounded-3xl p-6 border-2 ${p.color}`}>
                     <div className="flex items-start gap-4">

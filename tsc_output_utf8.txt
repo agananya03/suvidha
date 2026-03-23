@@ -1,0 +1,1 @@
+﻿src/app/(kiosk)/kiosk/discovery/page.tsx(504,39): error TS17002: Expected corresponding JSX closing tag for 'button'.

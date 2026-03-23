@@ -250,8 +250,8 @@ export default function PaymentPage() {
     };
 
     return (
-        <div className="h-full overflow-y-auto p-8 max-w-4xl mx-auto w-full">
-            <h1 className="text-3xl font-bold mb-8">{t('Bill Payment Checkout')}</h1>
+        <div className="h-full overflow-y-auto p-6 pl-24 md:p-8 md:pl-28 max-w-5xl mx-auto w-full border-t-0">
+            <h1 className="text-3xl font-black text-[#0A1628] mb-8">{t('Bill Payment Checkout')}</h1>
 
             <AnimatePresence mode="wait">
 
@@ -262,13 +262,13 @@ export default function PaymentPage() {
                     className="space-y-6"
                   >
                     <div>
-                      <h2 className="text-2xl font-bold mb-2">{t('Select Your Service Provider')}</h2>
-                      <p className="text-gray-500 text-sm">{t('Choose the utility you want to pay')}</p>
+                      <h2 className="text-2xl font-black text-[#0A1628] mb-2">{t('Select Your Service Provider')}</h2>
+                      <p className="text-[#4A6FA5] text-sm">{t('Choose the utility you want to pay')}</p>
                     </div>
 
                     {(['electricity', 'gas', 'water'] as const).map(category => (
                       <div key={category}>
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase
+                        <h3 className="text-sm font-semibold text-[#4A6FA5] uppercase
                                        tracking-wider mb-3 flex items-center gap-2">
                           <span>{CATEGORY_ICONS[category]}</span>
                           {t(category.charAt(0).toUpperCase() + category.slice(1))}
@@ -278,9 +278,7 @@ export default function PaymentPage() {
                             <button
                               key={biller.id}
                               onClick={() => { setSelectedBiller(biller); setView('consumer_input'); }}
-                              className="w-full p-4 rounded-xl border border-gray-200 bg-white
-                                         text-left hover:border-blue-400 hover:shadow-md
-                                         transition-all group"
+                              className="w-full p-5 rounded-2xl border-2 border-[#BEE3F8] bg-white text-left hover:border-[#004085] hover:shadow-md transition-all group active:scale-98 flex items-center gap-4 min-h-[80px]"
                             >
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center
@@ -289,7 +287,7 @@ export default function PaymentPage() {
                                 </div>
                                 <div>
                                   <p className="font-semibold text-gray-900">{biller.name}</p>
-                                  <p className="text-xs text-gray-500">{biller.state}</p>
+                                  <p className="text-xs text-[#4A6FA5]">{biller.state}</p>
                                 </div>
                               </div>
                             </button>
@@ -315,9 +313,9 @@ export default function PaymentPage() {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white rounded-2xl p-6 shadow-md border-2 border-[#BEE3F8] space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-[#2C5282] mb-2">
                           {t('Enter Consumer Number')}
                         </label>
                         <input
@@ -328,9 +326,7 @@ export default function PaymentPage() {
                             setFetchError(null);
                           }}
                           placeholder={selectedBiller.consumerNumberFormat}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl
-                                     text-lg font-mono focus:outline-none focus:ring-2
-                                     focus:ring-blue-500 focus:border-transparent"
+                          className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] focus:outline-none focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] font-mono tracking-widest"
                           maxLength={20}
                         />
                         <p className="text-xs text-gray-400 mt-1">
@@ -347,8 +343,7 @@ export default function PaymentPage() {
                       )}
 
                       <Button
-                        className="w-full"
-                        size="lg"
+                        className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full"
                         disabled={isFetchingBill || !consumerNumberInput.trim()}
                         onClick={async () => {
                           if (!consumerNumberInput.trim()) return;
@@ -404,7 +399,7 @@ export default function PaymentPage() {
                         </div>
                         <DemoDataBadge />
                         {/* SECTION 1: Bill Details Card */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div className="bg-white rounded-2xl p-8 shadow-md border-2 border-[#BEE3F8]">
                             <div className="flex items-start justify-between border-b pb-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
@@ -412,18 +407,18 @@ export default function PaymentPage() {
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-bold text-gray-800">{billData.providerName}</h2>
-                                        <p className="text-gray-500">{billData.consumerNumber}</p>
+                                        <p className="text-[#4A6FA5]">{billData.consumerNumber}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm text-gray-500">{t('Bill Period')}</p>
+                                    <p className="text-sm text-[#4A6FA5]">{t('Bill Period')}</p>
                                     <p className="font-semibold">{billData.billPeriod}</p>
                                 </div>
                             </div>
 
                             <div className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div>
-                                    <p className="text-gray-500 mb-1">{t('Consumer Details')}</p>
+                                    <p className="text-[#4A6FA5] mb-1">{t('Consumer Details')}</p>
                                     <div className="flex items-center gap-2">
                                         <p className="font-semibold">{billData.holderName}</p>
                                         <StaleBadge lastSynced={cachedAt} />
@@ -431,7 +426,7 @@ export default function PaymentPage() {
                                     <p className="text-sm text-gray-600">{billData.address}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-gray-500 mb-1">{t('Total Amount Due')}</p>
+                                    <p className="text-[#4A6FA5] mb-1">{t('Total Amount Due')}</p>
                                     <p className="text-4xl font-bold text-gray-900">₹{billData.currentBill.toFixed(2)}</p>
                                     <p className={`text-sm mt-2 font-medium ${new Date(billData.dueDate) < new Date() ? 'text-red-500' : 'text-orange-500'}`}>
                                         {t('Due')}: {new Date(billData.dueDate).toLocaleDateString()}
@@ -443,7 +438,7 @@ export default function PaymentPage() {
                             <div className="border-t pt-4">
                                 <button
                                     onClick={() => setIsBreakdownOpen(!isBreakdownOpen)}
-                                    className="flex items-center justify-between w-full text-left font-medium text-gray-700 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                                    className="flex items-center justify-between w-full text-left font-medium text-[#2C5282] p-2 hover:bg-gray-50 rounded-lg transition-colors"
                                 >
                                     <span>{t('View Itemized Breakdown')}</span>
                                     {isBreakdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -471,26 +466,25 @@ export default function PaymentPage() {
 
                         {/* SECTION 2: Anomaly Warning */}
                         {billData.anomaly.flagged && (
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-r-2xl shadow-sm">
+                            <div className="bg-[#FFFBEB] border-2 border-[#FBD38D] p-6 rounded-2xl shadow-sm">
                                 <div className="flex items-start gap-4">
                                     <AlertTriangle className="w-8 h-8 text-yellow-500 flex-shrink-0" />
                                     <div className="flex-grow">
-                                        <h3 className="text-lg font-bold text-yellow-800">⚠️ {t('Unusual Bill Amount Detected')}</h3>
-                                        <p className="text-yellow-700 mt-1">
+                                        <h3 className="text-lg font-bold text-[#7B4A0A]">⚠️ {t('Unusual Bill Amount Detected')}</h3>
+                                        <p className="text-[#7B4A0A] mt-1">
                                             {t('This bill')} (<strong>₹{billData.currentBill.toFixed(2)}</strong>) {t('is')} <strong>{billData.anomaly.ratio}x {t('higher')}</strong> {t('than your average')} (₹{billData.lastBill.toFixed(2)}).
                                         </p>
 
                                         <div className="mt-6 flex flex-wrap gap-4">
                                             <Button
-                                                variant="outline"
-                                                className="bg-white text-yellow-800 border-yellow-300 hover:bg-yellow-100"
+                                                variant="outline" className="bg-white hover:bg-[#E8F4FD] active:bg-[#BEE3F8] text-[#004085] border-2 border-[#004085] font-semibold text-lg min-h-[56px] px-8 rounded-xl"
                                                 onClick={() => setView('dispute')}
                                             >
                                                 {t('Dispute This Bill')}
                                             </Button>
                                             <Button
                                                 onClick={() => setView('payment_method')}
-                                                className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                                                className="bg-[#004085] hover:bg-[#002868] text-white font-bold text-lg min-h-[56px] px-8 rounded-xl shadow-md"
                                             >
                                                 {t('Pay Anyway')}
                                             </Button>
@@ -515,7 +509,7 @@ export default function PaymentPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="bg-white rounded-2xl p-8 shadow-sm max-w-2xl mx-auto"
                     >
-                        <h2 className="text-2xl font-bold mb-6">{t('Dispute Bill Amount')}</h2>
+                        <h2 className="text-2xl font-black text-[#0A1628] mb-6">{t('Dispute Bill Amount')}</h2>
                         <div className="space-y-6">
                             <div>
                                 <label className="block text-sm font-medium mb-2">{t('Reason for dispute')}</label>
@@ -531,7 +525,7 @@ export default function PaymentPage() {
                                 <label className="block text-sm font-medium mb-2">{t('Meter Photo Evidence (Optional)')}</label>
                                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 cursor-pointer transition-colors">
                                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                    <p className="text-gray-500 text-sm">{t('Tap to take photo or upload document')}</p>
+                                    <p className="text-[#4A6FA5] text-sm">{t('Tap to take photo or upload document')}</p>
                                 </div>
                             </div>
 
@@ -552,17 +546,17 @@ export default function PaymentPage() {
                         className="space-y-6"
                     >
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-bold">{t('Select Payment Method')}</h2>
-                            <p className="text-xl font-bold text-primary">₹{billData.currentBill.toFixed(2)}</p>
+                            <h2 className="text-2xl font-black text-[#0A1628]">{t('Select Payment Method')}</h2>
+                            <p className="text-3xl font-black text-[#004085]">₹{billData.currentBill.toFixed(2)}</p>
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* UPI Card */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" onClick={() => setView('upi_qr')}>
+                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" onClick={() => setView('upi_qr')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-green-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <Smartphone className="w-10 h-10 text-green-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('UPI Payment')}</h3>
-                                <p className="text-sm text-gray-500 mb-4">{t('Scan with Google Pay, PhonePe, Paytm, etc.')}</p>
+                                <p className="text-sm text-[#4A6FA5] mb-4">{t('Scan with Google Pay, PhonePe, Paytm, etc.')}</p>
                                 <div className="w-full aspect-square bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300">
                                     <div className="text-center text-gray-400">
                                         <span className="block text-4xl mb-2">📱</span>
@@ -572,11 +566,11 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Card Payment */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('card')}>
+                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('card')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <CreditCard className="w-10 h-10 text-blue-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('Card Payment')}</h3>
-                                <p className="text-sm text-gray-500 mb-4">{t('Pay securely with Credit or Debit Card')}</p>
+                                <p className="text-sm text-[#4A6FA5] mb-4">{t('Pay securely with Credit or Debit Card')}</p>
                                 <div className="space-y-3 opacity-50 pointer-events-none">
                                     <div className="h-10 bg-gray-100 rounded-lg w-full"></div>
                                     <div className="flex gap-3">
@@ -590,11 +584,11 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Cash Payment */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border hover:border-primary hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('cash')}>
+                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('cash')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-orange-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <Banknote className="w-10 h-10 text-orange-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('Cash at Counter')}</h3>
-                                <p className="text-sm text-gray-500 mb-4">{t('Generate challan and pay at helping desk.')}</p>
+                                <p className="text-sm text-[#4A6FA5] mb-4">{t('Generate challan and pay at helping desk.')}</p>
                                 <div className="mt-8 p-4 bg-orange-50 text-orange-700 text-sm rounded-lg border border-orange-100">
                                     {t('Click here to generate your cash payment token slip.')}
                                 </div>
@@ -648,7 +642,7 @@ export default function PaymentPage() {
                         {/* Intent details card */}
                         <div className="p-5 rounded-xl border border-gray-200 bg-white space-y-3">
                             <div className="text-center pb-3 border-b border-gray-100">
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                                <p className="text-xs text-[#4A6FA5] uppercase tracking-wide">
                                     Payment Intent ID
                                 </p>
                                 <p className="text-2xl font-mono font-semibold text-gray-900 mt-1">
@@ -656,21 +650,21 @@ export default function PaymentPage() {
                                 </p>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Consumer No.</span>
+                                <span className="text-[#4A6FA5]">Consumer No.</span>
                                 <span className="font-medium">{paymentIntent.consumerNumber}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Amount Due</span>
+                                <span className="text-[#4A6FA5]">Amount Due</span>
                                 <span className="font-semibold text-gray-900">
                                     ₹{paymentIntent.amount.toFixed(2)}
                                 </span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Generated At</span>
+                                <span className="text-[#4A6FA5]">Generated At</span>
                                 <span>{new Date(paymentIntent.generatedAt).toLocaleString('en-IN')}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Valid Until</span>
+                                <span className="text-[#4A6FA5]">Valid Until</span>
                                 <span className="text-amber-700 font-medium">
                                     {new Date(paymentIntent.expiresAt).toLocaleString('en-IN')}
                                 </span>
@@ -716,8 +710,8 @@ export default function PaymentPage() {
                         className="flex flex-col items-center justify-center py-20"
                     >
                         <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin mb-8"></div>
-                        <h2 className="text-2xl font-bold mb-2">{t('Processing Payment...')}</h2>
-                        <p className="text-gray-500">{t('Please do not close this window or refresh the page.')}</p>
+                        <h2 className="text-2xl font-black text-[#0A1628] mb-2">{t('Processing Payment...')}</h2>
+                        <p className="text-[#4A6FA5]">{t('Please do not close this window or refresh the page.')}</p>
                     </motion.div>
                 )}
 
@@ -727,10 +721,10 @@ export default function PaymentPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="max-w-sm mx-auto space-y-6 text-center py-10"
                   >
-                    <h2 className="text-2xl font-bold">{t('Scan to Pay')}</h2>
+                    <h2 className="text-2xl font-black text-[#0A1628]">{t('Scan to Pay')}</h2>
 
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                      <p className="text-gray-500 text-sm mb-4">
+                    <div className="bg-white rounded-2xl p-8 shadow-md border-2 border-[#BEE3F8]">
+                      <p className="text-[#4A6FA5] text-sm mb-4">
                         {t('Open any UPI app and scan this QR code')}
                       </p>
 
@@ -747,15 +741,15 @@ export default function PaymentPage() {
 
                       <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-gray-500">{t('Pay To')}</span>
+                          <span className="text-[#4A6FA5]">{t('Pay To')}</span>
                           <span className="font-medium">{selectedBiller.name}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">{t('Amount')}</span>
+                          <span className="text-[#4A6FA5]">{t('Amount')}</span>
                           <span className="font-bold text-lg">₹{billData.currentBill.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">{t('UPI ID')}</span>
+                          <span className="text-[#4A6FA5]">{t('UPI ID')}</span>
                           <span className="font-mono text-xs">{selectedBiller.billerVpa}</span>
                         </div>
                       </div>
@@ -766,7 +760,7 @@ export default function PaymentPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <Button className="w-full" size="lg" onClick={() => processPayment('upi')}>
+                      <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" onClick={() => processPayment('upi')}>
                         ✅ {t('I have completed the payment')}
                       </Button>
                       <Button variant="ghost" onClick={() => setView('payment_method')}>

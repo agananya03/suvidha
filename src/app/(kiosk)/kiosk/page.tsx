@@ -112,7 +112,7 @@ export default function KioskHome() {
     };
 
     return (
-        <div className="kiosk-page flex flex-col relative w-full h-full overflow-hidden">
+        <div className="bg-gradient-to-br from-[#001a4d] via-[#002868] to-[#003a8c] flex flex-col relative w-full h-full overflow-hidden">
             <ConsentModal />
 
             {/* Back button — only visible on LANGUAGE and HOME_VISIT steps (not the first screen) */}
@@ -134,62 +134,62 @@ export default function KioskHome() {
                         animate="center"
                         exit="exit"
                         transition={{ duration: 0.2 }}
-                        className="flex-1 flex flex-col items-center justify-center w-full"
+                        className="h-full overflow-y-auto pt-16 pb-8 pl-24 pr-8 max-w-5xl mx-auto flex flex-col items-center justify-center w-full relative"
                     >
-                        <h1 className="text-[var(--font-2xl)] font-bold text-[var(--irs-navy)] mb-2">
+                        <h1 className="text-3xl font-black text-white text-center mb-2 tracking-tight">
                             नमस्ते / Welcome
                         </h1>
-                        <h2 className="text-[var(--font-lg)] text-[var(--irs-gray-600)] mb-12">
+                        <h2 className="text-blue-200 text-lg text-center mb-8">
                             Government Services — Simplified
                         </h2>
                         
-                        <div className="flex gap-6 mb-16">
-                            <button className="btn-secondary" onClick={() => handleFlow('QUICK_PAY')}>
+                        <div className="flex gap-6 mb-10 mt-6">
+                            <button className="bg-white hover:bg-[#E8F4FD] active:bg-[#BEE3F8] text-[#004085] border-2 border-[#004085] font-semibold text-lg min-h-[56px] px-6 rounded-2xl transition-all duration-150" onClick={() => handleFlow('QUICK_PAY')}>
                                 Quick Pay (No Login)
                             </button>
-                            <button className="btn-primary" onClick={() => handleFlow('FULL_ACCESS')}>
+                            <button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[56px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center" onClick={() => handleFlow('FULL_ACCESS')}>
                                 Full Access (OTP Login)
                             </button>
                         </div>
 
                         {/* Accessibility bottom strip */}
-                        <div className="absolute bottom-8 left-0 w-full flex flex-col items-center gap-6">
-                            <div className="flex justify-center gap-6">
+                        <div className="w-full mt-auto mb-8 flex flex-col items-center gap-6 z-10">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-center px-4 px-4">
                                 <button 
                                     onClick={() => handleAccessibilitySelect('voice')}
-                                    className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
+                                    className="bg-white text-[#0A1628] rounded-2xl p-6 min-h-[100px] border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md cursor-pointer transition-all duration-150 active:scale-95 flex flex-col items-center text-center gap-3"
                                 >
-                                    <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <div className="w-14 h-14 rounded-2xl bg-[#E8F4FD] flex items-center justify-center text-2xl text-[#004085]">
                                         <Ear size={28} />
                                     </div>
-                                    <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Voice</span>
+                                    <span className="text-lg font-bold text-[#0A1628] block">Voice</span>
                                 </button>
                                 <button 
                                     onClick={() => handleAccessibilitySelect('visual')}
-                                    className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
+                                    className="bg-white text-[#0A1628] rounded-2xl p-6 min-h-[100px] border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md cursor-pointer transition-all duration-150 active:scale-95 flex flex-col items-center text-center gap-3"
                                 >
-                                    <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <div className="w-14 h-14 rounded-2xl bg-[#E8F4FD] flex items-center justify-center text-2xl text-[#004085]">
                                         <Eye size={28} />
                                     </div>
-                                    <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Visual</span>
+                                    <span className="text-lg font-bold text-[#0A1628] block">Visual</span>
                                 </button>
                                 <button 
                                     onClick={() => handleAccessibilitySelect('simplified')}
-                                    className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
+                                    className="bg-white text-[#0A1628] rounded-2xl p-6 min-h-[100px] border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md cursor-pointer transition-all duration-150 active:scale-95 flex flex-col items-center text-center gap-3"
                                 >
-                                    <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <div className="w-14 h-14 rounded-2xl bg-[#E8F4FD] flex items-center justify-center text-2xl text-[#004085]">
                                         <ALargeSmall size={28} />
                                     </div>
-                                    <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Simplified</span>
+                                    <span className="text-lg font-bold text-[#0A1628] block">Simplified</span>
                                 </button>
                                 <button 
                                     onClick={() => handleAccessibilitySelect('standard')}
-                                    className="flex flex-col items-center gap-2 text-[var(--irs-gray-600)] hover:text-[var(--irs-navy)] transition-colors"
+                                    className="bg-white text-[#0A1628] rounded-2xl p-6 min-h-[100px] border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md cursor-pointer transition-all duration-150 active:scale-95 flex flex-col items-center text-center gap-3"
                                 >
-                                    <div className="w-14 h-14 rounded-full bg-white border border-[var(--irs-gray-200)] flex items-center justify-center shadow-sm">
+                                    <div className="w-14 h-14 rounded-2xl bg-[#E8F4FD] flex items-center justify-center text-2xl text-[#004085]">
                                         <UserRound size={28} />
                                     </div>
-                                    <span className="text-[var(--font-xs)] font-bold uppercase tracking-widest">Standard</span>
+                                    <span className="text-lg font-bold text-[#0A1628] block">Standard</span>
                                 </button>
                             </div>
 
@@ -200,7 +200,7 @@ export default function KioskHome() {
                                 </p>
                                 <button
                                     onClick={() => setCurrentStep('HOME_VISIT')}
-                                    className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-colors text-base shadow-none border-0"
+                                    className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-[#E8F4FD] active:bg-[#BEE3F8] text-[#004085] border border-[#004085] font-semibold rounded-2xl transition-colors text-base shadow-none"
                                 >
                                     <Home size={20} />
                                     Request a Home Visit
@@ -221,18 +221,18 @@ export default function KioskHome() {
                         transition={{ duration: 0.2 }}
                         className="flex flex-col w-full h-full"
                     >
-                        <h1 className="kiosk-page-title">Choose Your Language</h1>
+                        <h1 className="text-3xl font-black text-white text-center mb-2 tracking-tight">Choose Your Language</h1>
                         
                         <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto py-4">
-                            <div className="lang-grid">
+                            <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                                 {LANGUAGES.map((lang) => (
                                     <button
                                         key={lang.code}
                                         onClick={() => setSelectedLang(lang.code)}
-                                        className={`lang-btn flex-col gap-1 ${selectedLang === lang.code ? 'selected' : ''}`}
+                                        className={`flex flex-col items-center gap-1 transition-all min-h-[56px] cursor-pointer ${selectedLang === lang.code ? 'bg-white text-[#002868] border-[2px] border-white rounded-xl px-4 py-4 font-black shadow-lg' : 'bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-xl px-4 py-4 text-base font-semibold active:bg-white/30'}`}
                                     >
-                                        <span className="text-[var(--font-md)] font-bold">{lang.native}</span>
-                                        <span className="text-[var(--font-xs)] opacity-80">{lang.name}</span>
+                                        <span className="text-lg font-bold">{lang.native}</span>
+                                        <span className="text-xs opacity-70">{lang.name}</span>
                                     </button>
                                 ))}
                             </div>
@@ -240,7 +240,7 @@ export default function KioskHome() {
 
                         <div className="flex justify-end items-center mt-8 px-4 w-full max-w-5xl mx-auto">
                             <button 
-                                className="btn-primary" 
+                                className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center w-full mt-6" 
                                 disabled={!selectedLang} 
                                 onClick={handleLanguageConfirm}
                                 style={{ opacity: selectedLang ? 1 : 0.5, cursor: selectedLang ? 'pointer' : 'not-allowed' }}

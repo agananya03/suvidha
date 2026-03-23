@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Building2, ArrowLeft, CreditCard, CheckCircle2, AlertTriangle,
   Download, MapPin, FileText, Gift, ChevronRight, Image as ImageIcon,
@@ -43,8 +43,17 @@ const POLICIES = [
 
 export default function MunicipalPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useDynamicTranslation();
-  const [activeTab, setActiveTab] = useState<Tab>('property');
+  const initialTab = (searchParams.get('tab') as Tab) ?? 'property';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab') as Tab;
+    if (tab && TABS.some(t => t.id === tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const [taxPaid, setTaxPaid] = useState(false);
   const [waterPaid, setWaterPaid] = useState(false);
   const [wasteDone, setWasteDone] = useState(false);

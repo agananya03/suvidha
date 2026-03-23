@@ -1,0 +1,34 @@
+﻿src/components/kiosk-ui/KioskShell.tsx(8,36): error TS2339: Property 'sessionTimer' does not exist on type 'KioskState'.
+src/components/kiosk-ui/KioskShell.tsx(8,50): error TS2339: Property 'setSessionTimer' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/AccessibilityScreen.tsx(9,54): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/BillPaymentScreen.tsx(12,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/BillPaymentScreen.tsx(12,24): error TS2339: Property 'citizen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/ComplaintScreen.tsx(9,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/HomeScreen.tsx(9,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/OTPScreen.tsx(9,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/OTPScreen.tsx(9,24): error TS2339: Property 'setCitizen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/QueueScreen.tsx(9,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/ServiceScreen.tsx(10,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/ServiceScreen.tsx(10,24): error TS2339: Property 'citizen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/SuccessScreen.tsx(9,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/SuccessScreen.tsx(9,24): error TS2339: Property 'citizen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/TokenScreen.tsx(9,13): error TS2339: Property 'setScreen' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/TokenScreen.tsx(9,24): error TS2339: Property 'setCurrentToken' does not exist on type 'KioskState'.
+src/components/kiosk-ui/screens/TokenScreen.tsx(9,41): error TS2339: Property 'setCitizen' does not exist on type 'KioskState'.
+suvidha-2026/app/(kiosk)/kiosk/auth/page.tsx(11,42): error TS2307: Cannot find module '@/components/otp-input' or its corresponding type declarations.
+suvidha-2026/app/(kiosk)/kiosk/auth/page.tsx(12,30): error TS2307: Cannot find module '@/lib/auth-store' or its corresponding type declarations.
+suvidha-2026/app/(kiosk)/kiosk/services/page.tsx(23,30): error TS2307: Cannot find module '@/lib/auth-store' or its corresponding type declarations.
+suvidha-2026/app/(kiosk)/kiosk/services/page.tsx(100,41): error TS2339: Property 'SpeechRecognition' does not exist on type 'Window & typeof globalThis'.
+suvidha-2026/app/(kiosk)/kiosk/services/page.tsx(101,47): error TS2339: Property 'SpeechRecognition' does not exist on type 'Window & typeof globalThis'.
+suvidha-2026/app/(kiosk)/kiosk/services/page.tsx(120,29): error TS7006: Parameter 'event' implicitly has an 'any' type.
+suvidha-2026/app/api/auth/send-otp/route.ts(2,41): error TS2307: Cannot find module '@/lib/redis' or its corresponding type declarations.
+suvidha-2026/app/api/auth/send-otp/route.ts(3,64): error TS2307: Cannot find module '@/lib/twilio' or its corresponding type declarations.
+suvidha-2026/app/api/auth/verify-otp/route.ts(2,27): error TS2307: Cannot find module '@/lib/redis' or its corresponding type declarations.
+suvidha-2026/app/api/auth/verify-otp/route.ts(3,36): error TS2307: Cannot find module '@/lib/twilio' or its corresponding type declarations.
+suvidha-2026/app/api/auth/verify-otp/route.ts(63,9): error TS2353: Object literal may only specify known properties, and 'connections' does not exist in type 'UserInclude<DefaultArgs>'.
+suvidha-2026/app/api/auth/verify-otp/route.ts(74,11): error TS2353: Object literal may only specify known properties, and 'connections' does not exist in type 'UserInclude<DefaultArgs>'.
+suvidha-2026/app/api/auth/verify-otp/route.ts(100,27): error TS2339: Property 'connections' does not exist on type '{ id: string; mobile: string; name: string | null; address: string | null; preferredLanguage: string; accessibilityMode: string; createdAt: Date; updatedAt: Date; }'.
+suvidha-2026/app/api/services/discover/route.ts(177,14): error TS2551: Property 'connection' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean '$connect'?
+suvidha-2026/components/kiosk/FaceLock.tsx(86,39): error TS2448: Block-scoped variable 'handleUserActivity' used before its declaration.
+suvidha-2026/components/kiosk/FaceLock.tsx(86,39): error TS2454: Variable 'handleUserActivity' is used before being assigned.
+suvidha-2026/prisma.config.ts(9,5): error TS2353: Object literal may only specify known properties, and 'earlyAccess' does not exist in type 'PrismaConfig'.
