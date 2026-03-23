@@ -39,6 +39,13 @@ dist/
 !.env.sample
 
 # =============================================================================
+# GOOGLE CLOUD CREDENTIALS - NEVER commit these
+# =============================================================================
+service-account.json
+*.json.local
+*-credentials.json
+
+# =============================================================================
 # IDE & EDITOR
 # =============================================================================
 .vscode/*
@@ -100,3 +107,6 @@ public/swe-worker-*.js
 # DOCKER (optional - uncomment if not needed in repo)
 # =============================================================================
 # docker-compose.override.yml
+
+
+service-account.json

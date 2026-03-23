@@ -58,6 +58,8 @@ export function middleware(request: NextRequest) {
         base-uri 'self';
         form-action 'self';
         frame-ancestors 'none';
+        connect-src 'self' https://translate.googleapis.com;
+        media-src 'self' blob:;
         upgrade-insecure-requests;
     `.replace(/\s{2,}/g, ' ').trim();
 

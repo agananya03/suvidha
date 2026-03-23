@@ -6,10 +6,19 @@ import { useRouter } from 'next/navigation';
 import { useKioskStore } from '@/store/useKioskStore';
 import toast from 'react-hot-toast';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import { Ear, Eye, ALargeSmall, UserRound } from 'lucide-react';
+import type { AccessibilityMode } from '@/store/useKioskStore';
+
+const ACCESSIBILITY_OPTIONS = [
+    { mode: 'voice' as AccessibilityMode, Icon: Ear, label: 'Audio', desc: 'Voice guide' },
+    { mode: 'visual' as AccessibilityMode, Icon: Eye, label: 'Vision', desc: 'Sign language' },
+    { mode: 'simplified' as AccessibilityMode, Icon: ALargeSmall, label: 'Text', desc: 'Large text' },
+    { mode: 'standard' as AccessibilityMode, Icon: UserRound, label: 'Screen', desc: 'Standard' },
+];
 
 export default function AuthPage() {
     const router = useRouter();
-    const { login } = useKioskStore();
+    const { login, setAccessibilityMode } = useKioskStore();
     const { t } = useDynamicTranslation();
 
     const [step, setStep] = useState<'MOBILE' | 'OTP'>('MOBILE');
@@ -22,14 +31,15 @@ export default function AuthPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [demoOtp, setDemoOtp] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState(300);
+    const [otpSent, setOtpSent] = useState(false);
 
     // Timer effect
     useEffect(() => {
-        if (step === 'OTP' && timeLeft > 0) {
+        if (otpSent && timeLeft > 0) {
             const timerId = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
             return () => clearInterval(timerId);
         }
-    }, [step, timeLeft]);
+    }, [otpSent, timeLeft]);
 
     const handleSendOTP = async () => {
         if (mobile.length !== 10) {
@@ -47,7 +57,7 @@ export default function AuthPage() {
             const data = await res.json();
 
             if (res.ok) {
-                setStep('OTP');
+                setOtpSent(true);
                 setTimeLeft(300);
                 if (data.demoOtp) {
                     setDemoOtp(data.demoOtp);
@@ -115,148 +125,226 @@ export default function AuthPage() {
         }
     };
 
+    const handleAccessibilitySelect = (mode: AccessibilityMode) => {
+        setAccessibilityMode(mode);
+    };
+
     return (
-        <div className="h-full flex items-center justify-center p-6">
-            
-            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 max-w-lg mx-auto border-2 border-[#BEE3F8] w-full relative">
+        <div className="absolute inset-0 flex" style={{ background: '#F4F5F7' }}>
+
+            {/* ── Left accessibility sidebar ── */}
+            <aside
+                className="splash-sidebar flex flex-col items-center justify-center gap-4 px-5 py-8 shrink-0 relative z-10 bg-white shadow-[2px_0_15px_rgba(0,0,0,0.03)]"
+                style={{ width: 120, borderRight: '1px solid #E5E7EB' }}
+            >
+                <span
+                    style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: '0.12em',
+                        color: '#9CA3AF',
+                        textTransform: 'uppercase',
+                        textAlign: 'center',
+                        lineHeight: 1.3,
+                        marginBottom: 8,
+                    }}
+                >
+                    {t('Accessibility')}
+                </span>
+                {ACCESSIBILITY_OPTIONS.map(({ mode, Icon, label, desc }) => (
+                    <button
+                        key={mode}
+                        onClick={() => handleAccessibilitySelect(mode)}
+                        title={desc}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 6,
+                            background: '#fff',
+                            border: '1.5px solid #E5E7EB',
+                            borderRadius: 16,
+                            padding: '14px 10px',
+                            width: 88,
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                            transition: 'border-color 0.15s, box-shadow 0.15s',
+                            color: '#1a3a6b',
+                        }}
+                        onMouseEnter={e => {
+                            (e.currentTarget as HTMLElement).style.borderColor = '#1a3a6b';
+                            (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(26,58,107,0.15)';
+                        }}
+                        onMouseLeave={e => {
+                            (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB';
+                            (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+                        }}
+                    >
+                        <Icon size={36} strokeWidth={1.6} />
+                        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                            {label}
+                        </span>
+                    </button>
+                ))}
+            </aside>
+
+            {/* ── Main centre content split layout ── */}
+            <main className="flex-1 flex flex-col items-center justify-center relative px-8 py-10 h-full overflow-y-auto">
+                <button 
+                    onClick={() => router.push('/kiosk?step=OPTIONS')}
+                    className="absolute top-8 left-8 text-[#6B7280] hover:text-[#1B3A6B] font-semibold text-lg hover:underline transition-colors z-20 flex items-center gap-2"
+                >
+                    &larr; {t('Back')}
+                </button>
                 
-                {/* Government Header inside card */}
-                <div className="text-center mb-0 pb-0 border-0 flex flex-col items-center">
-                    <div className="w-20 h-20 bg-[#002868] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><span className="text-white text-3xl font-black">auth</span></div><h2 className="text-3xl font-black text-[#0A1628] text-center mb-2">{t('Citizen Authentication')}</h2>
-                    <p className="text-[#4A6FA5] text-lg text-center mb-8">{t('Secure access to SUVIDHA services')}</p>
-                </div>
+                {/* SECTION 1: OTP */}
+                <div className="flex flex-col items-center w-full max-w-3xl pt-10">
+                    <h2 style={{ fontSize: 36, fontWeight: 700, color: '#1B2F5E', marginBottom: 8, fontFamily: '"Inter", "Noto Sans", system-ui, sans-serif' }}>
+                        {t('Quick Access via OTP')}
+                    </h2>
+                    <p style={{ fontSize: 20, color: '#6B7280', marginBottom: 32 }}>
+                        {t('Enter your mobile number to receive a one-time password')}
+                    </p>
 
-                <AnimatePresence mode="wait">
-                    
-                    {step === 'MOBILE' && (
-                        <motion.div
-                            key="mobile"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="flex flex-col gap-6"
+                    <div className="relative mb-6">
+                        <span style={{ position: 'absolute', left: 24, top: '50%', transform: 'translateY(-50%)', fontSize: 24, display: 'flex', alignItems: 'center', gap: 8, color: '#4B5563', pointerEvents: 'none' }}>
+                            🇮🇳 +91
+                            <div style={{ width: 1, height: 32, background: '#D1D5DB', marginLeft: 8 }} />
+                        </span>
+                        <input
+                            type="tel"
+                            maxLength={10}
+                            value={mobile}
+                            onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                            placeholder={t('Enter Mobile Number')}
+                            disabled={otpSent || isLoading}
+                            style={{
+                                width: 520,
+                                height: 72,
+                                borderRadius: 12,
+                                border: '2px solid #E5E7EB',
+                                fontSize: 24,
+                                paddingLeft: 120,
+                                paddingRight: 24,
+                                letterSpacing: '0.05em',
+                                outline: 'none',
+                                transition: 'border-color 0.15s',
+                                backgroundColor: otpSent ? '#F3F4F6' : '#fff',
+                                color: otpSent ? '#9CA3AF' : '#111827',
+                            }}
+                            onFocus={e => !otpSent && (e.currentTarget.style.borderColor = '#1B3A6B')}
+                            onBlur={e => !otpSent && (e.currentTarget.style.borderColor = '#E5E7EB')}
+                        />
+                    </div>
+
+                    {!otpSent ? (
+                        <button
+                            onClick={handleSendOTP}
+                            disabled={mobile.length !== 10 || isLoading}
+                            style={{
+                                width: 260,
+                                height: 64,
+                                borderRadius: 12,
+                                background: mobile.length === 10 ? '#1B3A6B' : '#9CA3AF',
+                                color: '#fff',
+                                fontSize: 20,
+                                fontWeight: 600,
+                                cursor: mobile.length === 10 && !isLoading ? 'pointer' : 'not-allowed',
+                                border: 'none',
+                                transition: 'background 0.15s, transform 0.15s',
+                            }}
+                            onMouseEnter={e => mobile.length === 10 && !isLoading && (e.currentTarget.style.filter = 'brightness(1.1)')}
+                            onMouseLeave={e => mobile.length === 10 && !isLoading && (e.currentTarget.style.filter = '')}
+                            onMouseDown={e => mobile.length === 10 && !isLoading && (e.currentTarget.style.transform = 'scale(0.98)')}
+                            onMouseUp={e => mobile.length === 10 && !isLoading && (e.currentTarget.style.transform = '')}
                         >
-                            <div>
-                                <label className="text-base font-semibold text-[#2C5282] block mb-2">{t('Mobile Number')}</label>
-                                <div className="relative flex items-center">
-                                    <span className="absolute left-0 top-0 bottom-0 bg-[#E8F4FD] border-r-2 border-[#90CDF4] px-4 py-4 text-[#002868] font-bold text-xl rounded-l-xl flex items-center">+91</span>
+                            {isLoading ? t('Sending...') : t('Send OTP')}
+                        </button>
+                    ) : (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
+                            <div className="flex gap-4 mb-8">
+                                {otp.map((digit, i) => (
                                     <input
-                                        type="tel"
-                                        className="bg-white border-2 border-[#90CDF4] rounded-xl pl-20 pr-5 py-4 text-xl text-[#0A1628] font-medium min-h-[60px] w-full placeholder:text-[#4A6FA5] focus:outline-none focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] tracking-widest"
-                                        value={mobile}
-                                        onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                        placeholder="XXXXXXXXXX"
+                                        key={i}
+                                        ref={(el) => { otpRefs.current[i] = el; }}
+                                        type="text"
                                         inputMode="numeric"
+                                        value={digit}
+                                        onChange={(e) => handleOtpChange(i, e.target.value)}
+                                        onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                                        autoFocus={i === 0}
+                                        style={{
+                                            width: 80,
+                                            height: 80,
+                                            borderRadius: 12,
+                                            border: '2px solid #E5E7EB',
+                                            fontSize: 32,
+                                            fontWeight: 700,
+                                            textAlign: 'center',
+                                            outline: 'none',
+                                            transition: 'all 0.15s',
+                                            backgroundColor: '#fff',
+                                            color: '#1B2F5E',
+                                        }}
+                                        onFocus={e => {
+                                            e.currentTarget.style.borderColor = '#1B3A6B';
+                                            e.currentTarget.style.boxShadow = '0 0 0 4px rgba(27,58,107,0.1)';
+                                        }}
+                                        onBlur={e => {
+                                            e.currentTarget.style.borderColor = '#E5E7EB';
+                                            e.currentTarget.style.boxShadow = 'none';
+                                        }}
                                     />
-                                </div>
-                            </div>
-
-                            <button
-                                className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full mt-2"
-                                onClick={handleSendOTP}
-                                disabled={mobile.length !== 10 || isLoading}
-                            >
-                                {isLoading ? t('Sending...') : t('Get OTP')}
-                            </button>
-
-                            <button 
-                                onClick={() => router.push('/kiosk')}
-                                className="text-[#004085] hover:bg-[#E8F4FD] active:bg-[#BEE3F8] font-medium text-base min-h-[48px] px-5 rounded-xl transition-all mt-4 w-full"
-                            >
-                                {t('Cancel and return to Home')}
-                            </button>
-
-                            {/* ─── Aadhaar eKYC alternate entry ─── */}
-                            <div className="flex items-center gap-3 my-1">
-                                <div className="flex-1 h-px bg-[#BEE3F8]" />
-                                <span className="text-[#4A6FA5] text-sm font-medium">or</span>
-                                <div className="flex-1 h-px bg-[#BEE3F8]" />
+                                ))}
                             </div>
                             <button
-                                onClick={() => router.push('/kiosk/aadhaar')}
-                                className="border-2 border-[#004085] text-[#004085] hover:bg-[#E8F4FD] font-bold text-base min-h-[56px] px-5 rounded-2xl transition-all w-full flex items-center justify-center gap-2"
-                            >
-                                🆔 {t('Use Aadhaar Offline eKYC instead')}
-                            </button>
-                        </motion.div>
-                    )}
-
-                    {step === 'OTP' && (
-                        <motion.div
-                            key="otp"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="flex flex-col gap-6"
-                        >
-                            <div className="text-center">
-                                <label className="text-base font-semibold text-[#2C5282] block mb-4 text-center">{t('Enter 6-Digit Code')}</label>
-                                <p className="text-[var(--font-sm)] text-[var(--irs-gray-600)] mb-6">
-                                    {t('Sent to')} +91 {mobile.slice(0, 2)}******{mobile.slice(8, 10)}
-                                </p>
-                                
-                                <div className="flex justify-between gap-2">
-                                    {otp.map((digit, i) => (
-                                        <input
-                                            key={i}
-                                            ref={(el) => { otpRefs.current[i] = el; }}
-                                            type="text"
-                                            inputMode="numeric"
-                                            className="w-14 h-16 text-center text-3xl font-black border-2 border-[#BEE3F8] rounded-xl text-[#0A1628] bg-white focus:border-[#004085] focus:ring-4 focus:ring-[#E8F4FD] outline-none transition-all"
-                                            value={digit}
-                                            onChange={(e) => handleOtpChange(i, e.target.value)}
-                                            onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Timer progress bar */}
-                            <div className="w-full mt-2">
-                                <div className="w-full bg-[var(--irs-gray-200)] h-2 rounded-full overflow-hidden">
-                                    <div 
-                                        className={`h-full transition-all duration-1000 ${timeLeft <= 60 ? 'bg-[var(--irs-warning)]' : 'bg-[var(--irs-navy)]'}`} 
-                                        style={{ width: `${(timeLeft / 300) * 100}%` }} 
-                                    />
-                                </div>
-                                <div className={`text-right text-[var(--font-xs)] mt-1 font-bold ${timeLeft <= 60 ? 'text-[var(--irs-error)]' : 'text-[var(--irs-gray-600)]'}`}>
-                                    {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                                </div>
-                            </div>
-
-                            <button
-                                className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full mt-2"
                                 onClick={handleVerifyOTP}
                                 disabled={otp.join('').length !== 6 || isLoading}
+                                style={{
+                                    width: 260,
+                                    height: 64,
+                                    borderRadius: 12,
+                                    background: otp.join('').length === 6 ? '#1B3A6B' : '#9CA3AF',
+                                    color: '#fff',
+                                    fontSize: 20,
+                                    fontWeight: 600,
+                                    cursor: otp.join('').length === 6 && !isLoading ? 'pointer' : 'not-allowed',
+                                    border: 'none',
+                                    transition: 'background 0.15s, transform 0.15s',
+                                }}
+                                onMouseEnter={e => otp.join('').length === 6 && !isLoading && (e.currentTarget.style.filter = 'brightness(1.1)')}
+                                onMouseLeave={e => otp.join('').length === 6 && !isLoading && (e.currentTarget.style.filter = '')}
+                                onMouseDown={e => otp.join('').length === 6 && !isLoading && (e.currentTarget.style.transform = 'scale(0.98)')}
+                                onMouseUp={e => otp.join('').length === 6 && !isLoading && (e.currentTarget.style.transform = '')}
                             >
-                                {isLoading ? t('Verifying...') : t('Login')}
+                                {isLoading ? t('Verifying...') : t('Verify & Continue')}
                             </button>
-
-                            <div className="flex justify-between items-center mt-4">
-                                <button 
-                                    className="text-[var(--irs-gray-600)] text-[var(--font-sm)] font-semibold underline underline-offset-4"
-                                    onClick={() => { setStep('MOBILE'); setOtp(['','','','','','']); }}
-                                >
-                                    {t('Change Number')}
-                                </button>
-                                <button 
-                                    className="text-[var(--irs-blue-mid)] text-[var(--font-sm)] font-semibold underline underline-offset-4"
-                                    onClick={handleSendOTP}
-                                    disabled={timeLeft > 240} // Only allow resend after 60s
-                                >
-                                    {t('Resend OTP')}
-                                </button>
-                            </div>
+                            <button onClick={() => { setOtpSent(false); setOtp(['','','','','','']); setMobile(''); }} className="mt-4 text-[#1B3A6B] font-semibold underline text-sm">
+                                {t('Change Mobile Number')}
+                            </button>
                         </motion.div>
                     )}
+                </div>
+            </main>
 
-                </AnimatePresence>
+            {/* Bottom Accessibility Strip */}
+            <div className="absolute bottom-6 right-8 flex gap-5 bg-white px-6 py-3 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-gray-100 z-50">
+                {ACCESSIBILITY_OPTIONS.map(({ mode, Icon, label }) => (
+                    <button
+                        key={mode}
+                        onClick={() => handleAccessibilitySelect(mode)}
+                        className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-[#1B3A6B] transition-colors group"
+                    >
+                        <Icon size={22} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                    </button>
+                ))}
             </div>
             
-            {demoOtp && step === 'OTP' && (
-                <div className="fixed top-24 right-8 bg-[#EBF8FF] border-2 border-[#90CDF4] text-[#002868] rounded-2xl p-4 shadow-lg z-50 min-h-[72px] flex flex-col items-center justify-center">
-                    <p className="text-sm border-b border-[#90CDF4] pb-1 font-bold uppercase mb-1">Demo Mode</p>
-                    <p className="text-lg font-mono text-center font-bold tracking-widest">{demoOtp}</p>
+            {demoOtp && otpSent && (
+                <div className="fixed top-24 right-8 bg-[#fff8e6] border-l-4 border-[var(--irs-warning)] text-[#4a3000] p-4 shadow-lg rounded-r-[var(--radius-md)] z-50">
+                    <p className="font-bold text-[var(--font-sm)] uppercase mb-1">{t('Demo Mode')}</p>
+                    <p className="text-[var(--font-lg)] font-mono tracking-widest">{demoOtp}</p>
                 </div>
             )}
         </div>

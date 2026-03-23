@@ -3,11 +3,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useKioskStore } from '@/store/useKioskStore';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 import { Power, Flame, Droplets, Trash2, FileText, UserCircle2, LogOut, ArrowRight } from 'lucide-react';
 import { BackButton } from '@/components/kiosk/BackButton';
 
 export function ServiceScreen() {
     const { setScreen, citizen, logout } = useKioskStore();
+    const { t } = useDynamicTranslation();
 
     const services = [
         {
@@ -58,16 +60,16 @@ export function ServiceScreen() {
             <div className="flex justify-between items-center mb-16 mt-8 px-4">
                 <div>
                     <h1 className="text-6xl font-display font-bold text-white mb-2">
-                        {citizen ? `नमस्ते ${citizen.name}` : 'Welcome Citizen'}
+                        {citizen ? `नमस्ते ${citizen.name}` : t('Welcome Citizen')}
                     </h1>
-                    <p className="text-3xl text-white/70">What can we help you with today?</p>
+                    <p className="text-3xl text-white/70">{t("What can we help you with today?")}</p>
                 </div>
                 {citizen && (
                     <button 
                         onClick={() => { logout(); setScreen('HOME'); }}
                         className="flex items-center gap-3 px-8 py-5 bg-white/10 hover:bg-danger/20 hover:text-danger rounded-full border border-white/20 text-2xl font-bold transition-all"
                     >
-                        <LogOut size={32} /> Logout
+                        <LogOut size={32} /> {t("Logout")}
                     </button>
                 )}
             </div>
@@ -84,12 +86,12 @@ export function ServiceScreen() {
                         <div className={`${svc.color} bg-opacity-20 p-5 rounded-2xl mb-8 ${svc.textColor} group-hover:scale-110 transition-transform`}>
                             {svc.icon}
                         </div>
-                        <h2 className="text-5xl font-display font-bold text-white mb-8">{svc.title}</h2>
+                        <h2 className="text-5xl font-display font-bold text-white mb-8">{t(svc.title)}</h2>
                         
                         <div className="flex flex-wrap gap-3 mt-auto">
                             {svc.badges.map(badge => (
                                 <span key={badge} className="px-5 py-2.5 bg-white/10 rounded-full text-lg font-medium text-white/90 border border-white/5">
-                                    {badge}
+                                    {t(badge)}
                                 </span>
                             ))}
                         </div>

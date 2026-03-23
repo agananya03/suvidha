@@ -27,7 +27,7 @@ export async function uploadAadhaarZip(
   const arrayBuffer = await zipFile.arrayBuffer();
   const base64Zip = Buffer.from(arrayBuffer).toString('base64');
 
-  const res = await fetch('/api/auth/verify-aadhaar-kyc', {
+  const res = await fetch('/api/auth/verifyaadharekyc', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

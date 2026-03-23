@@ -56,3 +56,41 @@ model DocumentToken {
   serviceType   String?  // 'electricity' | 'gas' | 'water' | 'complaint'
   uploadedAt    DateTime @default(now())
 }
+
+model UserConversationState {
+  id              String   @id @default(uuid())
+  phoneNumber     String   @unique
+  language        String   @default("en")
+  currentStep     String   @default("LANGUAGE_SELECT")
+  department      String?
+  issueType       String?
+  description     String?
+  lastMessageAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Complaint {
+  id              String   @id @default(uuid())
+  phoneNumber     String
+  department      String
+  issueType       String
+  description     String   @db.Text
+  status          String   @default("PENDING")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Document {
+  id              String   @id @default(uuid())
+  phoneNumber     String
+  service         String
+  documentType    String
+  fileName        String
+  fileUrl         String
+  mediaId         String?
+  mediaType       String?  // image, document, etc.
+  uploadedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
