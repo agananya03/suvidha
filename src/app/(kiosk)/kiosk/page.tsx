@@ -465,10 +465,10 @@ export default function KioskHome() {
                         {/* ── Heading ── */}
                         <div className="text-center mb-12">
                             <h2 style={{ fontSize: 44, fontWeight: 700, color: '#1B2F5E', marginBottom: 16 }}>
-                                Get Verified to Proceed
+                                {t("Get Verified to Proceed")}
                             </h2>
                             <p style={{ fontSize: 22, color: '#6B7280' }}>
-                                Choose your preferred authentication method
+                                {t("Choose your preferred authentication method")}
                             </p>
                         </div>
 
@@ -483,8 +483,8 @@ export default function KioskHome() {
                                     <Smartphone className="w-8 h-8 text-[#1B3A6B] group-hover:text-white transition-colors" />
                                 </div>
                                 <div className="ml-6 text-left">
-                                    <h3 style={{ fontSize: 24, fontWeight: 700, color: '#111827', marginBottom: 4 }}>OTP Verification</h3>
-                                    <p style={{ fontSize: 16, color: '#6B7280' }}>Login with your mobile number safely securely</p>
+                                    <h3 style={{ fontSize: 24, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{t("OTP Verification")}</h3>
+                                    <p style={{ fontSize: 16, color: '#6B7280' }}>{t("Login with your mobile number safely securely")}</p>
                                 </div>
                             </button>
 
@@ -494,14 +494,14 @@ export default function KioskHome() {
                                     <div className="w-full border-t border-dashed border-gray-300"></div>
                                 </div>
                                 <span className="relative bg-[#F4F5F7] px-4 text-gray-500 font-bold tracking-widest text-sm">
-                                    — OR —
+                                    {t("— OR —")}
                                 </span>
                             </div>
 
                             {/* SECTION 2: AADHAAR */}
                             <div className="flex flex-col items-center w-full">
                                 <h2 style={{ fontSize: 28, fontWeight: 700, color: '#1B2F5E', marginBottom: 20, fontFamily: '"Inter", "Noto Sans", system-ui, sans-serif' }}>
-                                    Verify with Aadhaar eKYC
+                                    {t("Verify with Aadhaar eKYC")}
                                 </h2>
 
                                 <div className="flex justify-center gap-6 w-full">
@@ -512,9 +512,9 @@ export default function KioskHome() {
                                     >
                                         <ShieldCheck className="w-10 h-10 text-[#1B3A6B] group-hover:text-white transition-colors" />
                                         <div className="text-center">
-                                            <div style={{ fontSize: 18, fontWeight: 700 }} className="text-[#1B3A6B] group-hover:text-white transition-colors">Aadhaar OTP</div>
+                                            <div style={{ fontSize: 18, fontWeight: 700 }} className="text-[#1B3A6B] group-hover:text-white transition-colors">{t("Aadhaar OTP")}</div>
                                             <div className="text-sm mt-1 text-[#6B7280] group-hover:text-white/80 transition-colors">
-                                                Verify using OTP on Aadhaar-linked mobile
+                                                {t("Verify using OTP on Aadhaar-linked mobile")}
                                             </div>
                                         </div>
                                     </button>
@@ -526,15 +526,15 @@ export default function KioskHome() {
                                     >
                                         <Fingerprint className="w-10 h-10 text-[#1B3A6B] group-hover:text-white transition-colors" />
                                         <div className="text-center">
-                                            <div style={{ fontSize: 18, fontWeight: 700 }} className="text-[#1B3A6B] group-hover:text-white transition-colors">Biometric Auth</div>
+                                            <div style={{ fontSize: 18, fontWeight: 700 }} className="text-[#1B3A6B] group-hover:text-white transition-colors">{t("Biometric Auth")}</div>
                                             <div className="text-sm mt-1 text-[#6B7280] group-hover:text-white/80 transition-colors">
-                                                Use fingerprint or iris scan at the kiosk
+                                                {t("Use fingerprint or iris scan at the kiosk")}
                                             </div>
                                         </div>
                                     </button>
                                 </div>
                                 <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', marginTop: 16 }}>
-                                    Your Aadhaar data is used only for verification as per UIDAI guidelines. No data is stored.
+                                    {t("Your Aadhaar data is used only for verification as per UIDAI guidelines. No data is stored.")}
                                 </p>
                             </div>
                         </div>

@@ -3,6 +3,7 @@ import { KioskHeader } from '@/components/kiosk/KioskHeader';
 import { KioskFooter } from '@/components/kiosk/KioskFooter';
 import dynamic from 'next/dynamic';
 const FaceLock = dynamic(() => import('@/components/kiosk/FaceLock').then((mod) => mod.FaceLock), { ssr: false });
+const FloatingSpeakerButton = dynamic(() => import('@/components/ui/FloatingSpeakerButton').then((mod) => mod.FloatingSpeakerButton), { ssr: false });
 import { ConsentModal } from '@/components/kiosk/ConsentModal';
 
 import { ConnectivityBanner } from '@/components/kiosk/ConnectivityBanner';
@@ -23,6 +24,7 @@ export default function KioskLayout({
                 <FaceLock />
                 <ConsentModal />
                 <VoiceNavigator />
+                <FloatingSpeakerButton />
             </main>
             <KioskFooter />
         </div>

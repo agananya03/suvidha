@@ -5,6 +5,9 @@ import { I18nProvider } from "@/components/providers/I18nProvider";
 import { AccessibilityToolbar } from "@/components/accessibility/AccessibilityToolbar";
 import { DemoBanner } from "@/components/kiosk/DemoBanner";
 import { Toaster } from 'react-hot-toast';
+import dynamic from 'next/dynamic';
+
+const FloatingSpeakerButton = dynamic(() => import('@/components/ui/FloatingSpeakerButton').then((mod) => mod.FloatingSpeakerButton), { ssr: false });
 
 export const metadata: Metadata = {
   title: "SUVIDHA 2026 | Smart City Services Kiosk",
@@ -37,6 +40,7 @@ export default function RootLayout({
 
           <main className="flex-grow flex flex-col relative overflow-hidden">
             {children}
+            <FloatingSpeakerButton />
           </main>
         </I18nProvider>
       </body>

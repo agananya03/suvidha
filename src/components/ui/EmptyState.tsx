@@ -31,23 +31,23 @@ export function EmptyState({
     const config = {
         complaints: {
             icon: <FileQuestion size={64} className="text-blue-200" />,
-            defaultTitle: 'No complaints filed yet',
-            defaultDesc: 'When you report civic issues like broken streetlights or water leaks, you can track their live resolution status here.',
-            defaultAction: 'File your first complaint',
+            defaultTitle: t('No complaints filed yet'),
+            defaultDesc: t('When you report civic issues like broken streetlights or water leaks, you can track their live resolution status here.'),
+            defaultAction: t('File your first complaint'),
             defaultHref: '/kiosk/complaint'
         },
         payments: {
             icon: <Wallet size={64} className="text-emerald-200" />,
-            defaultTitle: 'Your payment history is empty',
-            defaultDesc: 'All successful utility and civic fee transactions will be securely logged and available for download here.',
-            defaultAction: 'Pay a Utility Bill',
+            defaultTitle: t('Your payment history is empty'),
+            defaultDesc: t('All successful utility and civic fee transactions will be securely logged and available for download here.'),
+            defaultAction: t('Pay a Utility Bill'),
             defaultHref: '/kiosk'
         },
         services: {
             icon: <Layers size={64} className="text-orange-200" />,
-            defaultTitle: 'Discover your services',
-            defaultDesc: 'You do not have any utility consumer numbers explicitly linked to this profile.',
-            defaultAction: 'Link a Connection',
+            defaultTitle: t('Discover your services'),
+            defaultDesc: t('You do not have any utility consumer numbers explicitly linked to this profile.'),
+            defaultAction: t('Link a Connection'),
             defaultHref: '/dashboard'
         }
     };

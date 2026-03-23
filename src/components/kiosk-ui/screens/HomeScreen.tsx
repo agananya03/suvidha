@@ -3,10 +3,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useKioskStore } from '@/store/useKioskStore';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 import { Ticket, Smartphone, Zap, Eye, Volume2, Hand, UserRound, Activity } from 'lucide-react';
 
 export function HomeScreen() {
     const { setScreen } = useKioskStore();
+    const { t } = useDynamicTranslation();
 
     return (
         <motion.div
@@ -33,8 +35,8 @@ export function HomeScreen() {
                         <Ticket size={72} className="text-secondary" />
                     </div>
                     <div className="text-left flex-1 text-white">
-                        <h2 className="text-5xl font-display font-bold mb-3">Enter Token</h2>
-                        <p className="text-2xl text-white/80">Have a code from WhatsApp? Start here</p>
+                        <h2 className="text-5xl font-display font-bold mb-3">{t('Enter Token')}</h2>
+                        <p className="text-2xl text-white/80">{t('Have a code from WhatsApp? Start here')}</p>
                     </div>
                 </motion.button>
 
@@ -49,8 +51,8 @@ export function HomeScreen() {
                         <Smartphone size={72} className="text-white" />
                     </div>
                     <div className="text-left flex-1 text-white">
-                        <h2 className="text-5xl font-display font-bold mb-3">Login with Mobile</h2>
-                        <p className="text-2xl text-white/80">New or returning citizen</p>
+                        <h2 className="text-5xl font-display font-bold mb-3">{t('Login with Mobile')}</h2>
+                        <p className="text-2xl text-white/80">{t('New or returning citizen')}</p>
                     </div>
                 </motion.button>
 
@@ -65,8 +67,8 @@ export function HomeScreen() {
                         <Zap size={72} className="text-accent" />
                     </div>
                     <div className="text-left flex-1 text-white">
-                        <h2 className="text-5xl font-display font-bold mb-3">Quick Pay</h2>
-                        <p className="text-2xl text-white/80">Pay a bill instantly, no login needed</p>
+                        <h2 className="text-5xl font-display font-bold mb-3">{t('Quick Pay')}</h2>
+                        <p className="text-2xl text-white/80">{t('Pay a bill instantly, no login needed')}</p>
                     </div>
                 </motion.button>
             </div>
@@ -74,11 +76,11 @@ export function HomeScreen() {
             {/* Accessibility Strip */}
             <div className="mt-24 w-full flex justify-center gap-6">
                 {[
-                    { icon: <Eye size={32} />, label: "High Contrast", act: () => {} },
-                    { icon: <Volume2 size={32} />, label: "Voice Guide", act: () => setScreen('ACCESSIBILITY') },
-                    { icon: <Hand size={32} />, label: "Sign Language", act: () => setScreen('ACCESSIBILITY') },
-                    { icon: <UserRound size={32} />, label: "Senior Mode", act: () => setScreen('ACCESSIBILITY') },
-                    { icon: <Activity size={32} />, label: "Wheelchair", act: () => {} },
+                    { icon: <Eye size={32} />, label: t("High Contrast"), act: () => {} },
+                    { icon: <Volume2 size={32} />, label: t("Voice Guide"), act: () => setScreen('ACCESSIBILITY') },
+                    { icon: <Hand size={32} />, label: t("Sign Language"), act: () => setScreen('ACCESSIBILITY') },
+                    { icon: <UserRound size={32} />, label: t("Senior Mode"), act: () => setScreen('ACCESSIBILITY') },
+                    { icon: <Activity size={32} />, label: t("Wheelchair"), act: () => {} },
                 ].map((item, idx) => (
                     <button key={idx} onClick={item.act} className="flex flex-col items-center gap-3 bg-white/5 hover:bg-white/15 border border-white/10 p-5 rounded-2xl text-white min-w-[150px] transition-all">
                         <div className="bg-white/10 p-4 rounded-full">{item.icon}</div>

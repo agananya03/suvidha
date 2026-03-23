@@ -149,7 +149,7 @@ export default function AuthPage() {
                         marginBottom: 8,
                     }}
                 >
-                    Accessibility
+                    {t('Accessibility')}
                 </span>
                 {ACCESSIBILITY_OPTIONS.map(({ mode, Icon, label, desc }) => (
                     <button
@@ -194,16 +194,16 @@ export default function AuthPage() {
                     onClick={() => router.push('/kiosk?step=OPTIONS')}
                     className="absolute top-8 left-8 text-[#6B7280] hover:text-[#1B3A6B] font-semibold text-lg hover:underline transition-colors z-20 flex items-center gap-2"
                 >
-                    &larr; Back
+                    &larr; {t('Back')}
                 </button>
                 
                 {/* SECTION 1: OTP */}
                 <div className="flex flex-col items-center w-full max-w-3xl pt-10">
                     <h2 style={{ fontSize: 36, fontWeight: 700, color: '#1B2F5E', marginBottom: 8, fontFamily: '"Inter", "Noto Sans", system-ui, sans-serif' }}>
-                        Quick Access via OTP
+                        {t('Quick Access via OTP')}
                     </h2>
                     <p style={{ fontSize: 20, color: '#6B7280', marginBottom: 32 }}>
-                        Enter your mobile number to receive a one-time password
+                        {t('Enter your mobile number to receive a one-time password')}
                     </p>
 
                     <div className="relative mb-6">
@@ -216,7 +216,7 @@ export default function AuthPage() {
                             maxLength={10}
                             value={mobile}
                             onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                            placeholder="Enter Mobile Number"
+                            placeholder={t('Enter Mobile Number')}
                             disabled={otpSent || isLoading}
                             style={{
                                 width: 520,
@@ -258,7 +258,7 @@ export default function AuthPage() {
                             onMouseDown={e => mobile.length === 10 && !isLoading && (e.currentTarget.style.transform = 'scale(0.98)')}
                             onMouseUp={e => mobile.length === 10 && !isLoading && (e.currentTarget.style.transform = '')}
                         >
-                            {isLoading ? 'Sending...' : 'Send OTP'}
+                            {isLoading ? t('Sending...') : t('Send OTP')}
                         </button>
                     ) : (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
@@ -317,10 +317,10 @@ export default function AuthPage() {
                                 onMouseDown={e => otp.join('').length === 6 && !isLoading && (e.currentTarget.style.transform = 'scale(0.98)')}
                                 onMouseUp={e => otp.join('').length === 6 && !isLoading && (e.currentTarget.style.transform = '')}
                             >
-                                {isLoading ? 'Verifying...' : 'Verify & Continue'}
+                                {isLoading ? t('Verifying...') : t('Verify & Continue')}
                             </button>
                             <button onClick={() => { setOtpSent(false); setOtp(['','','','','','']); setMobile(''); }} className="mt-4 text-[#1B3A6B] font-semibold underline text-sm">
-                                Change Mobile Number
+                                {t('Change Mobile Number')}
                             </button>
                         </motion.div>
                     )}
@@ -343,7 +343,7 @@ export default function AuthPage() {
             
             {demoOtp && otpSent && (
                 <div className="fixed top-24 right-8 bg-[#fff8e6] border-l-4 border-[var(--irs-warning)] text-[#4a3000] p-4 shadow-lg rounded-r-[var(--radius-md)] z-50">
-                    <p className="font-bold text-[var(--font-sm)] uppercase mb-1">Demo Mode</p>
+                    <p className="font-bold text-[var(--font-sm)] uppercase mb-1">{t('Demo Mode')}</p>
                     <p className="text-[var(--font-lg)] font-mono tracking-widest">{demoOtp}</p>
                 </div>
             )}
