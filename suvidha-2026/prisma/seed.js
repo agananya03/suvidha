@@ -1,5 +1,4 @@
-import { config } from 'dotenv';
-config({ path: '.env.local' });
+
 
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -12,8 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function () { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function () { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -79,207 +78,207 @@ function main() {
                 case 7:
                     _a.sent();
                     return [4 /*yield*/, prisma.user.create({
-                        data: {
-                            mobile: '9876543210',
-                            name: 'Ramesh Kumar',
-                            address: '12, Civil Lines, Nagpur, Maharashtra 440001',
-                            preferredLanguage: 'en',
-                        },
-                    })
+                            data: {
+                                mobile: '9876543210',
+                                name: 'Ramesh Kumar',
+                                address: '12, Civil Lines, Nagpur, Maharashtra 440001',
+                                preferredLanguage: 'en',
+                            },
+                        })
                         // 2. Create 4 Connections for the user
                     ];
                 case 8:
                     user = _a.sent();
                     return [4 /*yield*/, prisma.connection.create({
-                        data: {
-                            userId: user.id,
-                            type: client_1.ConnectionType.ELECTRICITY,
-                            provider: 'MSEDCL',
-                            consumerNumber: 'MH-NP-2024-001247',
-                            address: '12, Civil Lines, Nagpur, Maharashtra 440001',
-                            outstandingAmt: 1247.50, // triggers anomaly detection as it's > 2x lastBillAmt
-                            lastBillAmt: 540.00,
-                        },
-                    })];
+                            data: {
+                                userId: user.id,
+                                type: client_1.ConnectionType.ELECTRICITY,
+                                provider: 'MSEDCL',
+                                consumerNumber: 'MH-NP-2024-001247',
+                                address: '12, Civil Lines, Nagpur, Maharashtra 440001',
+                                outstandingAmt: 1247.50, // triggers anomaly detection as it's > 2x lastBillAmt
+                                lastBillAmt: 540.00,
+                            },
+                        })];
                 case 9:
                     connElectricity = _a.sent();
                     return [4 /*yield*/, prisma.connection.create({
-                        data: {
-                            userId: user.id,
-                            type: client_1.ConnectionType.GAS,
-                            provider: 'Mahanagar Gas',
-                            consumerNumber: 'MGL-NGP-88431',
-                            address: '12, Civil Lines, Nagpur, Maharashtra 440001',
-                            outstandingAmt: 340.00,
-                            lastBillAmt: 315.00,
-                        },
-                    })];
+                            data: {
+                                userId: user.id,
+                                type: client_1.ConnectionType.GAS,
+                                provider: 'Mahanagar Gas',
+                                consumerNumber: 'MGL-NGP-88431',
+                                address: '12, Civil Lines, Nagpur, Maharashtra 440001',
+                                outstandingAmt: 340.00,
+                                lastBillAmt: 315.00,
+                            },
+                        })];
                 case 10:
                     connGas = _a.sent();
                     return [4 /*yield*/, prisma.connection.create({
-                        data: {
-                            userId: user.id,
-                            type: client_1.ConnectionType.WATER,
-                            provider: 'NMC Water Supply',
-                            consumerNumber: 'NMC-W-2024-5521',
-                            address: '12, Civil Lines, Nagpur, Maharashtra 440001',
-                            outstandingAmt: 89.00,
-                            lastBillAmt: 89.00,
-                        },
-                    })];
+                            data: {
+                                userId: user.id,
+                                type: client_1.ConnectionType.WATER,
+                                provider: 'NMC Water Supply',
+                                consumerNumber: 'NMC-W-2024-5521',
+                                address: '12, Civil Lines, Nagpur, Maharashtra 440001',
+                                outstandingAmt: 89.00,
+                                lastBillAmt: 89.00,
+                            },
+                        })];
                 case 11:
                     connWater = _a.sent();
                     return [4 /*yield*/, prisma.connection.create({
-                        data: {
-                            userId: user.id,
-                            type: client_1.ConnectionType.PROPERTY_TAX,
-                            provider: 'Nagpur Municipal Corporation',
-                            consumerNumber: 'NMC-PT-2024-007',
-                            address: '12, Civil Lines, Nagpur, Maharashtra 440001',
-                            outstandingAmt: 4200.00,
-                            lastBillAmt: 4200.00,
-                        },
-                    })
+                            data: {
+                                userId: user.id,
+                                type: client_1.ConnectionType.PROPERTY_TAX,
+                                provider: 'Nagpur Municipal Corporation',
+                                consumerNumber: 'NMC-PT-2024-007',
+                                address: '12, Civil Lines, Nagpur, Maharashtra 440001',
+                                outstandingAmt: 4200.00,
+                                lastBillAmt: 4200.00,
+                            },
+                        })
                         // 3. Create 5 Complaints
                     ];
                 case 12:
                     connTax = _a.sent();
                     return [4 /*yield*/, prisma.complaint.create({
-                        data: {
-                            ticketId: 'SUVDH-2026-00047',
-                            userId: user.id,
-                            type: 'STREET_LIGHT',
-                            description: 'Street light not working near house for 3 days',
-                            department: 'MULTI',
-                            secondaryDepartment: 'ELECTRICITY',
-                            status: client_1.ComplaintStatus.PENDING,
-                            priority: 7,
-                            queuePosition: 47,
-                            queueEntry: {
-                                create: {
-                                    departmentQueue: 'MULTI',
-                                    position: 47,
-                                    estimatedResolutionDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days
+                            data: {
+                                ticketId: 'SUVDH-2026-00047',
+                                userId: user.id,
+                                type: 'STREET_LIGHT',
+                                description: 'Street light not working near house for 3 days',
+                                department: 'MULTI',
+                                secondaryDepartment: 'ELECTRICITY',
+                                status: client_1.ComplaintStatus.PENDING,
+                                priority: 7,
+                                queuePosition: 47,
+                                queueEntry: {
+                                    create: {
+                                        departmentQueue: 'MULTI',
+                                        position: 47,
+                                        estimatedResolutionDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days
+                                    },
                                 },
                             },
-                        },
-                    })];
+                        })];
                 case 13:
                     c1 = _a.sent();
                     return [4 /*yield*/, prisma.complaint.create({
-                        data: {
-                            ticketId: 'SUVDH-2026-00048',
-                            userId: user.id,
-                            type: 'WATER_LEAK',
-                            description: 'Water pipe leak',
-                            department: 'MUNICIPAL',
-                            status: client_1.ComplaintStatus.IN_PROGRESS,
-                            priority: 8,
-                            queuePosition: 12,
-                            queueEntry: {
-                                create: {
-                                    departmentQueue: 'MUNICIPAL',
-                                    position: 12,
-                                    estimatedResolutionDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day
+                            data: {
+                                ticketId: 'SUVDH-2026-00048',
+                                userId: user.id,
+                                type: 'WATER_LEAK',
+                                description: 'Water pipe leak',
+                                department: 'MUNICIPAL',
+                                status: client_1.ComplaintStatus.IN_PROGRESS,
+                                priority: 8,
+                                queuePosition: 12,
+                                queueEntry: {
+                                    create: {
+                                        departmentQueue: 'MUNICIPAL',
+                                        position: 12,
+                                        estimatedResolutionDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day
+                                    },
                                 },
                             },
-                        },
-                    })];
+                        })];
                 case 14:
                     c2 = _a.sent();
                     return [4 /*yield*/, prisma.complaint.create({
-                        data: {
-                            ticketId: 'SUVDH-2026-00049',
-                            userId: user.id,
-                            type: 'METER_ISSUE',
-                            description: 'Electricity meter issue',
-                            department: 'ELECTRICITY',
-                            status: client_1.ComplaintStatus.RESOLVED,
-                            priority: 5,
-                            resolvedAt: new Date(),
-                        },
-                    })];
+                            data: {
+                                ticketId: 'SUVDH-2026-00049',
+                                userId: user.id,
+                                type: 'METER_ISSUE',
+                                description: 'Electricity meter issue',
+                                department: 'ELECTRICITY',
+                                status: client_1.ComplaintStatus.RESOLVED,
+                                priority: 5,
+                                resolvedAt: new Date(),
+                            },
+                        })];
                 case 15:
                     c3 = _a.sent();
                     return [4 /*yield*/, prisma.complaint.create({
-                        data: {
-                            ticketId: 'SUVDH-2026-00050',
-                            userId: user.id,
-                            type: 'GAS_DELAY',
-                            description: 'Gas connection delay',
-                            department: 'GAS',
-                            status: client_1.ComplaintStatus.ESCALATED,
-                            priority: 9,
-                            queueEntry: {
-                                create: {
-                                    departmentQueue: 'GAS',
-                                    position: 1,
-                                    estimatedResolutionDate: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours
-                                    isEscalated: true,
-                                    escalatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // escalated 1 day ago
+                            data: {
+                                ticketId: 'SUVDH-2026-00050',
+                                userId: user.id,
+                                type: 'GAS_DELAY',
+                                description: 'Gas connection delay',
+                                department: 'GAS',
+                                status: client_1.ComplaintStatus.ESCALATED,
+                                priority: 9,
+                                queueEntry: {
+                                    create: {
+                                        departmentQueue: 'GAS',
+                                        position: 1,
+                                        estimatedResolutionDate: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours
+                                        isEscalated: true,
+                                        escalatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // escalated 1 day ago
+                                    },
                                 },
                             },
-                        },
-                    })];
+                        })];
                 case 16:
                     c4 = _a.sent();
                     return [4 /*yield*/, prisma.complaint.create({
-                        data: {
-                            ticketId: 'SUVDH-2026-00051',
-                            userId: user.id,
-                            type: 'GENERAL',
-                            description: 'General inquiry request',
-                            department: 'ELECTRICITY',
-                            status: client_1.ComplaintStatus.PENDING,
-                            priority: 5,
-                            queuePosition: 89,
-                            queueEntry: {
-                                create: {
-                                    departmentQueue: 'ELECTRICITY',
-                                    position: 89,
-                                    estimatedResolutionDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
+                            data: {
+                                ticketId: 'SUVDH-2026-00051',
+                                userId: user.id,
+                                type: 'GENERAL',
+                                description: 'General inquiry request',
+                                department: 'ELECTRICITY',
+                                status: client_1.ComplaintStatus.PENDING,
+                                priority: 5,
+                                queuePosition: 89,
+                                queueEntry: {
+                                    create: {
+                                        departmentQueue: 'ELECTRICITY',
+                                        position: 89,
+                                        estimatedResolutionDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
+                                    },
                                 },
                             },
-                        },
-                    })
+                        })
                         // 4. Create 3 DocumentTokens
                     ];
                 case 17:
                     c5 = _a.sent();
                     // 4. Create 3 DocumentTokens
                     return [4 /*yield*/, prisma.documentToken.create({
-                        data: {
-                            token: 'A7X3K9',
-                            mobile: '9876543210',
-                            expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // valid +48h
-                            autoDeleteAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
-                            used: false,
-                        },
-                    })];
+                            data: {
+                                token: 'A7X3K9',
+                                mobile: '9876543210',
+                                expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // valid +48h
+                                autoDeleteAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+                                used: false,
+                            },
+                        })];
                 case 18:
                     // 4. Create 3 DocumentTokens
                     _a.sent();
                     return [4 /*yield*/, prisma.documentToken.create({
-                        data: {
-                            token: 'EXPD01',
-                            mobile: '9876543210',
-                            expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // expired 24h ago
-                            autoDeleteAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-                            used: false,
-                        },
-                    })];
+                            data: {
+                                token: 'EXPD01',
+                                mobile: '9876543210',
+                                expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // expired 24h ago
+                                autoDeleteAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                                used: false,
+                            },
+                        })];
                 case 19:
                     _a.sent();
                     return [4 /*yield*/, prisma.documentToken.create({
-                        data: {
-                            token: 'USED02',
-                            mobile: '9876543210',
-                            expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
-                            autoDeleteAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
-                            used: true,
-                            usedAt: new Date(),
-                        },
-                    })];
+                            data: {
+                                token: 'USED02',
+                                mobile: '9876543210',
+                                expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+                                autoDeleteAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+                                used: true,
+                                usedAt: new Date(),
+                            },
+                        })];
                 case 20:
                     _a.sent();
                     console.log('Seeding completed successfully!');
@@ -290,18 +289,16 @@ function main() {
 }
 main()
     .catch(function (e) {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(function () {
-        return __awaiter(void 0, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, prisma.$disconnect()];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
+    console.error(e);
+    process.exit(1);
+})
+    .finally(function () { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, prisma.$disconnect()];
+            case 1:
+                _a.sent();
+                return [2 /*return*/];
+        }
     });
+}); });

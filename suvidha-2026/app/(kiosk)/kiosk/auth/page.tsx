@@ -324,9 +324,8 @@ export default function KioskAuthPage() {
       initial="initial"
       animate="animate"
       exit="exit"
-      className="w-full max-w-md mx-auto"
-    >
-      <Card className="border-2 border-orange-200">
+      className="w-full max-w-md mx-auto min-h-0 flex flex-col" style={{height: 'calc(100vh - 32px)'}}>
+      <Card className="border-2 border-orange-200 bg-white flex flex-col h-full min-h-0">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
             {otpSent ? (
@@ -346,7 +345,7 @@ export default function KioskAuthPage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 flex-1 min-h-0 overflow-y-auto pb-40">
           <AnimatePresence mode="wait">
             {!otpSent ? (
               // Step 1: Mobile number input
@@ -358,8 +357,66 @@ export default function KioskAuthPage() {
                 exit="exit"
                 className="space-y-4"
               >
+                {/* Top Button */}
+                <div style={{position: 'relative', width: '100%', zIndex: 9999}} className="mb-2 flex justify-center">
+                  <Button
+                    onClick={handleSendOTP}
+                    disabled={isLoading || mobile.length < 10}
+                    className="w-full max-w-md h-16 text-xl rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold shadow-lg border-4 border-orange-700 outline outline-4 outline-white"
+                    style={{position: 'relative', zIndex: 99999, background: '#ff8800', borderColor: '#ff8800'}}>
+                    {isLoading ? (
+                      <Loader2 className="w-7 h-7 animate-spin" />
+                    ) : (
+                      <>SEND OTP (TOP)</>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Left Button */}
+                <div style={{position: 'absolute', left: '-120px', top: '50%', transform: 'translateY(-50%)', zIndex: 9999}} className="hidden md:block">
+                  <Button
+                    onClick={handleSendOTP}
+                    disabled={isLoading || mobile.length < 10}
+                    className="h-16 w-32 text-xl rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold shadow-lg border-4 border-orange-700 outline outline-4 outline-white rotate-[-90deg]"
+                    style={{background: '#ff8800', borderColor: '#ff8800'}}>
+                    SEND OTP (LEFT)
+                  </Button>
+                </div>
+
+                {/* Right Button */}
+                <div style={{position: 'absolute', right: '-120px', top: '50%', transform: 'translateY(-50%)', zIndex: 9999}} className="hidden md:block">
+                  <Button
+                    onClick={handleSendOTP}
+                    disabled={isLoading || mobile.length < 10}
+                    className="h-16 w-32 text-xl rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold shadow-lg border-4 border-orange-700 outline outline-4 outline-white rotate-90"
+                    style={{background: '#ff8800', borderColor: '#ff8800'}}>
+                    SEND OTP (RIGHT)
+                  </Button>
+                </div>
+
+                {/* Center Button (over input) */}
+                <div style={{position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 9999, pointerEvents: 'none'}} className="flex justify-center items-center">
+                  <Button
+                    onClick={handleSendOTP}
+                    disabled={isLoading || mobile.length < 10}
+                    className="h-12 w-48 text-lg rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold shadow-lg border-4 border-orange-700 outline outline-4 outline-white opacity-80"
+                    style={{background: '#ff8800', borderColor: '#ff8800', pointerEvents: 'auto'}}>
+                    SEND OTP (CENTER)
+                  </Button>
+                </div>
+
+                {/* Bottom Button */}
+                <div style={{position: 'relative', width: '100%', zIndex: 9999}} className="mt-2 flex justify-center">
+                  <Button
+                    onClick={handleSendOTP}
+                    disabled={isLoading || mobile.length < 10}
+                    className="w-full max-w-md h-16 text-xl rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold shadow-lg border-4 border-orange-700 outline outline-4 outline-white"
+                    style={{position: 'relative', zIndex: 99999, background: '#ff8800', borderColor: '#ff8800'}}>
+                    SEND OTP (BOTTOM)
+                  </Button>
+                </div>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-800 font-semibold">
                     +91
                   </span>
                   <Input
@@ -368,7 +425,7 @@ export default function KioskAuthPage() {
                     placeholder="Enter 10-digit mobile number"
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    className="text-lg h-14 pl-14"
+                    className="text-lg h-14 pl-14 bg-white text-gray-900 border-gray-400 placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
                     aria-label="Mobile Number"
                   />
                 </div>
@@ -377,23 +434,11 @@ export default function KioskAuthPage() {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-red-500 text-sm text-center"
+                    className="text-red-600 text-sm text-center font-semibold"
                   >
                     {error}
                   </motion.p>
                 )}
-
-                <Button
-                  onClick={handleSendOTP}
-                  disabled={isLoading || mobile.length < 10}
-                  className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>Send OTP</>
-                  )}
-                </Button>
               </motion.div>
             ) : (
               // Step 2: OTP entry
@@ -418,11 +463,14 @@ export default function KioskAuthPage() {
                   </motion.div>
                 )}
 
-                <OTPInput
-                  onComplete={handleVerifyOTP}
-                  disabled={isLoading}
-                  error={error}
-                />
+                <div className="bg-white p-2 rounded-xl">
+                  <OTPInput
+                    onComplete={handleVerifyOTP}
+                    disabled={isLoading}
+                    error={error}
+                    className="bg-white text-gray-900 border-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                  />
+                </div>
 
                 {/* Countdown timer */}
                 {otpExpiresAt && (
@@ -442,7 +490,7 @@ export default function KioskAuthPage() {
                       variant="link"
                       onClick={handleSendOTP}
                       disabled={isLoading}
-                      className="text-orange-600"
+                      className="text-orange-600 font-bold"
                     >
                       Resend OTP
                     </Button>
@@ -465,7 +513,7 @@ export default function KioskAuthPage() {
           <Button
             variant="ghost"
             onClick={handleBack}
-            className="w-full"
+            className="w-full mt-2"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>

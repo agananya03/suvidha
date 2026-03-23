@@ -4,19 +4,456 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #1A1A1A;
-    --radius: 0.5rem;
+    /* Primary Brand */
+    --irs-navy: #1a3a6b;
+    --irs-navy-dark: #122a52;
+    --irs-navy-light: #2c5099;
+
+    /* Secondary */
+    --irs-blue-mid: #005ea2;
+    --irs-blue-light: #d9e8f6;
+    --irs-blue-pale: #edf3fb;
+
+    /* Neutrals */
+    --irs-white: #ffffff;
+    --irs-gray-100: #f5f5f5;
+    --irs-gray-200: #e8e8e8;
+    --irs-gray-400: #adadad;
+    --irs-gray-600: #5c5c5c;
+    --irs-gray-900: #1b1b1b;
+
+    /* Semantic */
+    --irs-success: #00a91c;
+    --irs-warning: #ffbe2e;
+    --irs-error: #d54309;
+    --irs-info: #00bde3;
+
+    /* Accent */
+    --irs-gold: #c9850c;
+    
+    /* Scale */
+    --font-xs: 0.75rem;
+    --font-sm: 0.875rem;
+    --font-base: 1rem;
+    --font-md: 1.125rem;
+    --font-lg: 1.375rem;
+    --font-xl: 1.75rem;
+    --font-2xl: 2.25rem;
+
+    /* Line height */
+    --leading-tight: 1.25;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.75;
+
+    /* Touch & Spacing */
+    --touch-min: 56px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.10);
+    --shadow-lg: 0 4px 20px rgba(0,0,0,0.12);
   }
 }
 
 @layer base {
-  * {
-    @apply border-gray-200;
+  body {
+    background-color: var(--irs-gray-100);
+    color: var(--irs-gray-900);
+    @apply transition-all duration-300;
+  }
+}
+
+@layer components {
+  /* 1. HEADER / NAVIGATION BAR */
+  .kiosk-header {
+    background-color: var(--irs-navy);
+    color: var(--irs-white);
+    height: 64px;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  body {
-    @apply bg-background text-foreground transition-all duration-300;
+  .kiosk-header .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: var(--font-md);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .kiosk-nav-link {
+    color: rgba(255,255,255,0.90);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    padding: 8px 16px;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    min-height: var(--touch-min);
+    display: flex;
+    align-items: center;
+  }
+
+  .kiosk-nav-link:hover {
+    background-color: rgba(255,255,255,0.10);
+    border-bottom-color: var(--irs-info);
+  }
+
+  .kiosk-nav-link.active {
+    border-bottom-color: white;
+    font-weight: 600;
+  }
+
+  /* 2. SECONDARY NAV / TAB BAR */
+  .kiosk-subnav {
+    background-color: var(--irs-white);
+    border-bottom: 1px solid var(--irs-gray-200);
+    padding: 0 32px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .kiosk-subnav-tab {
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--irs-blue-mid);
+    padding: 12px 20px;
+    border-bottom: 3px solid transparent;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .kiosk-subnav-tab.active {
+    color: var(--irs-navy);
+    border-bottom-color: var(--irs-navy);
+    font-weight: 600;
+  }
+
+  .kiosk-subnav-tab:hover {
+    background-color: var(--irs-blue-pale);
+  }
+
+  /* 3. PAGE / MODULE BACKGROUND */
+  .kiosk-page {
+    background-color: var(--irs-gray-100);
+    min-height: 100vh;
+    padding: var(--space-6) var(--space-7);
+  }
+
+  .kiosk-page-title {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--irs-navy);
+    margin-bottom: var(--space-5);
+    border-left: 4px solid var(--irs-blue-mid);
+    padding-left: var(--space-4);
+  }
+
+  /* 4. SERVICE CARDS */
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: var(--space-5);
+  }
+
+  .service-card {
+    background-color: var(--irs-white);
+    border: 1px solid var(--irs-gray-200);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: var(--touch-min);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .service-card:hover {
+    border-color: var(--irs-blue-mid);
+    background-color: var(--irs-blue-pale);
+  }
+
+  .service-card-icon {
+    width: 40px;
+    height: 40px;
+    color: var(--irs-blue-mid);
+    flex-shrink: 0;
+  }
+
+  .service-card-label {
+    font-size: var(--font-base);
+    font-weight: 500;
+    color: var(--irs-blue-mid);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* 5. PRIMARY BUTTON */
+  .btn-primary {
+    background-color: var(--irs-navy);
+    color: var(--irs-white);
+    font-family: inherit;
+    font-size: var(--font-base);
+    font-weight: 600;
+    padding: 14px 28px;
+    border: none;
+    border-radius: var(--radius-md);
+    min-height: var(--touch-min);
+    min-width: 160px;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: background-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--irs-navy-dark);
+  }
+
+  .btn-primary:active {
+    background-color: var(--irs-navy-light);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--irs-navy);
+    border: 2px solid var(--irs-navy);
+    font-family: inherit;
+    font-size: var(--font-base);
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: var(--radius-md);
+    min-height: var(--touch-min);
+    min-width: 160px;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: background-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--irs-blue-pale);
+  }
+
+  /* 6. FORM INPUTS */
+  .kiosk-input {
+    width: 100%;
+    font-family: inherit;
+    font-size: var(--font-md);
+    color: var(--irs-gray-900);
+    background-color: var(--irs-white);
+    border: 1.5px solid var(--irs-gray-400);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    min-height: 56px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .kiosk-input:focus {
+    border-color: var(--irs-blue-mid);
+    box-shadow: 0 0 0 3px rgba(0, 94, 162, 0.20);
+    background-color: var(--irs-blue-pale);
+  }
+
+  .kiosk-label {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--irs-gray-900);
+    margin-bottom: 6px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* 7. INFO / ALERT BANNERS */
+  .kiosk-banner {
+    background-color: var(--irs-blue-light);
+    border-left: 4px solid var(--irs-blue-mid);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 14px 20px;
+    font-size: var(--font-sm);
+    color: var(--irs-navy);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: var(--space-5);
+  }
+
+  .kiosk-banner.warning {
+    background-color: #fff8e6;
+    border-left-color: var(--irs-warning);
+    color: #4a3000;
+  }
+
+  .kiosk-banner.success {
+    background-color: #ecfbef;
+    border-left-color: var(--irs-success);
+    color: #003a09;
+  }
+
+  /* 8. RECEIPT / BBPS CARD */
+  .receipt-card {
+    background-color: var(--irs-white);
+    border: 1px solid var(--irs-gray-200);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    max-width: 540px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-md);
+  }
+
+  .receipt-header {
+    background-color: var(--irs-navy);
+    color: var(--irs-white);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: -32px -32px 24px -32px;
+  }
+
+  .receipt-ref-badge {
+    background-color: var(--irs-gold);
+    color: var(--irs-white);
+    font-size: var(--font-sm);
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.05em;
+  }
+
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--irs-gray-200);
+    font-size: var(--font-base);
+  }
+
+  .receipt-row:last-child {
+    border-bottom: none;
+  }
+
+  .receipt-label {
+    color: var(--irs-gray-600);
+    font-weight: 500;
+  }
+
+  .receipt-value {
+    color: var(--irs-gray-900);
+    font-weight: 600;
+  }
+
+  /* 9. LANGUAGE / ACCESSIBILITY SELECTOR */
+  .lang-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .lang-btn {
+    background-color: var(--irs-white);
+    border: 1.5px solid var(--irs-gray-200);
+    border-radius: var(--radius-lg);
+    padding: 16px 12px;
+    text-align: center;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--irs-gray-900);
+    min-height: 64px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lang-btn:hover, .lang-btn.selected {
+    border-color: var(--irs-navy);
+    background-color: var(--irs-blue-pale);
+    color: var(--irs-navy);
+    font-weight: 600;
+  }
+
+  /* 10. PROGRESS / STEP INDICATOR */
+  .step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: var(--space-6);
+    background-color: var(--irs-white);
+    border-bottom: 2px solid var(--irs-gray-200);
+    padding: 0 32px;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--irs-gray-400);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+
+  .step-item.done {
+    color: var(--irs-success);
+    border-bottom-color: var(--irs-success);
+  }
+
+  .step-item.active {
+    color: var(--irs-navy);
+    font-weight: 700;
+    border-bottom-color: var(--irs-navy);
+  }
+
+  .step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-xs);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-item.done .step-circle {
+    background-color: var(--irs-success);
+    border-color: var(--irs-success);
+    color: white;
   }
 }
 
@@ -42,3 +479,69 @@
 .text-size-xlarge {
   font-size: 125% !important;
 }
+
+/* ============================
+   KIOSK SPLASH SCREEN ANIMATIONS
+   ============================ */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(27, 58, 107, 0.55), 0 8px 32px rgba(27, 58, 107, 0.30);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 16px rgba(27, 58, 107, 0), 0 8px 40px rgba(27, 58, 107, 0.45);
+    transform: scale(1.015);
+  }
+}
+
+@keyframes breathe-ring {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.15; transform: scale(1.08); }
+}
+
+@keyframes splash-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes idle-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes idle-pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.splash-cta-idle {
+  animation: pulse-glow 2.4s ease-in-out infinite;
+}
+
+.splash-emblem {
+  animation: splash-fade-in 0.7s ease both;
+}
+
+.splash-title {
+  animation: splash-fade-in 0.7s 0.1s ease both;
+}
+
+.splash-subtitle {
+  animation: splash-fade-in 0.7s 0.2s ease both;
+}
+
+.splash-cta-wrap {
+  animation: splash-fade-in 0.7s 0.3s ease both;
+}
+
+.splash-sidebar {
+  animation: splash-fade-in 0.7s 0.15s ease both;
+}
+
+.idle-overlay {
+  animation: idle-fadein 0.8s ease forwards;
+}
+
+.idle-prompt-text {
+  animation: idle-pulse-text 2s ease-in-out infinite;
+}

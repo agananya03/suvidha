@@ -22,6 +22,7 @@ export interface ReceiptData {
         surcharges: number;
         total: number;
     };
+    bbpsRefNumber?: string;
 }
 
 interface ReceiptProps {
@@ -149,6 +150,15 @@ export function Receipt({ data }: ReceiptProps) {
 
                             <div className="text-sm text-gray-500 mt-4 print:text-gray-700">Transaction ID</div>
                             <div className="font-mono text-slate-600">{data.transactionId}</div>
+
+                            {data.bbpsRefNumber && (
+                                <div>
+                                    <div className="text-sm text-gray-500 mt-4 print:text-gray-700">BBPS Reference Number</div>
+                                    <div className="font-mono font-bold text-green-700">
+                                        {data.bbpsRefNumber}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="text-sm text-gray-500 mt-4 print:text-gray-700">Date & Time</div>
                             <div className="text-slate-600 font-medium">{new Date(data.dateTime).toLocaleString('en-IN')}</div>

@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Public_Sans } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { AccessibilityToolbar } from "@/components/accessibility/AccessibilityToolbar";
+import { DemoBanner } from "@/components/kiosk/DemoBanner";
 import { Toaster } from 'react-hot-toast';
+import dynamic from 'next/dynamic';
+
+const FloatingSpeakerButton = dynamic(() => import('@/components/ui/FloatingSpeakerButton').then((mod) => mod.FloatingSpeakerButton), { ssr: false });
 
 export const metadata: Metadata = {
   title: "SUVIDHA 2026 | Smart City Services Kiosk",
   description: "Unified self-service government kiosk for citizens.",
 };
 
-const inter = Inter({ subsets: ["latin"] });
+const publicSans = Public_Sans({ subsets: ["latin"], weight: ['300', '400', '500', '600', '700'] });
 
 export default function RootLayout({
   children,
@@ -19,12 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased bg-gray-50 text-dark min-h-screen flex flex-col`}>
+      <body className={`${publicSans.className} antialiased bg-gray-50 text-dark min-h-screen flex flex-col`}>
         <I18nProvider>
           {/* GLOBAL DEMO MODE BANNER */}
-          <div className="w-full bg-accent text-white text-center py-1 font-bold text-sm tracking-wider uppercase z-[110] relative">
-            DEMO MODE - C-DAC Smart City Challenge 2026
-          </div>
+          <DemoBanner />
 
           <AccessibilityToolbar />
 
@@ -38,6 +40,7 @@ export default function RootLayout({
 
           <main className="flex-grow flex flex-col relative overflow-hidden">
             {children}
+            <FloatingSpeakerButton />
           </main>
         </I18nProvider>
       </body>

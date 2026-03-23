@@ -6,9 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useKioskStore } from "@/store/useKioskStore";
 import { Camera, ShieldAlert } from "lucide-react";
+import * as tf from '@tensorflow/tfjs';
+import * as blazeface from '@tensorflow-models/blazeface';
 
-const INACTIVITY_THRESHOLD_MS = 10000; // 10 seconds of inactivity triggers the countdown
-const COUNTDOWN_SECONDS = 10;
+const INACTIVITY_THRESHOLD_MS = 10000; // 10 seconds of facial absence triggers the countdown
+const COUNTDOWN_SECONDS = 5;
 
 export function FaceLock() {
     const router = useRouter();
@@ -24,6 +26,64 @@ export function FaceLock() {
 
     const activityTimerRef = useRef<NodeJS.Timeout | null>(null);
     const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const webcamRef = useRef<Webcam>(null);
+    const modelRef = useRef<blazeface.BlazeFaceModel | null>(null);
+
+    // Initialize the BlazeFace model once
+    useEffect(() => {
+        const initModel = async () => {
+            try {
+                await tf.ready();
+                modelRef.current = await blazeface.load();
+                console.log("BlazeFace model loaded successfully.");
+            } catch (err) {
+                console.error("Failed to load BlazeFace model:", err);
+            }
+        };
+        initModel();
+    }, []);
+
+    // Run face detection periodically
+    useEffect(() => {
+        let animationFrameId: number;
+        let lastCheckTime = 0;
+
+        const checkFace = async (time: number) => {
+            // Run at most twice a second to save resources
+            if (time - lastCheckTime > 500) {
+                if (
+                    isAuthenticated &&
+                    !isLoggedOut &&
+                    modelRef.current &&
+                    webcamRef.current &&
+                    webcamRef.current.video &&
+                    webcamRef.current.video.readyState === 4
+                ) {
+                    try {
+                        const predictions = await modelRef.current.estimateFaces(webcamRef.current.video, false);
+                        if (predictions.length > 0) {
+                            // Reset inactivity timer when a face is detected
+                            handleUserActivity();
+                        }
+                    } catch (err) {
+                        // ignore occasional tfjs errors during unmounts
+                    }
+                }
+                lastCheckTime = time;
+            }
+            if (!isLoggedOut) {
+                animationFrameId = requestAnimationFrame(checkFace);
+            }
+        };
+
+        if (isAuthenticated && !isLoggedOut) {
+            animationFrameId = requestAnimationFrame(checkFace);
+        }
+
+        return () => {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        };
+    }, [isAuthenticated, isLoggedOut, handleUserActivity]);
 
     // Reset the inactivity timer when the user interacts
     const handleUserActivity = useCallback(() => {
@@ -112,6 +172,7 @@ export function FaceLock() {
                 <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-3 py-2 rounded-full border border-zinc-800 text-white shadow-lg">
                     <div className="relative w-10 h-10 overflow-hidden rounded-full border-2 border-emerald-500 bg-zinc-900 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.5)]">
                         <Webcam
+                            ref={webcamRef}
                             audio={false}
                             className="absolute w-full h-full object-cover"
                             mirrored={true}

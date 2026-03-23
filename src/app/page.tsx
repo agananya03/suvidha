@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
   Clock, WifiOff, Map, Accessibility, FileWarning,
   AlertTriangle, Banknote, HelpCircle, ArrowRight,
-  SearchCheck, Lock, CheckCircle2, QrCode, Fingerprint,
+  SearchCheck, Lock, QrCode, Fingerprint,
   Languages, Zap, ShieldCheck, FileText, Bot, HandMetal,
   Volume2, Ear, Eye, Home, Terminal
 } from 'lucide-react';
@@ -16,13 +16,16 @@ export default function LandingPage() {
   const router = useRouter();
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, -100]);
 
   // Local animated counter for hero
-  const [stats, setStats] = useState({ citizens: 0, languages: 0, services: 0 });
+  const [stats, setStats] = useState({ citizens: 0, languages: 0, services: 0, aadhaar: 0 });
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const timer = setTimeout(() => {
-      setStats({ citizens: 900, languages: 22, services: 4 });
+      setStats({ citizens: 900, languages: 22, services: 4, aadhaar: 0 });
     }, 500);
     return () => clearTimeout(timer);
   }, []);
@@ -72,8 +75,13 @@ export default function LandingPage() {
       <section className="relative w-full min-h-[90vh] bg-[#0A192F] text-white flex flex-col justify-center overflow-hidden pt-20 pb-16">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10 bg-[url('https://transparenttextures.com/patterns/cubes.png')]" />
-        <motion.div style={{ y }} className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500 rounded-full blur-[150px] opacity-20 pointer-events-none" />
-        <motion.div style={{ y: useTransform(scrollYProgress, [0, 1], [0, -100]) }} className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none" />
+
+        {isMounted && (
+          <>
+            <motion.div style={{ y }} className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500 rounded-full blur-[150px] opacity-20 pointer-events-none" />
+            <motion.div style={{ y: y2 }} className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none" />
+          </>
+        )}
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 w-full mb-12">
           <motion.div
@@ -105,7 +113,7 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-transparent border-2 border-white/30 text-black hover:text-white hover:bg-white/10 font-bold text-lg px-8 py-6 rounded-xl transition-all"
+                className="bg-transparent border-2 border-white/30 text-white hover:text-white hover:bg-white/10 font-bold text-lg px-8 py-6 rounded-xl transition-all"
                 onClick={() => router.push('/pre-visit')}
               >
                 <Bot className="mr-2 w-6 h-6" /> Pre-Visit Simulator
@@ -162,7 +170,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                 >
-                  0
+                  {stats.aadhaar}
                 </motion.div>
                 <div className="text-sm text-gray-400 uppercase tracking-widest font-bold">Aadhaar Required</div>
               </div>

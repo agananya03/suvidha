@@ -1,6 +1,20 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { User, Connection, Complaint } from '@prisma/client';
+import type { User } from '@prisma/client';
+
+export interface Connection {
+    id: string;
+    type: string;
+    name: string;
+}
+
+export interface Complaint {
+    id: string;
+    description: string;
+    department: string;
+    status: string;
+    [key: string]: unknown;
+}
 
 export type AuthMode = 'QUICK_PAY' | 'FULL_ACCESS' | null;
 export type AccessibilityMode = 'standard' | 'voice' | 'visual' | 'simplified';
@@ -105,7 +119,10 @@ export const useKioskStore = create<KioskState>()(
                     lastActivityTime: new Date(),
                 }),
 
-            logout: () =>
+            logout: () => {
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                }
                 set((state) => ({
                     ...initialState,
                     // Preserve preferences on logout
@@ -113,7 +130,11 @@ export const useKioskStore = create<KioskState>()(
                     accessibilityMode: state.accessibilityMode,
                     highContrast: state.highContrast,
                     fontSize: state.fontSize,
-                })),
+                }));
+                import('@/lib/offlineDb').then(({ clearSessionData }) => {
+                    clearSessionData().catch(console.error);
+                });
+            },
 
             setLanguage: (code) => set({ language: code }),
 

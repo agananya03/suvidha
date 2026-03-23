@@ -1,0 +1,40 @@
+
+> suvidha@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: C:\Users\ASUS\OneDrive\Desktop\suvidhaah\public\sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+ ○ (pwa) Custom runtimeCaching array found, using it instead of the default one.
+Failed to compile.
+
+./src/lib/cloudinary.ts
+Module not found: Can't resolve 'cloudinary'
+Did you mean './cloudinary'?
+Requests that should resolve in the current directory need to start with './'.
+Requests that start with a name are treated as module requests and resolve within module directories (node_modules).
+If changing the source code is not an option there is also a resolve options called 'preferRelative' which tries to resolve these kind of requests in the current directory too.
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/documents/upload/route.ts
+
+./src/lib/messaging.ts
+Module not found: Can't resolve 'twilio'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/lib/whatsappBot.ts
+./src/app/api/whatsapp/webhook/route.ts
+
+
+> Build failed because of webpack errors

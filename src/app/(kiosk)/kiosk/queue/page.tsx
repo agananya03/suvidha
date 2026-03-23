@@ -8,8 +8,10 @@ import {
     UserCircle2, PlayCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from 'react-i18next'; // Keeping available just in case, but suppressing unused
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 import { useStore } from '@/lib/store';
+import { DemoDataBadge } from '@/components/ui/EmptyState';
+import { StaleBadge } from '@/components/ui/StaleBadge';
 
 // --- STUB DATA --- //
 const MOCK_COMPLAINTS = [
@@ -42,12 +44,27 @@ const MOCK_COMPLAINTS = [
         officerState: { name: 'Officer #M9', load: 45, avgLoad: 42 },
         peerState: { name: 'Officer #M2', load: 41 },
         stage: 4
+    },
+    {
+        id: 'SUVDH-2026-QUEUED',
+        department: 'Electricity',
+        position: 0,
+        total: 156,
+        status: 'PENDING SYNC',
+        priority: 8,
+        priorityLabel: 'HIGH',
+        slaDays: 7,
+        slaDaysLeft: 7,
+        submittedAt: new Date().toISOString(),
+        officerState: { name: 'Pending', load: 0, avgLoad: 0 },
+        peerState: { name: 'Pending', load: 0 },
+        stage: 1,
+        pendingSync: true,
     }
 ];
 
 export default function QueuePage() {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { t } = useTranslation();
+    const { t } = useDynamicTranslation();
     const { highContrast } = useStore();
 
     const [activeTab, setActiveTab] = useState(0);
@@ -102,17 +119,17 @@ export default function QueuePage() {
         return circumference * (1 - percent);
     };
 
-    const isScaBreached = activeComplaint.slaDaysLeft <= 0;
+    const isSlaBreached = activeComplaint.slaDaysLeft <= 0;
 
     return (
-        <div className={`flex-grow p-4 lg:p-8 ${highContrast ? 'bg-black text-white' : 'bg-gray-50'}`}>
+        <div className={`h-full overflow-y-auto p-4 lg:p-8 ${highContrast ? 'bg-black text-white' : 'bg-gray-50'}`}>
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* HEADER & TABS */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold mb-2">Live Queue Tracker</h1>
-                        <p className={`text-sm ${highContrast ? 'text-gray-300' : 'text-gray-500'}`}>Real-time transparency into your municipal requests.</p>
+                        <h1 className="text-3xl font-bold mb-2">{t('Live Queue Tracker')}</h1>
+                        <p className={`text-sm ${highContrast ? 'text-gray-300' : 'text-gray-500'}`}>{t('Real-time transparency into your municipal requests.')}</p>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 border-b border-gray-200">
                         {complaints.map((c, idx) => (
@@ -124,7 +141,7 @@ export default function QueuePage() {
                                     : 'border-transparent text-gray-500 hover:text-gray-700'
                                     }`}
                             >
-                                {idx === 0 ? 'Latest Complaint' : `Complaint ${idx + 1}`}
+                                {idx === 0 ? t('Latest Complaint') : `${t('Complaint')} ${idx + 1}`}
                                 <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
                                     #{c.position}
                                 </span>
@@ -134,7 +151,8 @@ export default function QueuePage() {
                 </div>
 
                 {/* MAIN GRID */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+                    <DemoDataBadge />
 
                     {/* LEFT COLUMN: MAIN DISPLAY & CORRUPTION PANEL */}
                     <div className="lg:col-span-8 space-y-6">
@@ -145,14 +163,14 @@ export default function QueuePage() {
 
                                 <div className="space-y-6 flex-1">
                                     <div>
-                                        <p className="text-sm font-bold tracking-widest text-gray-400 uppercase mb-1">Active Ticket</p>
+                                        <p className="text-sm font-bold tracking-widest text-gray-400 uppercase mb-1">{t('Active Ticket')}</p>
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-2xl font-mono font-bold">{activeComplaint.id}</h2>
                                             <span className={`px-3 py-1 text-xs font-bold rounded-full border border-current ${activeComplaint.department === 'Electricity' ? 'text-yellow-600 bg-yellow-50' :
                                                 activeComplaint.department === 'Municipal' ? 'text-green-600 bg-green-50' :
                                                     'text-blue-600 bg-blue-50'
                                                 }`}>
-                                                {activeComplaint.department} Dept.
+                                                {t(activeComplaint.department)} {t('Dept.')}
                                             </span>
                                         </div>
                                     </div>
@@ -171,20 +189,28 @@ export default function QueuePage() {
                                                 </motion.h1>
                                             </AnimatePresence>
                                         </div>
-                                        <p className="text-gray-500 mb-2 whitespace-nowrap">of {activeComplaint.total} total complaints in queue</p>
+                                        <p className="text-gray-500 mb-2 whitespace-nowrap">{t('of')} {activeComplaint.total} {t('total complaints in queue')}</p>
                                     </div>
 
                                     <div className="flex flex-wrap gap-4 items-center">
-                                        <div className={`px-4 py-2 rounded-lg font-bold text-sm tracking-widest animate-pulse ${activeComplaint.status === 'UNDER INVESTIGATION' ? 'bg-blue-100 text-blue-700' :
-                                            activeComplaint.status === 'IN PROGRESS' ? 'bg-purple-100 text-purple-700' :
-                                                'bg-gray-100 text-gray-700'
-                                            }`}>
-                                            {activeComplaint.status}
-                                        </div>
+                                        {activeComplaint.pendingSync ? (
+                                            <div className="px-4 py-2 rounded-lg font-bold text-sm tracking-widest bg-amber-100 text-amber-700 animate-pulse">
+                                                AWAITING CONNECTION
+                                            </div>
+                                        ) : (
+                                            <div className={`px-4 py-2 rounded-lg font-bold text-sm tracking-widest animate-pulse ${activeComplaint.status === 'UNDER INVESTIGATION' ? 'bg-blue-100 text-blue-700' :
+                                                activeComplaint.status === 'IN PROGRESS' ? 'bg-purple-100 text-purple-700' :
+                                                    'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                {activeComplaint.status}
+                                            </div>
+                                        )}
+
+                                        <StaleBadge lastSynced={Date.now() - 35 * 60 * 1000} />
 
                                         <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border">
                                             <span className={`text-xs font-bold px-2 py-0.5 rounded ${getPriorityColor(activeComplaint.priorityLabel)}`}>
-                                                {activeComplaint.priorityLabel} PRIORITY
+                                                {t(activeComplaint.priorityLabel)} {t('PRIORITY')}
                                             </span>
                                             <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                                                 <div className={`h-full ${getPriorityBarColor(activeComplaint.priorityLabel)}`} style={{ width: `${(activeComplaint.priority / 10) * 100}%` }} />
@@ -207,19 +233,19 @@ export default function QueuePage() {
                                                 initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
                                                 animate={{ strokeDashoffset: calculateRingStroke(activeComplaint.slaDaysLeft, activeComplaint.slaDays) }}
                                                 transition={{ duration: 1.5, ease: "easeOut" }}
-                                                className={isScaBreached ? 'text-red-500' : 'text-blue-500'}
+                                                className={isSlaBreached ? 'text-red-500' : 'text-blue-500'}
                                             />
                                         </svg>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                                            <span className={`text-3xl font-black ${isScaBreached ? 'text-red-600' : 'text-gray-900'}`}>
+                                            <span className={`text-3xl font-black ${isSlaBreached ? 'text-red-600' : 'text-gray-900'}`}>
                                                 {activeComplaint.slaDaysLeft}
                                             </span>
-                                            <span className="text-xs uppercase font-bold text-gray-500">Days Left</span>
+                                            <span className="text-xs uppercase font-bold text-gray-500">{t('Days Left')}</span>
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">SLA Deadline</p>
-                                        <p className={`text-sm font-semibold ${isScaBreached ? 'text-red-500' : 'text-gray-900'}`}>
+                                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">{t('SLA Deadline')}</p>
+                                        <p className={`text-sm font-semibold ${isSlaBreached ? 'text-red-500' : 'text-gray-900'}`}>
                                             {new Date(Date.now() + activeComplaint.slaDaysLeft * 86400000).toLocaleDateString()}
                                         </p>
                                     </div>
@@ -232,27 +258,27 @@ export default function QueuePage() {
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
                                     <ShieldCheck className="w-6 h-6 text-green-500" />
-                                    Department Accountability Interface
+                                    {t('Department Accountability Interface')}
                                 </h3>
                                 <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                    <CheckCircle2 className="w-4 h-4" /> No queue jumps detected
+                                    <CheckCircle2 className="w-4 h-4" /> {t('No queue jumps detected')}
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-500 mb-6">Queue Transparency: All positions are sequentially bound and public. Officer workloads are balanced to prevent artificial delays.</p>
+                            <p className="text-sm text-gray-500 mb-6">{t('Queue Transparency: All positions are sequentially bound and public. Officer workloads are balanced to prevent artificial delays.')}</p>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {/* Officer Workload Comparison */}
                                 <div>
                                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <Activity className="w-4 h-4" /> Workload Balancing
+                                        <Activity className="w-4 h-4" /> {t('Workload Balancing')}
                                     </p>
 
                                     <div className="space-y-4">
                                         <div>
                                             <div className="flex justify-between text-sm mb-1">
-                                                <span className="font-semibold">{activeComplaint.officerState.name} (Assigned)</span>
-                                                <span className="text-gray-500">{activeComplaint.officerState.load} active tickets</span>
+                                                <span className="font-semibold">{t(activeComplaint.officerState.name)} ({t('Assigned')})</span>
+                                                <span className="text-gray-500">{activeComplaint.officerState.load} {t('active tickets')}</span>
                                             </div>
                                             <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                                                 <div className="bg-blue-500 h-full" style={{ width: `${(activeComplaint.officerState.load / 60) * 100}%` }} />
@@ -260,8 +286,8 @@ export default function QueuePage() {
                                         </div>
                                         <div>
                                             <div className="flex justify-between text-sm mb-1">
-                                                <span className="text-gray-500">{activeComplaint.peerState.name} (Available Peer)</span>
-                                                <span className="text-gray-500">{activeComplaint.peerState.load} active tickets</span>
+                                                <span className="text-gray-500">{t(activeComplaint.peerState.name)} ({t('Available Peer')})</span>
+                                                <span className="text-gray-500">{activeComplaint.peerState.load} {t('active tickets')}</span>
                                             </div>
                                             <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                                                 <div className="bg-gray-400 h-full" style={{ width: `${(activeComplaint.peerState.load / 60) * 100}%` }} />
@@ -273,8 +299,8 @@ export default function QueuePage() {
                                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-4">
                                     <UserCircle2 className="w-8 h-8 text-blue-500 flex-shrink-0" />
                                     <div>
-                                        <h4 className="font-bold text-sm text-blue-900 mb-1">Verified Fair Distribution</h4>
-                                        <p className="text-xs text-blue-700 leading-relaxed">System logs confirm this ticket was assigned automatically via round-robin weighting. Manual overrides were not engaged.</p>
+                                        <h4 className="font-bold text-sm text-blue-900 mb-1">{t('Verified Fair Distribution')}</h4>
+                                        <p className="text-xs text-blue-700 leading-relaxed">{t('System logs confirm this ticket was assigned automatically via round-robin weighting. Manual overrides were not engaged.')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -284,18 +310,18 @@ export default function QueuePage() {
                     {/* RIGHT COLUMN: PROGRESS TIMELINE */}
                     <div className="lg:col-span-4">
                         <div className={`p-6 rounded-3xl shadow-sm border h-full ${highContrast ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-100'}`}>
-                            <h3 className="text-lg font-bold mb-6">Resolution Timeline</h3>
+                            <h3 className="text-lg font-bold mb-6">{t('Resolution Timeline')}</h3>
 
                             <div className="relative pl-4 space-y-8">
                                 {/* Vertical Line Track */}
                                 <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-200 z-0" />
 
                                 {[
-                                    { step: 1, title: 'Complaint Submitted', date: new Date(activeComplaint.submittedAt).toLocaleString(), icon: CheckCircle2, complete: activeComplaint.stage >= 1 },
-                                    { step: 2, title: 'Routed to Department', date: new Date(new Date(activeComplaint.submittedAt).getTime() + 3600000).toLocaleString(), icon: ArrowRight, complete: activeComplaint.stage >= 2 },
+                                    { step: 1, title: 'Complaint Submitted', date: new Date(activeComplaint.submittedAt).toLocaleDateString(), icon: CheckCircle2, active: activeComplaint.stage === 1, complete: activeComplaint.stage > 1 },
+                                    { step: 2, title: 'Routed to Department', date: new Date(new Date(activeComplaint.submittedAt).getTime() + 3600000).toLocaleDateString(), icon: ArrowRight, active: activeComplaint.stage === 2, complete: activeComplaint.stage > 2 },
                                     { step: 3, title: 'Under Investigation', date: 'Active Phase', icon: PlayCircle, active: activeComplaint.stage === 3, complete: activeComplaint.stage > 3 },
                                     { step: 4, title: 'Resolution in Progress', date: 'Pending', icon: Clock, active: activeComplaint.stage === 4, complete: activeComplaint.stage > 4 },
-                                    { step: 5, title: 'Resolved & Closed', date: 'Pending Completion', icon: ShieldCheck, complete: activeComplaint.stage >= 5 },
+                                    { step: 5, title: 'Resolved & Closed', date: 'Pending Completion', icon: ShieldCheck, active: activeComplaint.stage === 5, complete: activeComplaint.stage > 5 },
                                 ].map((item, idx) => (
                                     <div key={idx} className={`relative z-10 flex gap-4 ${!item.complete && !item.active ? 'opacity-40' : ''}`}>
                                         <div className={`w-5 h-5 rounded-full mt-1 flex-shrink-0 flex items-center justify-center border-2 ${item.complete ? 'bg-green-500 border-green-500' :
@@ -305,8 +331,8 @@ export default function QueuePage() {
                                             {item.complete && <CheckCircle2 className="w-3 h-3 text-white" />}
                                         </div>
                                         <div>
-                                            <h4 className={`text-sm font-bold ${item.active ? 'text-primary' : ''}`}>{item.title}</h4>
-                                            <p className="text-xs text-gray-500 mt-1">{item.date}</p>
+                                            <h4 className={`text-sm font-bold ${item.active ? 'text-primary' : ''}`}>{t(item.title)}</h4>
+                                            <p className="text-xs text-gray-500 mt-1">{item.date === 'Pending' || item.date === 'Pending Completion' || item.date === 'Active Phase' ? t(item.date) : item.date}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -315,12 +341,12 @@ export default function QueuePage() {
                             <div className="mt-8 pt-8 border-t space-y-3">
                                 <Button className="w-full" asChild>
                                     <a href="/kiosk/complaint">
-                                        <PlusCircle className="w-4 h-4 mr-2" /> File New Complaint
+                                        <PlusCircle className="w-4 h-4 mr-2" /> {t('File New Complaint')}
                                     </a>
                                 </Button>
                                 <Button variant="outline" className="w-full" asChild>
                                     <a href="/kiosk">
-                                        <Home className="w-4 h-4 mr-2" /> Return Home
+                                        <Home className="w-4 h-4 mr-2" /> {t('Return Home')}
                                     </a>
                                 </Button>
                             </div>

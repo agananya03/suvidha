@@ -1,5 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { translateText } from "@/lib/translate";
+
+// Language list for selection
+const LANGUAGE_LIST = [
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "mr", name: "Marathi" },
+  { code: "te", name: "Telugu" },
+  { code: "ta", name: "Tamil" },
+  { code: "bn", name: "Bengali" },
+  { code: "pa", name: "Punjabi" },
+  { code: "gu", name: "Gujarati" },
+  { code: "kn", name: "Kannada" },
+  { code: "ml", name: "Malayalam" },
+  { code: "or", name: "Odia" },
+  { code: "as", name: "Assamese" },
+  { code: "ur", name: "Urdu" },
+  { code: "sd", name: "Sindhi" },
+  { code: "sa", name: "Sanskrit" },
+  { code: "ks", name: "Kashmiri" },
+  { code: "ne", name: "Nepali" },
+  { code: "kok", name: "Konkani" },
+  { code: "doi", name: "Dogri" },
+  { code: "mai", name: "Maithili" },
+];
 
 // 🔹 VERIFY (Meta webhook)
 export async function GET(req: NextRequest) {
@@ -39,7 +64,11 @@ export async function POST(req: NextRequest) {
 
     if (!state) {
       state = await prisma.userConversationState.create({
-        data: { phoneNumber, currentStep: "MENU" },
+        data: { 
+          phoneNumber, 
+          currentStep: "LANGUAGE_SELECT",
+          language: "en" 
+        },
       });
     }
 
@@ -50,7 +79,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Route message based on current step
-    await handleMessage(phoneNumber, text, state);
+    await handleMessage(phoneNumber, text, state, body);
 
     return NextResponse.json({ success: true });
   } catch (err) {
@@ -63,9 +92,16 @@ export async function POST(req: NextRequest) {
 async function handleMessage(
   phoneNumber: string,
   text: string,
-  state: any
+  state: any,
+  body: any = {}
 ) {
   const step = state.currentStep;
+
+  // Language selection must be done first
+  if (step === "LANGUAGE_SELECT") {
+    await handleLanguageSelection(phoneNumber, text);
+    return;
+  }
 
   // Always allow menu reset
   if (text === "menu") {
@@ -73,52 +109,90 @@ async function handleMessage(
       where: { phoneNumber },
       data: { currentStep: "MENU", department: null, issueType: null, description: null },
     });
-    await sendMainMenu(phoneNumber);
+    await sendMainMenu(phoneNumber, state.language);
     return;
   }
 
   // Route based on conversation step
   switch (step) {
     case "MENU":
-      await handleMenuSelection(phoneNumber, text);
+      await handleMenuSelection(phoneNumber, text, state.language);
       break;
     case "COMPLAINT_DEPT":
-      await handleDepartmentSelection(phoneNumber, text);
+      await handleDepartmentSelection(phoneNumber, text, state.language);
       break;
     case "COMPLAINT_ISSUE":
-      await handleIssueTypeSelection(phoneNumber, text, state.department);
+      await handleIssueTypeSelection(phoneNumber, text, state.department, state.language);
       break;
     case "COMPLAINT_DESC":
-      await handleComplaintDescription(phoneNumber, text, state.department, state.issueType);
+      await handleComplaintDescription(phoneNumber, text, state.department, state.issueType, state.language);
       break;
     case "COMPLAINT_CONFIRM":
-      await handleComplaintConfirmation(phoneNumber, text, state);
+      await handleComplaintConfirmation(phoneNumber, text, state, state.language);
       break;
     case "CHECK_STATUS":
-      await handleComplaintStatusCheck(phoneNumber, text);
+      await handleComplaintStatusCheck(phoneNumber, text, state.language);
       break;
     case "DOCUMENTS_SERVICE":
-      await handleDocumentsService(phoneNumber, text);
+      await handleDocumentsService(phoneNumber, text, state.language);
       break;
     case "DOCUMENTS_SELECT_TYPE":
-      await handleDocumentTypeSelection(phoneNumber, text, state.department || "");
+      await handleDocumentTypeSelection(phoneNumber, text, state.department || "", state.language);
       break;
     case "DOCUMENTS_WAITING_UPLOAD":
-      await handleDocumentUpload(phoneNumber, text, state.department || "", state.issueType || "", body);
+      await handleDocumentUpload(phoneNumber, text, state.department || "", state.issueType || "", body, state.language);
       break;
     case "DOCUMENTS_UPLOAD_MENU":
-      await handleDocumentUploadMenu(phoneNumber, text, state.department || "");
+      await handleDocumentUploadMenu(phoneNumber, text, state.department || "", state.language);
       break;
     case "SCHEMES_CATEGORY":
-      await handleSchemesCategory(phoneNumber, text);
+      await handleSchemesCategory(phoneNumber, text, state.language);
       break;
     default:
-      await sendMainMenu(phoneNumber);
+      await sendMainMenu(phoneNumber, state.language);
+  }
+}
+
+// 🔹 LANGUAGE SELECTION
+async function handleLanguageSelection(phoneNumber: string, text: string) {
+  // Check if user entered a language number
+  const selectedLangIndex = parseInt(text, 10) - 1;
+
+  if (selectedLangIndex >= 0 && selectedLangIndex < LANGUAGE_LIST.length) {
+    const selectedLanguage = LANGUAGE_LIST[selectedLangIndex].code;
+
+    // Save language preference
+    await prisma.userConversationState.update({
+      where: { phoneNumber },
+      data: {
+        language: selectedLanguage,
+        currentStep: "MENU",
+      },
+    });
+
+    const greeting =
+      selectedLanguage === "en"
+        ? "🎉 Welcome to Suvidha Kiosk!\n\nHow can I help you today?"
+        : "Welcome to Suvidha!";
+
+    await sendMessage(phoneNumber, greeting, selectedLanguage);
+    await sendMainMenu(phoneNumber, selectedLanguage);
+  } else {
+    // Invalid selection, show language list again
+    const languageOptions = LANGUAGE_LIST.map(
+      (lang, idx) => `${idx + 1}. ${lang.name}`
+    ).join("\n");
+
+    await sendMessage(
+      phoneNumber,
+      `Please select your language:\n\n${languageOptions}\n\nReply with the number of your choice:`,
+      "en"
+    );
   }
 }
 
 // 🔹 MENU HANDLER
-async function handleMenuSelection(phoneNumber: string, text: string) {
+async function handleMenuSelection(phoneNumber: string, text: string, language: string = "en") {
   if (text === "1" || text === "complaint") {
     await prisma.userConversationState.update({
       where: { phoneNumber },
@@ -126,14 +200,15 @@ async function handleMenuSelection(phoneNumber: string, text: string) {
     });
     await sendMessage(
       phoneNumber,
-      "Select the department:\n\n1. Electricity\n2. Gas\n3. Municipal (Water, Roads, etc.)"
+      "Select the department:\n\n1. Electricity\n2. Gas\n3. Municipal (Water, Roads, etc.)",
+      language
     );
   } else if (text === "2" || text === "status") {
     await prisma.userConversationState.update({
       where: { phoneNumber },
       data: { currentStep: "CHECK_STATUS" },
     });
-    await sendMessage(phoneNumber, "Please enter your Complaint ID:");
+    await sendMessage(phoneNumber, "Please enter your Complaint ID:", language);
   } else if (text === "3" || text === "documents") {
     await prisma.userConversationState.update({
       where: { phoneNumber },
@@ -141,7 +216,8 @@ async function handleMenuSelection(phoneNumber: string, text: string) {
     });
     await sendMessage(
       phoneNumber,
-      "Which service do you need documents for?\n\n1. Electricity\n2. Water\n3. Gas\n4. Birth Certificate"
+      "Which service do you need documents for?\n\n1. Electricity\n2. Water\n3. Gas\n4. Birth Certificate",
+      language
     );
   } else if (text === "4" || text === "schemes") {
     await prisma.userConversationState.update({
@@ -150,10 +226,11 @@ async function handleMenuSelection(phoneNumber: string, text: string) {
     });
     await sendMessage(
       phoneNumber,
-      "Select scheme category:\n\n1. Electricity\n2. Water\n3. Municipal"
+      "Select scheme category:\n\n1. Electricity\n2. Water\n3. Municipal",
+      language
     );
   } else {
-    await sendMainMenu(phoneNumber);
+    await sendMainMenu(phoneNumber, language);
   }
 }
 
@@ -563,12 +640,12 @@ async function handleSchemesCategory(phoneNumber: string, text: string) {
 }
 
 // 🔹 HELPER FUNCTIONS
-async function sendMainMenu(phoneNumber: string) {
+async function sendMainMenu(phoneNumber: string, language: string = "en") {
   const menu = `👋 *Welcome to SUVIDHA* 🤖\n\nHow can I help you?\n\n1. Register Complaint\n2. Check Complaint Status\n3. Documents Required\n4. Government Schemes`;
-  await sendMessage(phoneNumber, menu);
+  await sendMessage(phoneNumber, menu, language);
 }
 
-async function sendIssueTypeMenu(phoneNumber: string, department: string) {
+async function sendIssueTypeMenu(phoneNumber: string, department: string, language: string = "en") {
   const menus: Record<string, string> = {
     ELECTRICITY:
       "Select issue type:\n\n1. Bill related issue\n2. Power outage\n3. Meter problem\n4. New connection",
@@ -577,11 +654,17 @@ async function sendIssueTypeMenu(phoneNumber: string, department: string) {
       "Select issue type:\n\n1. Water leakage\n2. No water supply\n3. Road damage\n4. Street light not working",
   };
 
-  await sendMessage(phoneNumber, menus[department] || "Invalid department");
+  await sendMessage(phoneNumber, menus[department] || "Invalid department", language);
 }
 
-async function sendMessage(to: string, text: string) {
+async function sendMessage(to: string, text: string, language: string = "en") {
   try {
+    // Translate message if language is not English
+    let messageToSend = text;
+    if (language !== "en") {
+      messageToSend = await translateText(text, language);
+    }
+
     const response = await fetch(
       `https://graph.facebook.com/v18.0/${process.env.PHONE_NUMBER_ID}/messages`,
       {
@@ -595,7 +678,7 @@ async function sendMessage(to: string, text: string) {
           recipient_type: "individual",
           to,
           type: "text",
-          text: { body: text },
+          text: { body: messageToSend },
         }),
       }
     );
@@ -607,7 +690,7 @@ async function sendMessage(to: string, text: string) {
       return;
     }
     
-    console.log("✅ Message sent to", to);
+    console.log(`✅ Message sent to ${to} (${language})`);
   } catch (error) {
     console.error("❌ Error sending message:", error);
   }

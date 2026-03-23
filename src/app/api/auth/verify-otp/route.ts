@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { signToken } from '@/lib/auth';
+import { rateLimiter } from '@/lib/rateLimit';
+import { withDbRetry } from '@/lib/db-retry';
 
 export async function POST(req: NextRequest) {
     try {
@@ -10,8 +12,18 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Mobile and OTP are required' }, { status: 400 });
         }
 
+        // Throttle Verify Attempts per IP basis
+        const ip = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
+        const rateLimitResult = rateLimiter.checkLoginAttempt(ip);
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: `Too many login attempts. Please wait ${rateLimitResult.retryAfter} seconds.` },
+                { status: 429, headers: { 'Retry-After': String(rateLimitResult.retryAfter) } }
+            );
+        }
+
         // Find OTPSession: mobile match, otp match, not used, not expired
-        const session = await prisma.oTPSession.findFirst({
+        const session = await withDbRetry(() => prisma.oTPSession.findFirst({
             where: {
                 mobile,
                 otp,
@@ -23,7 +35,7 @@ export async function POST(req: NextRequest) {
             orderBy: {
                 createdAt: 'desc',
             },
-        });
+        }));
 
         if (!session) {
             return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 400 });
@@ -55,7 +67,7 @@ export async function POST(req: NextRequest) {
         };
         const token = signToken(payload);
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             token,
             user: {
                 id: user.id,
@@ -66,6 +78,17 @@ export async function POST(req: NextRequest) {
                 accessibilityMode: user.accessibilityMode,
             },
         });
+        
+        // Set cookie for middleware
+        response.cookies.set('token', token, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            path: '/',
+        });
+
+        return response;
     } catch (error) {
         console.error('Error verifying OTP:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

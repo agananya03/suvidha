@@ -9,7 +9,8 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
             return NextResponse.json({ error: 'Invalid token format. Must be 6 characters.' }, { status: 400 });
         }
 
-        const documentToken = await prisma.documentToken.findUnique({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const documentToken = await (prisma as any).documentToken.findUnique({
             where: { token: token.toUpperCase() }
         });
 
@@ -29,13 +30,17 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
         // For a true integration, we would just return metadata at this stage until user clicks "Accept"
         // Return file metadata without the encrypted payload to save bandwidth
         return NextResponse.json({
-            id: documentToken.id,
-            fileName: documentToken.fileName || 'Citizen Document',
-            fileSize: documentToken.fileSize,
-            mimeType: documentToken.mimeType,
-            expiresAt: documentToken.expiresAt,
-            message: 'Document waiting to be retrieved. Confirm consent to view.'
-        }, { status: 200 });
+  id: documentToken.id,
+  token: documentToken.token,
+  fileName: documentToken.fileName ?? 'Citizen Document',
+  fileSize: documentToken.fileSize ?? 0,
+  mimeType: documentToken.mimeType ?? 'application/octet-stream',
+  serviceType: documentToken.serviceType ?? null,
+  uploadedAt: documentToken.uploadedAt,
+  expiresAt: documentToken.expiresAt,
+  hasFile: !!documentToken.cloudinaryUrl,
+  message: 'Document ready. Confirm consent to view.',
+}, { status: 200 });
 
     } catch (error) {
         console.error('Document Retrieval Error:', error);

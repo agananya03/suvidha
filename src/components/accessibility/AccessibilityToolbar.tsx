@@ -5,10 +5,10 @@ import { Eye, Type, Volume2, MonitorPlay, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { webSpeech } from '@/lib/webSpeech';
 import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 export function AccessibilityToolbar() {
-    const { t } = useTranslation();
+    const { t } = useDynamicTranslation();
     const {
         highContrast, setHighContrast,
         fontSize, setFontSize,

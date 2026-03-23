@@ -9,7 +9,7 @@ const EMERGENCY_KEYWORDS = ['leak', 'leaking', 'hospital', 'flood', 'flooding', 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { description, type } = body;
+        const { description } = body;
 
         if (!description) {
             return NextResponse.json({ error: 'Description is required' }, { status: 400 });

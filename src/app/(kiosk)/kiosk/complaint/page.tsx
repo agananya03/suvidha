@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -6,15 +7,16 @@ import { useRouter } from 'next/navigation';
 import {
     Zap, Flame, Droplets, Trash2, HelpCircle,
     Mic, Image as ImageIcon, Send, Clock,
-    AlertTriangle, Lightbulb, CheckCircle2, Smartphone
+    AlertTriangle, Lightbulb, CheckCircle2, Smartphone, ShieldCheck, Camera
 } from 'lucide-react';
 import debounce from 'lodash.debounce';
 
-import { Button } from '@/components/ui/button';
 import { webSpeech } from '@/lib/webSpeech';
 import { useStore } from '@/lib/store';
+import { DemoDataBadge } from '@/components/ui/EmptyState';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
-// --- TYPES & INTERFACES --- //
 type ServiceType = 'ELECTRICITY' | 'GAS' | 'WATER' | 'MUNICIPAL' | 'OTHER';
 
 interface DNAAnalysis {
@@ -33,28 +35,70 @@ interface DNAAnalysis {
 export default function ComplaintPage() {
     const router = useRouter();
     const { language } = useStore();
+    const { t } = useDynamicTranslation();
+    const { isOnline } = useOnlineStatus();
 
-    // Form State
     const [serviceType, setServiceType] = useState<ServiceType | null>(null);
     const [description, setDescription] = useState('');
     const [isRecording, setIsRecording] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recognitionRef = useRef<any>(null); // For Web Speech API SpeechRecognition
+    const recognitionRef = useRef<any>(null);
 
-    // Questionnaire State
     const [qsmellGas, setQSmellGas] = useState<'yes' | 'no' | null>(null);
     const [qPowerOutage, setQPowerOutage] = useState<'flickering' | 'out' | null>(null);
 
-    // Analysis State
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [dnaAnalysis, setDnaAnalysis] = useState<DNAAnalysis | null>(null);
 
-    // Submission State
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
 
+    // --- LOCAL OFFLINE DNA FALLBACK --- //
+    const analyzeOffline = (text: string, type: ServiceType | null): DNAAnalysis => {
+        const lower = text.toLowerCase();
+        const KEYWORDS: Record<string, string[]> = {
+            ELECTRICITY: ['power', 'electricity', 'light', 'wire', 'voltage', 'outage', 'spark', 'meter', 'electric', 'current', 'flickering'],
+            GAS: ['gas', 'leak', 'smell', 'lpg', 'cylinder', 'pipeline', 'flame', 'burner'],
+            WATER: ['water', 'pipe', 'tap', 'drainage', 'sewage', 'flood', 'leak', 'supply', 'pump', 'bore'],
+            MUNICIPAL: ['road', 'pothole', 'garbage', 'waste', 'drain', 'street', 'lamp', 'park', 'sanitation', 'dust', 'cleaning'],
+        };
+
+        const matched: { word: string; department: string; weight: number }[] = [];
+        const deptScores: Record<string, number> = {};
+
+        for (const [dept, words] of Object.entries(KEYWORDS)) {
+            for (const word of words) {
+                if (lower.includes(word)) {
+                    matched.push({ word, department: dept, weight: 1 });
+                    deptScores[dept] = (deptScores[dept] || 0) + 1;
+                }
+            }
+        }
+
+        const sorted = Object.entries(deptScores).sort((a, b) => b[1] - a[1]);
+        const primaryDepartment = sorted[0]?.[0] || type || 'GENERAL';
+        const isMultiDepartment = sorted.length > 1 && sorted[1][1] >= sorted[0][1] * 0.5;
+        const departments = sorted.map(([d]) => d);
+
+        const urgencyWords = ['urgent', 'emergency', 'immediately', 'dangerous', 'critical', 'fire', 'explode', 'dead'];
+        const hasUrgency = urgencyWords.some(w => lower.includes(w));
+        const priority = hasUrgency ? 9 : Math.min(sorted[0]?.[1] ? sorted[0][1] + 3 : 4, 8);
+        const priorityLabel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = priority >= 9 ? 'CRITICAL' : priority >= 7 ? 'HIGH' : priority >= 5 ? 'MEDIUM' : 'LOW';
+
+        return {
+            departments,
+            primaryDepartment,
+            isMultiDepartment,
+            priority,
+            priorityLabel,
+            queuePosition: Math.floor(Math.random() * 30) + 10,
+            slaDays: priorityLabel === 'CRITICAL' ? 1 : priorityLabel === 'HIGH' ? 3 : 7,
+            matchedKeywords: matched,
+            urgencyFlags: hasUrgency ? ['Urgent language detected'] : [],
+            complaintDNA: `Local analysis — ${primaryDepartment} route (offline mode)`,
+        };
+    };
+
     // --- DEBOUNCED DNA ANALYSIS --- //
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const analyzeText = useCallback(
         debounce(async (text: string) => {
             if (text.length < 5) return;
@@ -63,14 +107,17 @@ export default function ComplaintPage() {
                 const res = await fetch('/api/complaints/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description: text, type: serviceType })
+                    body: JSON.stringify({ description: text, type: serviceType }),
+                    signal: AbortSignal.timeout(4000),
                 });
                 if (res.ok) {
                     const data = await res.json();
                     setDnaAnalysis(data);
+                } else {
+                    setDnaAnalysis(analyzeOffline(text, serviceType));
                 }
-            } catch (err) {
-                console.error("Analysis failed", err);
+            } catch {
+                setDnaAnalysis(analyzeOffline(text, serviceType));
             } finally {
                 setIsAnalyzing(false);
             }
@@ -86,14 +133,12 @@ export default function ComplaintPage() {
     // --- SPEECH RECOGNITION (WEB SPEECH API) --- //
     useEffect(() => {
         if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
             recognitionRef.current = new SpeechRecognition();
             recognitionRef.current.continuous = true;
             recognitionRef.current.interimResults = true;
             recognitionRef.current.lang = language === 'hi' ? 'hi-IN' : 'en-US';
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             recognitionRef.current.onresult = (event: any) => {
                 let finalTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -125,11 +170,8 @@ export default function ComplaintPage() {
         }
     };
 
-    // --- HIGHLIGHTER UTIL --- //
     const renderHighlightedText = () => {
         if (!dnaAnalysis || !description) return description;
-
-        // Sort words by length descending to prevent partial match overlaps
         const words = dnaAnalysis.matchedKeywords.map(k => k.word).sort((a, b) => b.length - a.length);
         if (words.length === 0) return description;
 
@@ -141,18 +183,55 @@ export default function ComplaintPage() {
             const match = dnaAnalysis.matchedKeywords.find(k => k.word.toLowerCase() === lowerPart);
 
             if (match) {
-                let colorClass = 'bg-gray-200';
-                if (match.department === 'ELECTRICITY') colorClass = 'bg-yellow-200 font-semibold text-yellow-900';
-                if (match.department === 'GAS') colorClass = 'bg-orange-200 font-semibold text-orange-900';
-                if (match.department === 'MUNICIPAL') colorClass = 'bg-green-200 font-semibold text-green-900';
+                let colorClass = 'bg-[var(--irs-gray-200)] text-[var(--irs-gray-800)]';
+                if (match.department === 'ELECTRICITY') colorClass = 'bg-[#fef0d9] text-[#b45309]';
+                if (match.department === 'GAS') colorClass = 'bg-[#ffedd5] text-[#c2410c]';
+                if (match.department === 'MUNICIPAL') colorClass = 'bg-[#dcfce7] text-[#15803d]';
 
-                return <span key={i} className={`${colorClass} px-1 rounded mx-0.5`}>{part}</span>;
+                return <span key={i} className={`${colorClass} px-1 rounded mx-0.5 font-bold`}>{part}</span>;
             }
             return part;
         });
     };
 
-    // --- FORM SUBMISSION --- //
+    const queueComplaintLocally = async (payload: { serviceType: string; description: string; dnaAnalysis: unknown; }) => {
+        const { queueAction } = await import('@/lib/offlineDb');
+        const { createSignedSyncItem } = await import('@/lib/offlineCrypto');
+        const signedItem = await createSignedSyncItem('complaint', payload);
+        await queueAction(signedItem);
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            const sw = await navigator.serviceWorker.ready;
+            // @ts-expect-error
+            sw.sync.register('sync-complaints').catch(() => {});
+        }
+        return { queued: true as const };
+    };
+
+    const submitComplaintWithOfflineFallback = async (payload: { serviceType: string; description: string; dnaAnalysis: unknown; }) => {
+        if (!isOnline || !navigator.onLine) {
+            return queueComplaintLocally(payload);
+        }
+
+        const submitPromise = fetch('/api/complaints/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        }).then(async (res) => {
+            if (!res.ok) throw new Error('Server error');
+            return res.json();
+        });
+
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 3000)
+        );
+
+        try {
+            return await Promise.race([submitPromise, timeoutPromise]);
+        } catch {
+            return queueComplaintLocally(payload);
+        }
+    };
+
     const handleSubmit = async () => {
         if (description.length < 20) return;
         setIsSubmitting(true);
@@ -167,69 +246,67 @@ export default function ComplaintPage() {
                 slaDeadline: dnaAnalysis?.slaDays ? new Date(Date.now() + dnaAnalysis.slaDays * 86400000).toISOString() : undefined
             };
 
-            const res = await fetch('/api/complaints/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            const result = await submitComplaintWithOfflineFallback({
+                serviceType: serviceType || 'OTHER',
+                description,
+                dnaAnalysis: dnaAnalysis || null
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                setSubmittedTicket(data.complaint.ticketId);
-                // Announce success
+            if (result.queued) {
+                const { suvidhaToast } = await import('@/lib/toast');
+                suvidhaToast.success('Complaint saved — will submit automatically when connected.');
+                router.push('/kiosk/queue');
+            } else if (result.complaint?.ticketId) {
+                setSubmittedTicket(result.complaint.ticketId);
                 if (useStore.getState().voiceMode) {
-                    webSpeech.speak(`Complaint submitted successfully. Your ticket number is ${data.complaint.ticketId}`);
+                    webSpeech.speak(`Complaint submitted successfully. Your ticket number is ${result.complaint.ticketId}`);
                 }
             } else {
                 alert("Failed to submit complaint.");
             }
         } catch (err) {
             console.error(err);
+            alert("Failed to submit complaint.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // --- RENDER HELPERS --- //
     const getPriorityColor = (label?: string) => {
         switch (label) {
-            case 'CRITICAL': return 'bg-red-500 text-red-100';
-            case 'HIGH': return 'bg-orange-500 text-orange-100';
-            case 'MEDIUM': return 'bg-yellow-500 text-yellow-900';
-            default: return 'bg-green-500 text-green-100';
+            case 'CRITICAL': return 'bg-[#d54309] text-white';
+            case 'HIGH': return 'bg-[#e5a000] text-black';
+            case 'MEDIUM': return 'bg-[var(--irs-blue-light)] text-[var(--irs-navy)]';
+            default: return 'bg-[var(--irs-success)] text-white';
         }
     };
 
-    // --- SUCCESS SCREEN --- //
     if (submittedTicket) {
         return (
-            <motion.div
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className="flex-grow flex items-center justify-center p-8 bg-gray-50"
-            >
-                <div className="bg-white rounded-3xl p-10 max-w-lg w-full text-center shadow-xl border">
-                    <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle2 className="w-12 h-12" />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex items-center justify-center p-8 bg-[var(--irs-gray-100)]">
+                <div className="bg-white rounded-[var(--radius-xl)] p-10 max-w-lg w-full text-center shadow-md border border-[var(--irs-gray-200)]">
+                    <div className="w-20 h-20 bg-[var(--irs-success)] text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <CheckCircle2 className="w-10 h-10" />
                     </div>
-                    <h1 className="text-3xl font-bold mb-2">Complaint Logged</h1>
-                    <p className="text-gray-500 mb-8">Your request has been successfully recorded in the centralized routing system.</p>
+                    <h1 className="text-[var(--font-2xl)] font-bold text-[var(--irs-navy)] mb-2">{t('Complaint Logged')}</h1>
+                    <p className="text-[var(--font-md)] text-[var(--irs-gray-600)] mb-8">{t('Your request has been successfully recorded in the centralized routing system.')}</p>
 
-                    <div className="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100">
-                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Ticket ID</p>
-                        <p className="text-3xl font-mono font-bold text-primary tracking-widest">{submittedTicket}</p>
+                    <div className="bg-[var(--irs-blue-pale)] p-6 rounded-[var(--radius-lg)] mb-8 border border-[var(--irs-blue-light)]">
+                        <p className="kiosk-label uppercase mb-1">{t('Ticket ID')}</p>
+                        <p className="text-[var(--font-2xl)] font-mono font-bold text-[var(--irs-blue-mid)] tracking-widest">{submittedTicket}</p>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-8 flex items-center justify-center gap-2">
-                        <Smartphone className="w-4 h-4" /> You will receive live updates via WhatsApp
+                    <p className="text-[var(--font-sm)] font-bold text-[var(--irs-gray-600)] mb-8 flex items-center justify-center gap-2">
+                        <Smartphone className="w-4 h-4 text-[var(--irs-blue-mid)]" /> {t('You will receive live updates via WhatsApp')}
                     </p>
 
-                    <div className="space-y-3">
-                        <Button size="lg" className="w-full" onClick={() => router.push('/kiosk/queue')}>
-                            Track this Complaint
-                        </Button>
-                        <Button variant="outline" size="lg" className="w-full" onClick={() => router.push('/kiosk')}>
-                            Return to Home
-                        </Button>
+                    <div className="space-y-4 gap-4">
+                        <button className="btn-primary w-full" onClick={() => router.push('/kiosk/queue')}>
+                            {t('Track this Complaint')}
+                        </button>
+                        <button className="text-[var(--irs-blue-mid)] font-bold underline w-full" onClick={() => router.push('/kiosk')}>
+                            {t('Return to Home')}
+                        </button>
                     </div>
                 </div>
             </motion.div>
@@ -237,22 +314,19 @@ export default function ComplaintPage() {
     }
 
     return (
-        <div className="flex-grow p-4 lg:p-8 bg-gray-50/50">
+        <div className="kiosk-page p-4 lg:p-8">
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
                 {/* LEFT COLUMN: FORM */}
                 <div className="flex-1 space-y-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Register Complaint</h1>
-                        <p className="text-gray-500">Our AI routing system will automatically assign the correct departments.</p>
+                        <h1 className="kiosk-page-title mb-2">{t('Register Complaint')}</h1>
+                        <p className="text-[var(--font-md)] text-[var(--irs-gray-600)] font-medium">{t('Our AI routing system will automatically assign the correct departments.')}</p>
                     </div>
 
                     {/* Step 1: Service Type */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">1</span>
-                            Select Category
-                        </h2>
+                    <div className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)]">
+                        <h2 className="kiosk-label mb-4">{t('SELECT CATEGORY')}</h2>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                             {[
                                 { id: 'ELECTRICITY', icon: Zap, label: 'Electricity' },
@@ -264,13 +338,13 @@ export default function ComplaintPage() {
                                 <button
                                     key={btn.id}
                                     onClick={() => setServiceType(btn.id as ServiceType)}
-                                    className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${serviceType === btn.id
-                                        ? 'border-orange-500 bg-orange-50 text-orange-700'
-                                        : 'border-gray-200 bg-white hover:border-orange-200 hover:bg-orange-50/50'
+                                    className={`flex flex-col items-center justify-center p-4 rounded-[var(--radius-md)] border-2 transition-all ${serviceType === btn.id
+                                        ? 'border-[var(--irs-blue-mid)] bg-[var(--irs-blue-pale)] text-[var(--irs-navy)]'
+                                        : 'border-[var(--irs-gray-200)] bg-white hover:border-[var(--irs-blue-light)] hover:bg-[var(--irs-gray-100)]'
                                         }`}
                                 >
-                                    <btn.icon className={`w-8 h-8 mb-2 ${serviceType === btn.id ? 'text-orange-500' : 'text-gray-400'}`} />
-                                    <span className="text-sm font-medium">{btn.label}</span>
+                                    <btn.icon className={`w-8 h-8 mb-2 ${serviceType === btn.id ? 'text-[var(--irs-blue-mid)]' : 'text-[var(--irs-gray-500)]'}`} />
+                                    <span className="text-[var(--font-sm)] font-bold">{t(btn.label)}</span>
                                 </button>
                             ))}
                         </div>
@@ -279,108 +353,110 @@ export default function ComplaintPage() {
                     {/* Step 2: Smart Questionnaire */}
                     <AnimatePresence>
                         {serviceType === 'GAS' && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                <h3 className="font-bold mb-4">Do you currently smell gas in the vicinity?</h3>
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)] overflow-hidden">
+                                <h3 className="kiosk-label text-[var(--font-lg)] mb-4">{t('DO YOU CURRENTLY SMELL GAS IN THE VICINITY?')}</h3>
                                 <div className="flex gap-4">
-                                    <Button variant={qsmellGas === 'yes' ? 'destructive' : 'outline'} onClick={() => { setQSmellGas('yes'); setDescription(prev => prev + " Strong smell of gas detected."); }}>YES</Button>
-                                    <Button variant={qsmellGas === 'no' ? 'default' : 'outline'} onClick={() => setQSmellGas('no')}>NO</Button>
+                                    <button className={qsmellGas === 'yes' ? 'btn-primary bg-[var(--irs-error)] border-[var(--irs-error)] text-white w-32' : 'btn-secondary w-32'} onClick={() => { setQSmellGas('yes'); setDescription(prev => prev + " Strong smell of gas detected."); }}>{t('YES')}</button>
+                                    <button className={qsmellGas === 'no' ? 'btn-primary w-32' : 'btn-secondary w-32'} onClick={() => setQSmellGas('no')}>{t('NO')}</button>
                                 </div>
                                 {qsmellGas === 'yes' && (
-                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 p-4 bg-red-50 text-red-800 border-l-4 border-red-500 rounded-r-lg flex gap-3">
-                                        <AlertTriangle className="w-6 h-6 flex-shrink-0" />
-                                        <p className="font-bold text-sm">SAFETY WARNING: EVACUATE IMMEDIATELY. Do not use electrical switches. Call emergency services at 1906!</p>
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 kiosk-banner warning">
+                                        <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
+                                        <div className="font-bold">
+                                            {t('SAFETY WARNING: EVACUATE IMMEDIATELY. Do not use electrical switches. Call emergency services at 1906!')}
+                                        </div>
                                     </motion.div>
                                 )}
                             </motion.div>
                         )}
                         {serviceType === 'ELECTRICITY' && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                <h3 className="font-bold mb-4">Is the power completely out or just flickering?</h3>
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)] overflow-hidden">
+                                <h3 className="kiosk-label text-[var(--font-lg)] mb-4">{t('IS THE POWER COMPLETELY OUT OR JUST FLICKERING?')}</h3>
                                 <div className="flex gap-4">
-                                    <Button variant={qPowerOutage === 'out' ? 'default' : 'outline'} onClick={() => { setQPowerOutage('out'); setDescription(prev => prev + " Power is completely out."); }}>Completely Out</Button>
-                                    <Button variant={qPowerOutage === 'flickering' ? 'default' : 'outline'} onClick={() => { setQPowerOutage('flickering'); setDescription(prev => prev + " Power is flickering."); }}>Flickering</Button>
+                                    <button className={qPowerOutage === 'out' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setQPowerOutage('out'); setDescription(prev => prev + " Power is completely out."); }}>{t('Completely Out')}</button>
+                                    <button className={qPowerOutage === 'flickering' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setQPowerOutage('flickering'); setDescription(prev => prev + " Power is flickering."); }}>{t('Flickering')}</button>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    {/* Step 3: Description Form */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-bold flex items-center gap-2">
-                                <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">2</span>
-                                Describe the Issue
-                            </h2>
+                    {/* Step 3: Photo Upload (IRS Blue Pale styled) */}
+                    <div className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)]">
+                        <h2 className="kiosk-label mb-4">{t('UPLOAD EVIDENCE (OPTIONAL)')}</h2>
+                        <div className="w-full bg-[var(--irs-blue-pale)] border-2 border-dashed border-[var(--irs-blue-mid)] rounded-[var(--radius-lg)] p-8 text-center flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--irs-blue-light)] transition-colors">
+                            <Camera className="w-10 h-10 text-[var(--irs-blue-mid)] mb-3" />
+                            <span className="font-bold text-[var(--font-md)] text-[var(--irs-navy)]">{t('Tap to take photo')}</span>
+                            <span className="text-[var(--font-sm)] text-[var(--irs-gray-600)] font-medium mt-1">{t('or upload document supporting your complaint')}</span>
+                        </div>
+                    </div>
 
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={toggleRecording}
-                                    className={isRecording ? 'bg-red-50 text-red-600 border-red-200 animate-pulse' : ''}
-                                >
-                                    <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'animate-bounce' : ''}`} />
-                                    {isRecording ? 'Listening...' : 'Dictate'}
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => alert('Camera simulated for demo.')}>
-                                    <ImageIcon className="w-4 h-4 mr-2" /> Photo
-                                </Button>
-                            </div>
+                    {/* Step 4: Description Form */}
+                    <div className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)]">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="kiosk-label">{t('DESCRIBE THE ISSUE')}</h2>
+                            
+                            <button
+                                onClick={toggleRecording}
+                                className={`flex items-center gap-2 px-4 py-2 font-bold rounded-[var(--radius-md)] border-2 transition-all ${isRecording ? 'bg-[#fef0d9] border-[#d54309] text-[#d54309] animate-pulse' : 'bg-white border-[var(--irs-gray-300)] text-[var(--irs-gray-700)]'}`}
+                            >
+                                <Mic className={`w-4 h-4 ${isRecording ? 'animate-bounce' : ''}`} />
+                                {isRecording ? t('Listening...') : t('Dictate')}
+                            </button>
                         </div>
 
                         <textarea
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 min-h-[200px] focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none text-lg"
-                            placeholder="Please describe the problem in detail. The smart routing system analyzes your text as you type..."
+                            className="kiosk-input min-h-[200px] resize-none"
+                            placeholder={t('Please describe the problem in detail. The smart routing system analyzes your text as you type...')}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
 
-                        <div className="flex items-center justify-between mt-2 text-sm">
-                            <span className={`${description.length < 20 ? 'text-orange-500 font-medium' : 'text-green-600 font-medium'}`}>
-                                {description.length}/500 chars (Min 20 required)
+                        <div className="flex items-center justify-between mt-2 text-[var(--font-sm)]">
+                            <span className={`font-bold ${description.length < 20 ? 'text-[var(--irs-error)]' : 'text-[var(--irs-success)]'}`}>
+                                {description.length}/500 {t('chars (Min 20 required)')}
                             </span>
                         </div>
 
-                        <Button
-                            className="w-full mt-6"
-                            size="lg"
+                        {!isOnline && (
+                            <div className="mt-4 kiosk-banner">
+                                <AlertTriangle className="w-5 h-5 shrink-0" />
+                                <div>
+                                    <strong>Offline mode</strong> — complaint will be queued and submitted automatically when connected.
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            className="btn-primary w-full mt-6 h-[64px] text-[var(--font-lg)]"
                             disabled={description.length < 20 || isSubmitting}
                             onClick={handleSubmit}
                         >
-                            {isSubmitting ? 'Routing Complaint...' : 'Submit Complaint'} <Send className="w-4 h-4 ml-2" />
-                        </Button>
+                            {isSubmitting ? t('Routing Complaint...') : t('Submit Complaint')} <Send className="w-5 h-5 ml-2 inline-block" />
+                        </button>
                     </div>
                 </div>
 
                 {/* RIGHT COLUMN: LIVE DNA PANEL */}
-                <div className="w-full lg:w-[400px] xl:w-[450px]">
-                    <div className="sticky top-8 bg-gray-900 text-white rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-
-                        {/* Background subtle glow based on priority */}
-                        {dnaAnalysis && (
-                            <div className={`absolute top-0 right-0 w-64 h-64 blur-3xl rounded-full opacity-20 transform translate-x-1/2 -translate-y-1/2 ${dnaAnalysis.priorityLabel === 'CRITICAL' ? 'bg-red-500' :
-                                dnaAnalysis.priorityLabel === 'HIGH' ? 'bg-orange-500' :
-                                    dnaAnalysis.priorityLabel === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500'
-                                }`} />
-                        )}
-
-                        <div className="flex items-center justify-between mb-8 relative z-10">
-                            <h2 className="text-xl font-bold flex items-center gap-2">
-                                <Lightbulb className="w-5 h-5 text-yellow-400" />
-                                Live DNA Analysis
+                <div className="w-full lg:w-[450px]">
+                    <div className="sticky top-8 bg-white border-2 border-[var(--irs-gray-200)] rounded-[var(--radius-xl)] p-6 shadow-md relative overflow-hidden">
+                        
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-[var(--irs-gray-200)]">
+                            <h2 className="text-[var(--font-lg)] font-bold flex items-center gap-2 text-[var(--irs-navy)]">
+                                <ShieldCheck className="w-6 h-6 text-[var(--irs-blue-mid)]" />
+                                {t('AI Routing Preview')}
                             </h2>
                             {isAnalyzing && (
-                                <span className="flex items-center gap-2 text-sm text-gray-400 bg-gray-800 px-3 py-1 rounded-full">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                                    Analyzing...
+                                <span className="flex items-center gap-2 text-[var(--font-xs)] font-bold text-[var(--irs-blue-mid)] bg-[var(--irs-blue-pale)] px-3 py-1 rounded-full">
+                                    <span className="w-2 h-2 rounded-full bg-[var(--irs-blue-mid)] animate-pulse"></span>
+                                    {t('Analyzing...')}
                                 </span>
                             )}
                         </div>
 
                         {!dnaAnalysis && description.length < 5 && (
-                            <div className="text-center py-12 text-gray-500 relative z-10 border-2 border-dashed border-gray-700 rounded-2xl">
-                                <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                                <p>Start typing to see AI routing decisions...</p>
+                            <div className="text-center py-16 text-[var(--irs-gray-500)]">
+                                <Lightbulb className="w-12 h-12 mx-auto mb-4 text-[var(--irs-gray-300)]" />
+                                <p className="font-medium px-4">{t('Start typing to see which department this will be assigned to...')}</p>
                             </div>
                         )}
 
@@ -389,61 +465,38 @@ export default function ComplaintPage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="space-y-6 relative z-10"
+                                    className="space-y-6"
                                 >
-                                    {/* 2. Keyword Highlights Review */}
-                                    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Audited Transcript</p>
-                                        <p className="text-sm leading-relaxed text-gray-300">
-                                            {renderHighlightedText()}
-                                        </p>
-                                    </div>
-
-                                    {/* 3. Department Routing Badge */}
-                                    <motion.div
-                                        initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-                                        className="bg-gray-800 rounded-xl p-4 border border-gray-700"
-                                    >
-                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Calculated Routing</p>
-                                        <div className="flex items-center gap-3">
+                                    
+                                    <div className="kiosk-banner block-banner bg-[var(--irs-blue-pale)] border-[var(--irs-blue-light)] shadow-none">
+                                        <p className="kiosk-label uppercase mb-2">{t('Calculated Routing')}</p>
+                                        <div className="flex items-center gap-4">
                                             {dnaAnalysis.isMultiDepartment ? (
-                                                <div className="flex -space-x-2">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-gray-800 z-10"><Zap className="w-5 h-5 text-white" /></div>
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg border-2 border-gray-800 z-0"><Trash2 className="w-5 h-5 text-white" /></div>
-                                                </div>
+                                                <div className="w-12 h-12 rounded-full bg-[var(--irs-warning)] text-white flex items-center justify-center font-bold">MULTI</div>
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg">
-                                                    <CheckCircle2 className="w-5 h-5 text-white" />
-                                                </div>
+                                                <div className="w-12 h-12 rounded-full bg-[var(--irs-blue-mid)] text-white flex items-center justify-center font-bold">Single</div>
                                             )}
                                             <div>
-                                                <p className="font-bold text-lg">
-                                                    {dnaAnalysis.isMultiDepartment ? 'Multi-Department' : dnaAnalysis.primaryDepartment}
+                                                <p className="text-[var(--font-lg)] font-bold text-[var(--irs-navy)]">
+                                                    {dnaAnalysis.isMultiDepartment ? t('Multi-Department') : t(dnaAnalysis.primaryDepartment)}
                                                 </p>
                                                 {dnaAnalysis.isMultiDepartment && (
-                                                    <p className="text-xs text-blue-300">{dnaAnalysis.departments.join(' + ')}</p>
+                                                    <p className="text-[var(--font-sm)] font-bold text-[var(--irs-blue-mid)]">{dnaAnalysis.departments.join(' + ')}</p>
                                                 )}
                                             </div>
                                         </div>
-                                        <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-700 italic">
-                                            {dnaAnalysis.complaintDNA}
-                                        </p>
-                                    </motion.div>
+                                    </div>
 
-                                    {/* 4. Priority Meter */}
-                                    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                                    <div className="p-4 bg-[var(--irs-gray-100)] rounded-[var(--radius-lg)] border border-[var(--irs-gray-200)]">
                                         <div className="flex justify-between items-end mb-2">
-                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Priority Index</p>
-                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-sm ${getPriorityColor(dnaAnalysis.priorityLabel)}`}>
+                                            <p className="kiosk-label">{t('Priority Classification')}</p>
+                                            <span className={`text-[var(--font-sm)] font-bold px-3 py-1 rounded-[var(--radius-sm)] shadow-sm tracking-widest ${getPriorityColor(dnaAnalysis.priorityLabel)}`}>
                                                 {dnaAnalysis.priorityLabel}
                                             </span>
                                         </div>
-                                        <div className="h-3 w-full bg-gray-700 rounded-full overflow-hidden">
+                                        <div className="h-2 w-full bg-[var(--irs-gray-300)] rounded-full overflow-hidden mt-3">
                                             <motion.div
-                                                className={`h-full ${dnaAnalysis.priorityLabel === 'CRITICAL' ? 'bg-red-500' :
-                                                    dnaAnalysis.priorityLabel === 'HIGH' ? 'bg-orange-500' :
-                                                        dnaAnalysis.priorityLabel === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500'
-                                                    }`}
+                                                className={`h-full ${dnaAnalysis.priorityLabel === 'CRITICAL' ? 'bg-[#d54309]' : dnaAnalysis.priorityLabel === 'HIGH' ? 'bg-[#e5a000]' : dnaAnalysis.priorityLabel === 'MEDIUM' ? 'bg-[var(--irs-blue-mid)]' : 'bg-[var(--irs-success)]'}`}
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(dnaAnalysis.priority / 10) * 100}%` }}
                                                 transition={{ type: "spring", stiffness: 50 }}
@@ -451,20 +504,24 @@ export default function ComplaintPage() {
                                         </div>
                                     </div>
 
-                                    {/* 5 & 6. Queue & SLA */}
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 text-center">
-                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Queue Position</p>
-                                            <p className="text-3xl font-bold font-mono">#{dnaAnalysis.queuePosition}</p>
-                                            <p className="text-xs text-gray-500 mt-1">Est. live tracking</p>
+                                        <div className="p-4 bg-white rounded-[var(--radius-lg)] border-2 border-[var(--irs-gray-200)] text-center shadow-sm">
+                                            <p className="kiosk-label text-[var(--font-xs)]">{t('Est. Queue')}</p>
+                                            <p className="text-[var(--font-xl)] font-bold font-mono text-[var(--irs-navy)] mt-1">#{dnaAnalysis.queuePosition}</p>
                                         </div>
-                                        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 text-center flex flex-col justify-center">
-                                            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">SLA Target</p>
-                                            <div className="flex items-center justify-center gap-1 text-2xl font-bold text-blue-400">
-                                                <Clock className="w-5 h-5" /> {dnaAnalysis.slaDays}
+                                        <div className="p-4 bg-white rounded-[var(--radius-lg)] border-2 border-[var(--irs-gray-200)] text-center shadow-sm">
+                                            <p className="kiosk-label text-[var(--font-xs)]">{t('SLA Target')}</p>
+                                            <div className="flex items-center justify-center gap-1 text-[var(--font-xl)] font-bold text-[var(--irs-blue-mid)] mt-1">
+                                                <Clock className="w-5 h-5" /> {dnaAnalysis.slaDays} {t('Days')}
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">Maximum Days</p>
                                         </div>
+                                    </div>
+                                    
+                                    <div className="p-5 bg-white rounded-[var(--radius-lg)] border border-[var(--irs-gray-200)] text-[var(--font-sm)]">
+                                        <p className="kiosk-label text-[var(--irs-gray-600)] mb-2">{t('System Audit (Keywords matched)')}</p>
+                                        <p className="leading-relaxed">
+                                            {renderHighlightedText()}
+                                        </p>
                                     </div>
 
                                 </motion.div>
