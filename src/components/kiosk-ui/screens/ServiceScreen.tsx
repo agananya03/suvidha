@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useKioskStore } from '@/store/useKioskStore';
 import { Power, Flame, Droplets, Trash2, FileText, UserCircle2, LogOut, ArrowRight } from 'lucide-react';
+import { BackButton } from '@/components/kiosk/BackButton';
 
 export function ServiceScreen() {
     const { setScreen, citizen, logout } = useKioskStore();
@@ -53,6 +54,7 @@ export function ServiceScreen() {
             exit={{ opacity: 0 }}
             className="w-full h-full flex flex-col p-12 relative"
         >
+            <BackButton onClick={() => setScreen('HOME')} variant="dark" />
             <div className="flex justify-between items-center mb-16 mt-8 px-4">
                 <div>
                     <h1 className="text-6xl font-display font-bold text-white mb-2">

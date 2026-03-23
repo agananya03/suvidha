@@ -48,6 +48,159 @@ const POLICIES = [
   { title: 'RDSS Scheme Benefits', desc: 'Revamped Distribution Sector Scheme provides pre-paid smart meters and improved service quality.', icon: '📊', color: 'bg-purple-50 border-purple-200 text-purple-800' },
 ];
 
+function AnomalyBarChart() {
+  const months = [
+    { month: 'Sep', units: 255, amount: 570 },
+    { month: 'Oct', units: 210, amount: 465 },
+    { month: 'Nov', units: 230, amount: 510 },
+    { month: 'Dec', units: 280, amount: 620 },
+    { month: 'Jan', units: 245, amount: 540 },
+    { month: 'Feb', units: 540, amount: 1247, anomaly: true },
+  ];
+
+  const maxUnits = Math.max(...months.map(m => m.units));
+  const chartHeight = 80;
+  const barWidth = 32;
+  const gap = 12;
+  const totalWidth = months.length * (barWidth + gap) - gap;
+
+  return (
+    <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-bold text-gray-700">
+          6-Month Consumption (units)
+        </p>
+        <span className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded-full border border-red-200 font-medium">
+          ⚠️ Feb anomaly detected
+        </span>
+      </div>
+
+      <svg
+        width="100%"
+        viewBox={`0 0 ${totalWidth + 20} ${chartHeight + 40}`}
+        className="overflow-visible"
+      >
+        {months.map((m, i) => {
+          const barHeight = (m.units / maxUnits) * chartHeight;
+          const x = i * (barWidth + gap);
+          const y = chartHeight - barHeight;
+
+          return (
+            <g key={m.month}>
+              {/* Bar */}
+              <motion.rect
+                x={x}
+                y={y + 4}
+                width={barWidth}
+                height={barHeight}
+                rx={4}
+                fill={m.anomaly ? '#EF4444' : '#3B82F6'}
+                opacity={m.anomaly ? 1 : 0.6}
+                initial={{ scaleY: 0, originY: 1 }}
+                animate={{ scaleY: 1 }}
+                transition={{
+                  delay: i * 0.08,
+                  duration: 0.5,
+                  ease: 'easeOut',
+                }}
+                style={{ transformOrigin: `${x + barWidth / 2}px ${chartHeight + 4}px` }}
+              />
+
+              {/* Anomaly glow effect */}
+              {m.anomaly && (
+                <motion.rect
+                  x={x - 2}
+                  y={y + 2}
+                  width={barWidth + 4}
+                  height={barHeight + 4}
+                  rx={6}
+                  fill="none"
+                  stroke="#EF4444"
+                  strokeWidth={2}
+                  opacity={0.4}
+                  animate={{ opacity: [0.4, 0.9, 0.4] }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                />
+              )}
+
+              {/* Units label on top of bar */}
+              <text
+                x={x + barWidth / 2}
+                y={y}
+                textAnchor="middle"
+                fontSize={m.anomaly ? 11 : 9}
+                fontWeight={m.anomaly ? 'bold' : 'normal'}
+                fill={m.anomaly ? '#EF4444' : '#6B7280'}
+              >
+                {m.units}
+              </text>
+
+              {/* Month label below */}
+              <text
+                x={x + barWidth / 2}
+                y={chartHeight + 20}
+                textAnchor="middle"
+                fontSize={10}
+                fill={m.anomaly ? '#EF4444' : '#9CA3AF'}
+                fontWeight={m.anomaly ? 'bold' : 'normal'}
+              >
+                {m.month}
+              </text>
+
+              {/* Anomaly arrow */}
+              {m.anomaly && (
+                <text
+                  x={x + barWidth / 2}
+                  y={y - 10}
+                  textAnchor="middle"
+                  fontSize={14}
+                >
+                  ↑
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Average line */}
+        {(() => {
+          const avgUnits = 245;
+          const avgY = chartHeight - (avgUnits / maxUnits) * chartHeight + 4;
+          return (
+            <g>
+              <line
+                x1={0}
+                y1={avgY}
+                x2={totalWidth}
+                y2={avgY}
+                stroke="#9CA3AF"
+                strokeWidth={1}
+                strokeDasharray="4 3"
+              />
+              <text
+                x={totalWidth + 4}
+                y={avgY + 4}
+                fontSize={9}
+                fill="#9CA3AF"
+              >
+                avg
+              </text>
+            </g>
+          );
+        })()}
+      </svg>
+
+      <p className="text-xs text-red-500 font-medium mt-1">
+        Feb consumption is 2.2× your 6-month average — AI flagged for review
+      </p>
+    </div>
+  );
+}
+
 export default function ElectricityPage() {
   const router = useRouter();
   const { t } = useDynamicTranslation();
@@ -111,6 +264,7 @@ export default function ElectricityPage() {
 
             {activeTab === 'bill' && (
               <div className="space-y-5">
+                <AnomalyBarChart />
                 <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-6">
                   <div className="flex items-start gap-4">
                     <AlertTriangle className="w-8 h-8 text-amber-600 shrink-0 mt-1" />

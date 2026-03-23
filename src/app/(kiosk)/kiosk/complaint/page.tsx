@@ -7,12 +7,14 @@ import { useRouter } from 'next/navigation';
 import {
     Zap, Flame, Droplets, Trash2, HelpCircle,
     Mic, Image as ImageIcon, Send, Clock,
-    AlertTriangle, Lightbulb, CheckCircle2, Smartphone, ShieldCheck, Camera
+    AlertTriangle, Lightbulb, CheckCircle2, Smartphone, ShieldCheck, Camera, Copy
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import debounce from 'lodash.debounce';
 
 import { webSpeech } from '@/lib/webSpeech';
 import { useStore } from '@/lib/store';
+import { useKioskStore } from '@/store/useKioskStore';
 import { DemoDataBadge } from '@/components/ui/EmptyState';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -51,6 +53,16 @@ export default function ComplaintPage() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
+    const [successData, setSuccessData] = useState<{
+        ticketId: string;
+        department: string;
+        priorityLabel: string;
+        slaDays: number;
+        queuePosition: number;
+    } | null>(null);
+    const [copied, setCopied] = useState(false);
+    const user = useKioskStore(state => state.user);
+    const { voiceMode } = useStore();
 
     // --- LOCAL OFFLINE DNA FALLBACK --- //
     const analyzeOffline = (text: string, type: ServiceType | null): DNAAnalysis => {
@@ -257,9 +269,17 @@ export default function ComplaintPage() {
                 suvidhaToast.success('Complaint saved — will submit automatically when connected.');
                 router.push('/kiosk/queue');
             } else if (result.complaint?.ticketId) {
-                setSubmittedTicket(result.complaint.ticketId);
+                const ticketId = result.complaint.ticketId;
+                setSubmittedTicket(ticketId);
+                setSuccessData({
+                    ticketId,
+                    department: dnaAnalysis?.primaryDepartment || 'GENERAL',
+                    priorityLabel: dnaAnalysis?.priorityLabel || 'MEDIUM',
+                    slaDays: dnaAnalysis?.slaDays || 7,
+                    queuePosition: dnaAnalysis?.queuePosition || 0,
+                });
                 if (useStore.getState().voiceMode) {
-                    webSpeech.speak(`Complaint submitted successfully. Your ticket number is ${result.complaint.ticketId}`);
+                    webSpeech.speak(`Complaint filed successfully. Your ticket number is ${ticketId}. You will receive WhatsApp updates.`);
                 }
             } else {
                 alert("Failed to submit complaint.");
@@ -281,33 +301,174 @@ export default function ComplaintPage() {
         }
     };
 
-    if (submittedTicket) {
+    if (submittedTicket && successData) {
+        const handleCopy = () => {
+            navigator.clipboard.writeText(submittedTicket).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            });
+        };
+
+        const timelineSteps = [
+            { label: t('Complaint Received'), status: 'done', note: '' },
+            { label: t('Assigned to Officer'), status: 'pending', note: t('Within 24 hours') },
+            { label: t('Investigation Begins'), status: 'pending', note: t(`Within ${successData.slaDays} days`) },
+        ];
+
         return (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex items-center justify-center p-8 bg-[var(--irs-gray-100)]">
-                <div className="bg-white rounded-[var(--radius-xl)] p-10 max-w-lg w-full text-center shadow-md border border-[var(--irs-gray-200)]">
-                    <div className="w-20 h-20 bg-[var(--irs-success)] text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                        <CheckCircle2 className="w-10 h-10" />
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="kiosk-page p-4 lg:p-8 overflow-y-auto"
+            >
+                <div className="max-w-3xl mx-auto space-y-6">
+
+                    {/* ── Top: Confirmation stamp ── */}
+                    <div className="text-center pt-4">
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
+                            className="w-24 h-24 bg-[var(--irs-success)] text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+                        >
+                            <CheckCircle2 className="w-12 h-12" strokeWidth={2.5} />
+                        </motion.div>
+                        <h1 className="text-[var(--font-2xl)] font-bold text-[var(--irs-navy)] mb-2">
+                            {t('Complaint Filed Successfully!')}
+                        </h1>
+                        <p className="text-[var(--font-md)] text-[var(--irs-gray-600)] max-w-lg mx-auto">
+                            {t('Your complaint has been registered with the government grievance system')}
+                        </p>
                     </div>
-                    <h1 className="text-[var(--font-2xl)] font-bold text-[var(--irs-navy)] mb-2">{t('Complaint Logged')}</h1>
-                    <p className="text-[var(--font-md)] text-[var(--irs-gray-600)] mb-8">{t('Your request has been successfully recorded in the centralized routing system.')}</p>
 
-                    <div className="bg-[var(--irs-blue-pale)] p-6 rounded-[var(--radius-lg)] mb-8 border border-[var(--irs-blue-light)]">
-                        <p className="kiosk-label uppercase mb-1">{t('Ticket ID')}</p>
-                        <p className="text-[var(--font-2xl)] font-mono font-bold text-[var(--irs-blue-mid)] tracking-widest">{submittedTicket}</p>
+                    {/* ── Ticket card ── */}
+                    <div className="bg-white border border-[var(--irs-gray-200)] rounded-2xl p-6 shadow-sm space-y-4">
+                        {/* Ticket ID + copy */}
+                        <div className="flex items-center justify-between gap-4 bg-[var(--irs-blue-pale)] rounded-xl px-5 py-4">
+                            <div>
+                                <p className="kiosk-label mb-1">{t('Ticket ID')}</p>
+                                <p className="text-[var(--font-xl)] font-mono font-bold text-[var(--irs-blue-mid)] tracking-widest">
+                                    {submittedTicket}
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleCopy}
+                                className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] border border-[var(--irs-blue-light)] bg-white text-[var(--irs-blue-mid)] font-bold text-[var(--font-sm)] hover:bg-[var(--irs-blue-light)] transition-colors"
+                            >
+                                <Copy className="w-4 h-4" />
+                                {copied ? t('Copied!') : t('Copy')}
+                            </button>
+                        </div>
+
+                        {/* Details grid */}
+                        <div className="grid grid-cols-2 gap-4 text-[var(--font-sm)]">
+                            <div className="p-3 bg-[var(--irs-gray-100)] rounded-lg">
+                                <p className="kiosk-label text-[var(--font-xs)] mb-1">{t('Department')}</p>
+                                <p className="font-bold text-[var(--irs-navy)]">{t(successData.department)}</p>
+                            </div>
+                            <div className="p-3 bg-[var(--irs-gray-100)] rounded-lg">
+                                <p className="kiosk-label text-[var(--font-xs)] mb-1">{t('Priority')}</p>
+                                <span className={`text-[var(--font-xs)] font-bold px-2 py-0.5 rounded ${getPriorityColor(successData.priorityLabel)}`}>
+                                    {successData.priorityLabel}
+                                </span>
+                            </div>
+                            <div className="p-3 bg-[var(--irs-gray-100)] rounded-lg">
+                                <p className="kiosk-label text-[var(--font-xs)] mb-1">{t('SLA Target')}</p>
+                                <p className="font-bold text-[var(--irs-navy)]">
+                                    {t(`Response within ${successData.slaDays} working days`)}
+                                </p>
+                            </div>
+                            <div className="p-3 bg-[var(--irs-gray-100)] rounded-lg">
+                                <p className="kiosk-label text-[var(--font-xs)] mb-1">{t('Queue Position')}</p>
+                                <p className="font-bold text-[var(--irs-navy)]">
+                                    #{successData.queuePosition} {t(`in ${successData.department} queue`)}
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <p className="text-[var(--font-sm)] font-bold text-[var(--irs-gray-600)] mb-8 flex items-center justify-center gap-2">
-                        <Smartphone className="w-4 h-4 text-[var(--irs-blue-mid)]" /> {t('You will receive live updates via WhatsApp')}
-                    </p>
+                    {/* ── Continue on Your Phone (QR handoff) ── */}
+                    <div className="bg-[var(--irs-blue-pale)] border border-[var(--irs-blue-light)] rounded-2xl p-5">
+                        <div className="flex flex-col sm:flex-row items-center gap-6">
+                            {/* QR code */}
+                            <div className="shrink-0 bg-white rounded-xl p-3 shadow-sm">
+                                <QRCodeSVG
+                                    value={`${typeof window !== 'undefined' ? window.location.origin : 'https://suvidha.gov.in'}/track/${submittedTicket}`}
+                                    size={112}
+                                    bgColor="#ffffff"
+                                    fgColor="#003087"
+                                    level="M"
+                                />
+                            </div>
+                            {/* Explanation */}
+                            <div className="text-center sm:text-left">
+                                <p className="font-bold text-[var(--irs-navy)] text-[var(--font-md)] mb-1">
+                                    {t('Continue on Your Phone')}
+                                </p>
+                                <p className="text-[var(--irs-blue-mid)] text-[var(--font-sm)] leading-relaxed">
+                                    {t('Scan this QR code to track your complaint status from your phone. You can step away from the kiosk — your ticket is saved.')}
+                                </p>
+                                <p className="mt-2 text-[var(--font-xs)] text-[var(--irs-gray-600)] font-mono break-all">
+                                    /track/{submittedTicket}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div className="space-y-4 gap-4">
-                        <button className="btn-primary w-full" onClick={() => router.push('/kiosk/queue')}>
-                            {t('Track this Complaint')}
+                    {/* ── WhatsApp notification banner ── */}
+                    <div className="flex items-start gap-4 bg-green-50 border border-green-200 rounded-2xl p-5">
+                        <div className="bg-green-100 p-3 rounded-full shrink-0">
+                            <Smartphone className="w-6 h-6 text-green-700" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-green-900 text-[var(--font-md)]">
+                                {t('Updates will be sent to')} {user?.mobile ?? t('your registered number')}
+                            </p>
+                            <p className="text-green-700 text-[var(--font-sm)] mt-1">
+                                {t("You'll receive a message when your complaint is assigned, investigated, and resolved")}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* ── What happens next timeline ── */}
+                    <div className="bg-white border border-[var(--irs-gray-200)] rounded-2xl p-6 shadow-sm">
+                        <h2 className="kiosk-label mb-5">{t('WHAT HAPPENS NEXT')}</h2>
+                        <div className="flex flex-col md:flex-row gap-0 md:gap-0 relative">
+                            {/* connector line (desktop) */}
+                            <div className="hidden md:block absolute top-5 left-[calc(16.67%-1px)] right-[calc(16.67%-1px)] h-0.5 bg-[var(--irs-gray-200)] z-0" />
+                            {timelineSteps.map((step, i) => (
+                                <div key={i} className="flex md:flex-col items-start md:items-center md:flex-1 gap-4 md:gap-2 md:text-center relative z-10 mb-6 md:mb-0">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shrink-0 ${
+                                        step.status === 'done'
+                                            ? 'bg-[var(--irs-success)] border-[var(--irs-success)] text-white'
+                                            : 'bg-white border-[var(--irs-gray-300)] text-[var(--irs-gray-400)]'
+                                    }`}>
+                                        {step.status === 'done'
+                                            ? <CheckCircle2 className="w-5 h-5" />
+                                            : <span className="text-[var(--font-xs)] font-bold">{i + 1}</span>
+                                        }
+                                    </div>
+                                    <div>
+                                        <p className={`font-bold text-[var(--font-sm)] ${
+                                            step.status === 'done' ? 'text-[var(--irs-success)]' : 'text-[var(--irs-gray-600)]'
+                                        }`}>{step.label}</p>
+                                        {step.note && <p className="text-[var(--font-xs)] text-[var(--irs-gray-500)] mt-0.5">{step.note}</p>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ── Action buttons ── */}
+                    <div className="flex flex-col sm:flex-row gap-3 pb-8">
+                        <button className="btn-primary flex-1" onClick={() => router.push('/kiosk/queue')}>
+                            {t('Track This Complaint')}
                         </button>
-                        <button className="text-[var(--irs-blue-mid)] font-bold underline w-full" onClick={() => router.push('/kiosk')}>
-                            {t('Return to Home')}
+                        <button className="btn-secondary flex-1" onClick={() => router.push('/kiosk/dashboard')}>
+                            {t('Return to Services')}
                         </button>
                     </div>
+
                 </div>
             </motion.div>
         );

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useKioskStore } from '@/store/useKioskStore';
 import { ArrowLeft, Building2, FileText, CheckCircle2 } from 'lucide-react';
+import { BackButton } from '@/components/kiosk/BackButton';
 
 const InfoIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
 
@@ -21,12 +22,16 @@ export function BillPaymentScreen() {
     };
 
     return (
+        // BackButton for steps 2 & 3 — rendered outside AnimatePresence so it doesn't animate away
         <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             className="w-full h-full flex flex-col p-12"
         >
+            {/* Fixed Back button for steps 2 & 3 — step 1 already has an inline back in the stepper row */}
+            {step === 2 && <BackButton onClick={() => setStep(1)} variant="dark" />}
+            {step === 3 && !isProcessing && <BackButton onClick={() => setStep(2)} variant="dark" />}
             <div className="flex justify-between items-center mb-12">
                 <button onClick={() => setScreen('SERVICE')} className="flex items-center gap-3 text-white/70 hover:text-white px-8 py-4 bg-white/5 rounded-full border border-white/10 text-2xl font-bold transition-all hover:bg-white/10">
                     <ArrowLeft size={32} /> Back

@@ -26,6 +26,120 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
 );
 
+function KioskMapCard({
+  distance = '0.8 km',
+  name = 'Civil Lines SUVIDHA Kiosk',
+  hours = 'Open 8AM – 8PM · Mon–Sat',
+  walkTime = '~10 min walk',
+}: {
+  distance?: string;
+  name?: string;
+  hours?: string;
+  walkTime?: string;
+}) {
+  return (
+    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm mt-2">
+
+      {/* Map visual — pure CSS, zero API calls */}
+      <div className="relative h-28 bg-[#E8F0E8] overflow-hidden">
+
+        {/* Grid lines simulating map roads */}
+        <svg
+          className="absolute inset-0 w-full h-full"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Horizontal roads */}
+          <line x1="0" y1="30" x2="100%" y2="30" stroke="#D4E4D4" strokeWidth="6"/>
+          <line x1="0" y1="65" x2="100%" y2="65" stroke="#C8D8C8" strokeWidth="10"/>
+          <line x1="0" y1="95" x2="100%" y2="95" stroke="#D4E4D4" strokeWidth="4"/>
+
+          {/* Vertical roads */}
+          <line x1="25%" y1="0" x2="25%" y2="100%" stroke="#D4E4D4" strokeWidth="4"/>
+          <line x1="55%" y1="0" x2="55%" y2="100%" stroke="#C8D8C8" strokeWidth="8"/>
+          <line x1="80%" y1="0" x2="80%" y2="100%" stroke="#D4E4D4" strokeWidth="4"/>
+
+          {/* Building blocks */}
+          <rect x="5%" y="5" width="18%" height="20" rx="2" fill="#D0DDD0" opacity="0.8"/>
+          <rect x="30%" y="8" width="22%" height="16" rx="2" fill="#C8D8C8" opacity="0.9"/>
+          <rect x="60%" y="5" width="17%" height="22" rx="2" fill="#D0DDD0" opacity="0.8"/>
+          <rect x="5%" y="75" width="15%" height="15" rx="2" fill="#C8D8C8" opacity="0.7"/>
+          <rect x="62%" y="72" width="15%" height="18" rx="2" fill="#D0DDD0" opacity="0.8"/>
+
+          {/* You are here dot */}
+          <circle cx="20%" cy="65" r="5" fill="#3B82F6" opacity="0.9"/>
+          <circle cx="20%" cy="65" r="9" fill="#3B82F6" opacity="0.2"/>
+          <text x="20%" y="58" textAnchor="middle" fontSize="7" fill="#1D4ED8" fontWeight="bold">
+            You
+          </text>
+
+          {/* Route line from you to kiosk */}
+          <polyline
+            points="20%,65 20%,40 55%,40 55%,55"
+            fill="none"
+            stroke="#22C55E"
+            strokeWidth="2.5"
+            strokeDasharray="5 3"
+            strokeLinecap="round"
+          />
+
+          {/* Distance badge on route */}
+          <rect x="30%" y="32" width="18%" height="12" rx="3" fill="#22C55E"/>
+          <text x="39%" y="41" textAnchor="middle" fontSize="7" fill="white" fontWeight="bold">
+            {distance}
+          </text>
+        </svg>
+
+        {/* Pin at kiosk location */}
+        <div className="absolute" style={{ left: 'calc(55% - 12px)', top: '28px' }}>
+          <div className="relative">
+            {/* Pulse ring */}
+            <div className="absolute inset-0 w-6 h-6 rounded-full bg-green-400 animate-ping opacity-30" />
+            {/* Pin body */}
+            <div className="relative w-6 h-6 bg-green-500 rounded-full border-2 border-white shadow-md flex items-center justify-center z-10">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              </svg>
+            </div>
+            {/* Pin tail */}
+            <div className="w-0 h-0 mx-auto" style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '6px solid #22C55E' }} />
+          </div>
+        </div>
+
+        {/* Top-right badge */}
+        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-sm border border-gray-200">
+          <p className="text-xs font-bold text-gray-700">
+            {walkTime}
+          </p>
+        </div>
+      </div>
+
+      {/* Info card below the map */}
+      <div className="bg-white px-3 py-2.5 flex items-center gap-3">
+        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold text-gray-900 truncate">
+            {name}
+          </p>
+          <p className="text-xs text-green-600 font-medium">
+            {hours}
+          </p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className="text-xs font-bold text-green-600">
+            {distance}
+          </p>
+          <p className="text-xs text-gray-400">away</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const INITIAL_BOT_MSG: React.ReactNode = (
     <div className="space-y-2">
         <p>Namaste! 🙏 I am the SUVIDHA assistance bot.</p>
@@ -62,10 +176,7 @@ const REQ_CHECK_MSG: React.ReactNode = (
                 <span>Best time to visit:</span>
                 <span className="font-bold">10 AM - 12 PM or 3 PM - 5 PM</span>
             </div>
-            <div className="flex items-start gap-1 text-xs text-blue-700 mt-2">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span><b>Nearest kiosk:</b> Civil Lines Office, 0.8 km away</span>
-            </div>
+            <KioskMapCard />
         </div>
 
         <p className="font-bold text-green-800">Would you like to pre-upload your documents to save time?</p>
@@ -123,10 +234,7 @@ const GAS_REQ_MSG: React.ReactNode = (
         <span>Best time to visit:</span>
         <span className="font-bold">11 AM - 1 PM</span>
       </div>
-      <div className="flex items-start gap-1 text-xs text-blue-700 mt-2">
-        <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <span><b>Nearest kiosk:</b> Civil Lines Office, 0.8 km away</span>
-      </div>
+      <KioskMapCard walkTime="~10 min walk" />
     </div>
     <p className="font-bold text-green-800">Would you like to pre-upload your documents?</p>
   </div>
@@ -151,10 +259,7 @@ const WATER_REQ_MSG: React.ReactNode = (
         <span>Best time to visit:</span>
         <span className="font-bold">9 AM - 11 AM</span>
       </div>
-      <div className="flex items-start gap-1 text-xs text-blue-700 mt-2">
-        <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <span><b>Nearest kiosk:</b> Civil Lines Office, 0.8 km away</span>
-      </div>
+      <KioskMapCard walkTime="~10 min walk" />
     </div>
     <p className="font-bold text-green-800">Would you like to pre-upload your documents?</p>
   </div>
@@ -179,6 +284,7 @@ const COMPLAINT_REQ_MSG: React.ReactNode = (
         <span>Estimated resolution:</span>
         <span className="font-bold">7–15 days (SLA enforced)</span>
       </div>
+      <KioskMapCard walkTime="~10 min walk" />
     </div>
     <p className="font-bold text-green-800">
       Want to pre-upload photo evidence to speed up resolution?
@@ -207,10 +313,12 @@ const QUEUE_STATUS_MSG: React.ReactNode = (
         <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs font-bold">MEDIUM — 15 min (34 people)</span>
       </div>
     </div>
-    <div className="flex items-start gap-1 text-xs text-blue-700">
-      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-      <span><b>Nearest kiosk:</b> Civil Lines Office, 0.8 km away</span>
-    </div>
+    <KioskMapCard
+      name="Civil Lines SUVIDHA Kiosk"
+      hours="Open 8AM – 8PM · Mon–Sat"
+      distance="0.8 km"
+      walkTime="~10 min walk"
+    />
     <p className="text-sm text-gray-500">
       Type <b>MENU</b> to go back or choose another service.
     </p>

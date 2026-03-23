@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     AlertTriangle,
@@ -77,6 +77,8 @@ export default function PaymentPage() {
     const router = useRouter();
     const { t } = useDynamicTranslation();
     const [cachedAt, setCachedAt] = useState<number | null>(null);
+    const hasPrinted = useRef(false);
+    const user = useKioskStore(state => state.user);
 
     // UI State
     const [view, setView] = useState<
@@ -132,6 +134,15 @@ export default function PaymentPage() {
         };
         loadCachedBill();
     }, []);
+
+    // Auto-print once when payment succeeds — standard on gov portals (CSC, UMANG)
+    useEffect(() => {
+        if (view === 'success' && !hasPrinted.current) {
+            hasPrinted.current = true;
+            const timer = setTimeout(() => window.print(), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [view]);
 
     // Receipt Data
     const [receiptData, setReceiptData] = useState<{
@@ -790,8 +801,33 @@ export default function PaymentPage() {
                       },
                     } satisfies ReceiptData} />
 
-                    <div className="mt-6 text-center">
-                      <Button onClick={() => router.push('/kiosk')} size="lg">
+                    {/* WhatsApp confirmation banner */}
+                    <div className="mt-6 flex items-start gap-4 bg-green-50 border border-green-200 rounded-2xl p-4 print:hidden">
+                      <div className="bg-green-100 p-2 rounded-full shrink-0">
+                        <Smartphone className="w-5 h-5 text-green-700" />
+                      </div>
+                      <p className="text-green-800 font-medium text-sm">
+                        {t('Payment confirmation will be sent to')} <strong>{user?.mobile ?? t('your WhatsApp')}</strong>
+                      </p>
+                    </div>
+
+                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                      {/* Primary: print again (user may have missed the auto-print prompt) */}
+                      <Button
+                        size="lg"
+                        className="w-full sm:w-auto h-14 px-10 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg"
+                        onClick={() => window.print()}
+                      >
+                        <Printer className="w-5 h-5 mr-2" />
+                        {t('Print Receipt')}
+                      </Button>
+                      {/* Secondary: navigate away */}
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        className="w-full sm:w-auto h-14"
+                        onClick={() => router.push('/kiosk')}
+                      >
                         {t('Return to Services')}
                       </Button>
                     </div>

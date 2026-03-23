@@ -14,6 +14,9 @@ export interface CitizenRecord {
   mobile: string;
   name?: string;
   email?: string;
+  address?: string;       // last used address
+  lastVisitAt?: number;   // timestamp of last kiosk visit
+  visitCount?: number;    // how many times they have visited
   cachedAt: number;
 }
 
