@@ -47,7 +47,7 @@ async function getAccessToken(): Promise<string> {
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 
   if (!serviceAccountJson) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON not set');
+    throw new Error('Neither GOOGLE_TTS_API_KEY nor GOOGLE_SERVICE_ACCOUNT_JSON are set');
   }
 
   const credentials = JSON.parse(serviceAccountJson);
@@ -94,16 +94,30 @@ export async function POST(request: NextRequest) {
           languageCode: voiceConfig.code,
         };
 
-    const accessToken = await getAccessToken();
+    const apiKey = process.env.GOOGLE_TTS_API_KEY;
+    let accessToken = '';
+
+    if (!apiKey) {
+      accessToken = await getAccessToken();
+    }
+
+    const url = apiKey 
+      ? `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`
+      : 'https://texttospeech.googleapis.com/v1/text:synthesize';
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
 
     const response = await fetch(
-      'https://texttospeech.googleapis.com/v1/text:synthesize',
+      url,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           input: { text },
           voice,

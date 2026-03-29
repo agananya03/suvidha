@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -201,7 +201,7 @@ function AnomalyBarChart() {
   );
 }
 
-export default function ElectricityPage() {
+function ElectricityContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useDynamicTranslation();
@@ -540,5 +540,17 @@ export default function ElectricityPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function ElectricityPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-full flex items-center justify-center bg-[#F0F7FF]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004085]"></div>
+      </div>
+    }>
+      <ElectricityContent />
+    </Suspense>
   );
 }

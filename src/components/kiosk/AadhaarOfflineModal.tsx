@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, ShieldCheck, CheckCircle2, QrCode } from 'lucide-react';
+import { Upload, X, QrCode, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
 import { uploadAadhaarZip, type AadhaarKycData } from '@/lib/aadhaarOfflineKyc';
@@ -13,22 +13,19 @@ interface AadhaarOfflineModalProps {
 }
 
 export default function AadhaarOfflineModal({ onSuccess, onClose }: AadhaarOfflineModalProps) {
-    const [step, setStep] = useState<'upload' | 'verifying' | 'success' | 'error'>('upload');
+    const [step, setStep] = useState<'upload' | 'verifying' | 'error'>('upload');
     const [zipFile, setZipFile] = useState<File | null>(null);
     const [shareCode, setShareCode] = useState('');
-    const [kycData, setKycData] = useState<AadhaarKycData | null>(null);
     const [errorMessage, setErrorMessage] = useState('');
-    const [signatureVerified, setSignatureVerified] = useState(false);
 
     const handleVerify = async () => {
         if (!zipFile || shareCode.length < 4) return;
         
         setStep('verifying');
         try {
-            const { kycData: uploadedKycData, signatureVerified: verifiedStatus } = await uploadAadhaarZip(zipFile, shareCode);
-            setKycData(uploadedKycData);
-            setSignatureVerified(verifiedStatus);
-            setStep('success');
+            const { kycData: uploadedKycData } = await uploadAadhaarZip(zipFile, shareCode);
+            toast.success("Identity verified successfully!");
+            onSuccess(uploadedKycData);
         } catch (err: any) {
             setErrorMessage(err.message || 'Error parsing ZIP. Check share code.');
             setStep('error');
@@ -118,47 +115,7 @@ export default function AadhaarOfflineModal({ onSuccess, onClose }: AadhaarOffli
                             </motion.div>
                         )}
 
-                        {step === 'success' && kycData && (
-                            <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6">
-                                <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle2 className="w-10 h-10" />
-                                </div>
-                                
-                                {kycData.photo && (
-                                    <img 
-                                        src={`data:image/jpeg;base64,${kycData.photo}`} 
-                                        alt="Aadhaar Photo" 
-                                        className="w-24 h-24 rounded-full mx-auto border-4 border-white shadow-md object-cover"
-                                    />
-                                )}
 
-                                <div>
-                                    <h2 className="text-2xl font-bold">{kycData.name}</h2>
-                                    <p className="font-mono text-xl text-gray-500 mt-1">XXXX-XXXX-{kycData.referenceId.slice(-4)}</p>
-                                    <div className="flex items-center justify-center gap-4 mt-3 text-sm text-gray-600 font-medium">
-                                        <span>DOB: {kycData.dob}</span>
-                                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                                        <span>Gender: {kycData.gender}</span>
-                                    </div>
-                                </div>
-
-                                <Button className="w-full py-6 text-lg rounded-xl" onClick={() => onSuccess(kycData)}>
-                                    Continue
-                                </Button>
-
-                                <div className="pt-4 border-t border-gray-100">
-                                    {!signatureVerified ? (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
-                                            Signature verification pending — demo mode
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs text-gray-500 font-medium flex items-center justify-center gap-1">
-                                            <ShieldCheck className="w-4 h-4 text-green-500" /> Verified by UIDAI Digital Signature
-                                        </span>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
 
                         {step === 'error' && (
                             <motion.div key="error" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6">

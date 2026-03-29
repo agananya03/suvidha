@@ -17,7 +17,7 @@ const MOCK_DIGILOCKER_DOCS = [
     { id: '3', name: 'Driving License', type: 'ID PROOF', date: '2022-01-15' },
 ];
 
-export default function DocumentHandler() {
+export default function DocumentHandler({ onComplete }: { onComplete?: () => void }) {
     const { highContrast } = useStore();
     const { t } = useDynamicTranslation();
     const [activeTab, setActiveTab] = useState<'digilocker' | 'scanner' | 'token'>('digilocker');
@@ -35,7 +35,7 @@ export default function DocumentHandler() {
     const [token, setToken] = useState('');
     const [tokenStatus, setTokenStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [tokenError, setTokenError] = useState('');
-    const [tokenData, setTokenData] = useState<{ fileName: string; fileSize: number; mimeType: string; message: string } | null>(null);
+    const [tokenData, setTokenData] = useState<{ fileName: string; fileSize: number; mimeType: string; message: string; fileUrl?: string } | null>(null);
 
     // --- TAB 1: DIGILOCKER HANDLERS --- //
     const handleDigiLockerRequest = () => {
@@ -211,7 +211,10 @@ export default function DocumentHandler() {
                                             </div>
                                         ))}
                                     </div>
-                                    <button className="btn-primary w-full h-[64px]" disabled={selectedDocs.length === 0} onClick={() => alert('Documents attached!')}>
+                                    <button className="btn-primary w-full h-[64px]" disabled={selectedDocs.length === 0} onClick={() => {
+                                        if (onComplete) onComplete();
+                                        else alert('Documents attached!');
+                                    }}>
                                         Attach {selectedDocs.length} Document{selectedDocs.length !== 1 && 's'}
                                     </button>
                                 </motion.div>
@@ -290,7 +293,10 @@ export default function DocumentHandler() {
                                     </div>
                                     <div className="flex gap-4">
                                         <button className="btn-secondary w-full h-[64px]" onClick={() => setScanStatus('idle')}>{t('Rescan')}</button>
-                                        <button className="btn-primary w-full h-[64px]" onClick={() => alert('Attached scanned file!')}>{t('Attach File')}</button>
+                                        <button className="btn-primary w-full h-[64px]" onClick={() => {
+                                            if (onComplete) onComplete();
+                                            else alert('Attached scanned file!');
+                                        }}>{t('Attach File')}</button>
                                     </div>
                                 </motion.div>
                             )}
@@ -362,13 +368,22 @@ export default function DocumentHandler() {
                                     </div>
 
                                     <div className="flex gap-4 mt-8">
-                                        <button className="btn-secondary w-full h-[64px]" onClick={() => { setTokenStatus('idle'); setToken(''); }}>
-                                            {t('Use Another')}
-                                        </button>
-                                        <button className="btn-primary w-full h-[64px]" onClick={() => alert('Consent Verified. Document Attached!')}>
+                                        <button className="btn-primary w-full h-[64px]" onClick={() => {
+                                            if (onComplete) {
+                                                onComplete();
+                                            } else {
+                                                alert('Consent Verified. Document Attached!');
+                                            }
+                                        }}>
                                             {t('Confirm & Attach')}
                                         </button>
                                     </div>
+                                    
+                                    {tokenData.fileUrl && (
+                                        <button className="btn-secondary w-full h-[48px] mt-4 flex items-center justify-center gap-2" onClick={() => window.open(tokenData.fileUrl, '_blank')}>
+                                            <FileText className="w-5 h-5" /> {t('View Document')}
+                                        </button>
+                                    )}
                                     
                                 </motion.div>
                             )}

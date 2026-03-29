@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { translateText } from "@/lib/translate";
+import twilio from "twilio";
 
 // Language list for selection
 const LANGUAGE_LIST = [
@@ -26,34 +27,27 @@ const LANGUAGE_LIST = [
   { code: "mai", name: "Maithili" },
 ];
 
-// 🔹 VERIFY (Meta webhook)
+// 🔹 VERIFY (Twilio doesn't require this, keeping stub just in case)
 export async function GET(req: NextRequest) {
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-
-  const url = new URL(req.url);
-  const mode = url.searchParams.get("hub.mode");
-  const token = url.searchParams.get("hub.verify_token");
-  const challenge = url.searchParams.get("hub.challenge");
-
-  if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    return new NextResponse(challenge, { status: 200 });
-  }
-
-  return new NextResponse("Forbidden", { status: 403 });
+  return new NextResponse("Twilio Webhook Endpoint is active", { status: 200 });
 }
 
 // 🔹 RECEIVE MESSAGE
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    const formData = await req.formData();
+    
+    // Twilio parameters
+    const phoneNumber = formData.get("From")?.toString().trim(); // 'whatsapp:+14155238886'
+    const text = formData.get("Body")?.toString().toLowerCase().trim() || "";
+    
+    // Twilio Media (if user uploaded a photo/doc)
+    const mediaUrl = formData.get("MediaUrl0")?.toString() || null;
+    const mediaType = formData.get("MediaContentType0")?.toString() || "image";
 
-    if (!message) {
+    if (!phoneNumber) {
       return NextResponse.json({ success: true });
     }
-
-    const phoneNumber = message.from;
-    const text = message.text?.body?.toLowerCase().trim() || "";
 
     console.log("📩 Incoming from", phoneNumber, ":", text);
 
@@ -78,13 +72,19 @@ export async function POST(req: NextRequest) {
       data: { lastMessageAt: new Date() },
     });
 
+    // Pass the twilio media links inside body
+    const twilioPayload = { mediaUrl, mediaType };
+    
     // Route message based on current step
-    await handleMessage(phoneNumber, text, state, body);
+    await handleMessage(phoneNumber, text, state, twilioPayload);
 
-    return NextResponse.json({ success: true });
+    // Provide empty TwiML response as we'll manually send messages asynchronously
+    return new NextResponse("<Response></Response>", {
+      headers: { "Content-Type": "text/xml" }
+    });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Webhook error" }, { status: 500 });
+    return new NextResponse("Webhook error", { status: 500 });
   }
 }
 
@@ -520,11 +520,11 @@ async function handleDocumentUpload(
     return;
   }
 
-  // Check if message contains image/document
-  const media = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.image ||
-                body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.document;
+  // Check if message contains mediaUrl from Twilio payload
+  const mediaUrl = body?.mediaUrl;
+  const mediaType = body?.mediaType;
 
-  if (media) {
+  if (mediaUrl) {
     try {
       // Store document in database
       const document = await prisma.document.create({
@@ -532,10 +532,10 @@ async function handleDocumentUpload(
           phoneNumber,
           service,
           documentType,
-          fileName: media.caption || `${documentType}_${Date.now()}`,
-          fileUrl: "", // Would be populated with Cloudinary URL in production
-          mediaId: media.id,
-          mediaType: media.mime_type || "image",
+          fileName: `${documentType}_${Date.now()}`,
+          fileUrl: mediaUrl, // Twilio provides direct file URL
+          mediaId: mediaUrl,
+          mediaType: mediaType || "image",
         },
       });
 
@@ -665,34 +665,16 @@ async function sendMessage(to: string, text: string, language: string = "en") {
       messageToSend = await translateText(text, language);
     }
 
-    const response = await fetch(
-      `https://graph.facebook.com/v18.0/${process.env.PHONE_NUMBER_ID}/messages`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.ACCESS_TOKEN}`,
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to,
-          type: "text",
-          text: { body: messageToSend },
-        }),
-      }
-    );
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      console.error("❌ Failed to send message:", data);
-      return;
-    }
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    await client.messages.create({
+      body: messageToSend,
+      from: process.env.TWILIO_WHATSAPP_NUMBER || "whatsapp:+14155238886",
+      to,
+    });
     
     console.log(`✅ Message sent to ${to} (${language})`);
   } catch (error) {
-    console.error("❌ Error sending message:", error);
+    console.error("❌ Error sending message via Twilio:", error);
   }
 }
 

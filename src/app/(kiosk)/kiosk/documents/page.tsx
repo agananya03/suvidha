@@ -39,7 +39,7 @@ export default function DocumentsPage() {
             {/* Main Content */}
             <div className="flex-1 overflow-y-auto p-6 pl-24 md:p-8 md:pl-28">
                 <div className="max-w-4xl mx-auto">
-                    <DocumentHandler />
+                    <DocumentHandler onComplete={() => router.push('/kiosk/pay')} />
                 </div>
             </div>
         </div>
