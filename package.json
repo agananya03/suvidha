@@ -63,6 +63,9 @@
     "ws": "^8.19.0",
     "zustand": "^5.0.11"
   },
+  "overrides": {
+    "rimraf": "^4.0.0"
+  },
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",
