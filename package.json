@@ -64,7 +64,12 @@
     "zustand": "^5.0.11"
   },
   "overrides": {
-    "rimraf": "^4.0.0"
+    "rimraf": "^4.0.0",
+    "glob": "^10.4.5",
+    "@humanwhocodes/config-array": "npm:@eslint/config-array@latest",
+    "@humanwhocodes/object-schema": "npm:@eslint/object-schema@latest",
+    "source-map": "^0.7.4",
+    "node-domexception": "^1.0.0"
   },
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.9",
