@@ -11,64 +11,71 @@ export async function handleWhatsAppMessage(
   messageBody: string,
   mediaUrl?: string,
   mediaContentType?: string
-): Promise<void> {
+): Promise<string> {
   const session = await getSession(fromPhone);
 
   // Direct media upload — handle without AI
   if (session.step === 'WAITING_UPLOAD' && mediaUrl && mediaContentType) {
     try {
-      await sendWhatsAppMessage(fromPhone,
-        '⏳ Got your document! Processing securely...');
+      const immediateResponse = '⏳ Got your document! Processing securely...';
+      
+      // Return immediate response for TwiML, process in background
+      setImmediate(async () => {
+        try {
+          const credentials = Buffer.from(
+            `${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`
+          ).toString('base64');
 
-      const credentials = Buffer.from(
-        `${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`
-      ).toString('base64');
+          const mediaRes = await fetch(mediaUrl, {
+            headers: { Authorization: `Basic ${credentials}` },
+          });
+          if (!mediaRes.ok) throw new Error('Media download failed');
 
-      const mediaRes = await fetch(mediaUrl, {
-        headers: { Authorization: `Basic ${credentials}` },
+          const buffer = Buffer.from(await mediaRes.arrayBuffer());
+          const extMap: Record<string, string> = {
+            'image/jpeg': 'jpg', 'image/png': 'png',
+            'application/pdf': 'pdf', 'image/webp': 'webp',
+          };
+          const ext = extMap[mediaContentType] ?? 'bin';
+          const filename = `wa-doc-${Date.now()}.${ext}`;
+
+          const formData = new FormData();
+          formData.append(
+            'file',
+            new Blob([buffer], { type: mediaContentType }),
+            filename
+          );
+          formData.append('serviceType', session.serviceType ?? '');
+
+          const uploadRes = await fetch(
+            `${BASE_URL}/api/documents/upload`,
+            { method: 'POST', body: formData }
+          );
+          if (!uploadRes.ok) throw new Error('Upload API failed');
+
+          const { token } = await uploadRes.json() as { token: string };
+
+          session.uploadedToken = token;
+          session.step = 'DONE';
+          session.history.push(
+            { role: 'user', content: '[Citizen sent a document via WhatsApp]' },
+            { role: 'assistant', content: `Document received. Token: ${token}` }
+          );
+          await saveSession(fromPhone, session);
+          await sendWhatsAppMessage(fromPhone, DONE_MSG(token));
+        } catch (err) {
+          console.error('[Bot] Media upload error:', err);
+          await sendWhatsAppMessage(fromPhone,
+            `❌ Could not process your document. Try again or use:\n${BASE_URL}/upload/${encodeURIComponent(fromPhone)}`
+          );
+        }
       });
-      if (!mediaRes.ok) throw new Error('Media download failed');
 
-      const buffer = Buffer.from(await mediaRes.arrayBuffer());
-      const extMap: Record<string, string> = {
-        'image/jpeg': 'jpg', 'image/png': 'png',
-        'application/pdf': 'pdf', 'image/webp': 'webp',
-      };
-      const ext = extMap[mediaContentType] ?? 'bin';
-      const filename = `wa-doc-${Date.now()}.${ext}`;
-
-      const formData = new FormData();
-      formData.append(
-        'file',
-        new Blob([buffer], { type: mediaContentType }),
-        filename
-      );
-      formData.append('serviceType', session.serviceType ?? '');
-
-      const uploadRes = await fetch(
-        `${BASE_URL}/api/documents/upload`,
-        { method: 'POST', body: formData }
-      );
-      if (!uploadRes.ok) throw new Error('Upload API failed');
-
-      const { token } = await uploadRes.json() as { token: string };
-
-      session.uploadedToken = token;
-      session.step = 'DONE';
-      session.history.push(
-        { role: 'user', content: '[Citizen sent a document via WhatsApp]' },
-        { role: 'assistant', content: `Document received. Token: ${token}` }
-      );
-      await saveSession(fromPhone, session);
-      await sendWhatsAppMessage(fromPhone, DONE_MSG(token));
-      return;
+      return immediateResponse;
 
     } catch (err) {
       console.error('[Bot] Media upload error:', err);
-      await sendWhatsAppMessage(fromPhone,
-        `❌ Could not process your document. Try again or use:\n${BASE_URL}/upload/${encodeURIComponent(fromPhone)}`
-      );
-      return;
+      return `❌ Could not process your document. Try again or use:\n${BASE_URL}/upload/${encodeURIComponent(fromPhone)}`;
     }
   }
 
@@ -95,12 +102,12 @@ export async function handleWhatsAppMessage(
     }
 
     await saveSession(fromPhone, session);
-    await sendWhatsAppMessage(fromPhone, finalReply);
+    
+    // Return response for TwiML
+    return finalReply;
 
   } catch (err) {
     console.error('[Bot] Gemini error:', err);
-    await sendWhatsAppMessage(fromPhone,
-      `Sorry, I'm having trouble right now. Please call *1800-111-2026* or type *MENU* to try again.`
-    );
+    return `Sorry, I'm having trouble right now. Please call *1800-111-2026* or type *MENU* to try again.`;
   }
 }

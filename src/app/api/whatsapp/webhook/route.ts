@@ -5,16 +5,33 @@ import { handleWhatsAppMessage } from '@/lib/whatsappBot';
  * 🚀 TWILIO WHATSAPP WEBHOOK (Vercel-Compatible)
  * 
  * Architecture:
- * 1. Webhook returns empty TwiML immediately (fast response)
- * 2. Background handler (handleWhatsAppMessage) sends all messages via Twilio API
- * 3. This avoids timeouts and ensures proper response handling
- * 
- * Message flow:
- * - Text input → AI processes → Sends reply via Twilio API
- * - Media upload → Processes → Sends token via Twilio API
+ * 1. Text messages: Webhook awaits AI response, returns immediately in TwiML
+ * 2. Media uploads: Webhook returns "processing..." in TwiML, processes async in background
+ * 3. Tokens: Sent via Twilio API after media processing completes
  */
 
-const EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';
+function twimlResponse(message?: string): NextResponse {
+  const twiml = message
+    ? `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(message)}</Message></Response>`
+    : `<?xml version="1.0" encoding="UTF-8"?><Response></Response>`;
+
+  return new NextResponse(twiml, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/xml; charset=utf-8',
+      'Cache-Control': 'no-cache',
+    },
+  });
+}
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -32,8 +49,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         ? (formData.get('MediaContentType0') as string)
         : undefined;
 
-    // ✅ Always return empty TwiML immediately for Vercel
-    // The background handler sends all messages via Twilio API
     if (!from) {
       console.warn('[SUVIDHA Webhook] Missing From field');
       return twimlResponse();
@@ -45,37 +60,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       hasMedia: !!mediaUrl,
     });
 
-    // 🔥 Fire-and-forget: Process message in background
-    // DO NOT await - return response immediately for Vercel
-    handleWhatsAppMessage(from, body, mediaUrl, mediaContentType).catch((err) =>
-      console.error('[SUVIDHA Webhook] Handler error:', err)
-    );
+    // ✅ Await handler to get the response message
+    const responseMessage = await handleWhatsAppMessage(from, body, mediaUrl, mediaContentType);
 
-    // ✅ Return empty TwiML immediately
-    // All message responses are sent by background handler via Twilio API
-    return twimlResponse();
+    // ✅ Return response in TwiML for user to see immediately
+    return twimlResponse(responseMessage);
 
   } catch (err) {
-    console.error('[SUVIDHA Webhook] Unhandled error:', err);
-    // Even on error, return valid TwiML so Twilio doesn't retry
+    console.error('[SUIVIDHA Webhook] Unhandled error:', err);
+    // Even on error, return valid TwiML
     return twimlResponse();
   }
 }
 
 export async function GET(): Promise<NextResponse> {
   return twimlResponse();
-}
-
-/**
- * Helper: Return empty TwiML response
- * All user-facing messages are sent via background handler using Twilio API
- */
-function twimlResponse(): NextResponse {
-  return new NextResponse(EMPTY_TWIML, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/xml; charset=utf-8',
-      'Cache-Control': 'no-cache',
-    },
-  });
 }
