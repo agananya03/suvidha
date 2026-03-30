@@ -335,6 +335,7 @@ export default function DiscoveryPage() {
                             className="bg-[#004085] hover:bg-[#002868] text-white px-6 py-4 rounded-xl font-bold text-lg min-h-[56px] transition-all"
                             onClick={handleSearch}
                             disabled={address.length < 5}
+                            data-speech-label={t('Search utilities by address')}
                         >
                             {t('Connect Linked Utilities')} <ArrowRight className="w-6 h-6 ml-2" />
                         </Button>
@@ -439,6 +440,7 @@ export default function DiscoveryPage() {
                                                 setSelectedServices(prev => [...prev, service.id]);
                                             }
                                         }}
+                                        data-speech-label={`${service.name} ${service.consumerNo}`}
                                         className={`p-6 rounded-2xl border-2 cursor-pointer transition-all ${selectedServices.includes(service.id)
                                                 ? `border-primary bg-blue-50/30 shadow-md transform scale-[1.02]`
                                                 : `border-gray-200 hover:border-blue-300 opacity-70`
@@ -499,7 +501,7 @@ export default function DiscoveryPage() {
                                         }}
                                         className="bg-white border-2 border-[#90CDF4] rounded-xl px-5 py-4 text-xl font-mono min-h-[60px] text-[#0A1628] focus:border-[#004085] focus:ring-4 focus:ring-[#BEE3F8] uppercase flex-1 outline-none"
                                     />
-                                    <button type="button" className="bg-[#004085] hover:bg-[#002868] text-white px-6 py-4 rounded-xl font-bold min-h-[60px] disabled:opacity-50 transition-all" onClick={handleTokenLookup} disabled={documentToken.length !== 6}>
+                                    <button type="button" className="bg-[#004085] hover:bg-[#002868] text-white px-6 py-4 rounded-xl font-bold min-h-[60px] disabled:opacity-50 transition-all" onClick={handleTokenLookup} disabled={documentToken.length !== 6} data-speech-label={t('Load document token')}>
                                         Load
                                     </button>
                                 </div>
@@ -518,20 +520,20 @@ export default function DiscoveryPage() {
     </div>
 
     {!documentLoaded && (
-      <Button type="button" className="w-full" onClick={async () => {
-        const res = await fetch(
-          `/api/documents/retrieve/${documentToken}`,
-          { method: 'POST' }
-        );
-        if (res.ok) {
-          const data = await res.json() as { cloudinaryUrl: string };
-          setDocumentUrl(data.cloudinaryUrl);
-          setDocumentLoaded(true);
-        }
-      }}>
-        ✅ Confirm & Load Document
-      </Button>
-    )}
+                      <Button type="button" className="w-full" data-speech-label={t('Confirm and load document')} onClick={async () => {
+                        const res = await fetch(
+                          `/api/documents/retrieve/${documentToken}`,
+                          { method: 'POST' }
+                        );
+                        if (res.ok) {
+                          const data = await res.json() as { cloudinaryUrl: string };
+                          setDocumentUrl(data.cloudinaryUrl);
+                          setDocumentLoaded(true);
+                        }
+                      }}>
+                        ✅ Confirm & Load Document
+                      </Button>
+                    )}
 
     {documentLoaded && documentUrl && (
       <div className="border rounded-xl overflow-hidden">
@@ -565,6 +567,7 @@ export default function DiscoveryPage() {
                                     onClick={() => {
                                         router.push('/kiosk/dashboard');
                                     }}
+                                    data-speech-label={t('Confirm and link services')}
                                 >
                                     {t('Confirm & Link Selected')} ({selectedServices.length})
                                 </Button>

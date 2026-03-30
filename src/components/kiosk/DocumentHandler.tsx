@@ -36,6 +36,8 @@ export default function DocumentHandler() {
     const [tokenStatus, setTokenStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [tokenError, setTokenError] = useState('');
     const [tokenData, setTokenData] = useState<{ fileName: string; fileSize: number; mimeType: string; message: string } | null>(null);
+    const [documentLoaded, setDocumentLoaded] = useState(false);
+    const [documentUrl, setDocumentUrl] = useState<string | null>(null);
 
     // --- TAB 1: DIGILOCKER HANDLERS --- //
     const handleDigiLockerRequest = () => {
@@ -92,6 +94,48 @@ export default function DocumentHandler() {
         } catch {
             setTokenStatus('error');
             setTokenError('Network error while retrieving token.');
+        }
+    };
+
+    const handleConfirmAttach = async () => {
+        if (!token || tokenStatus !== 'success') return;
+        
+        setTokenStatus('loading');
+        setDocumentUrl(null);
+        setDocumentLoaded(false);
+        
+        try {
+            console.log('Fetching document with token:', token.toUpperCase());
+            const res = await fetch(`/api/documents/retrieve/${token.toUpperCase()}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            const data = await res.json();
+            console.log('Retrieve response:', { status: res.status, data });
+            
+            if (res.ok && data.success) {
+                console.log('Document retrieved successfully. CloudinaryUrl:', data.cloudinaryUrl);
+                
+                if (data.cloudinaryUrl) {
+                    setDocumentUrl(data.cloudinaryUrl);
+                    setDocumentLoaded(true);
+                    setTokenStatus('success');
+                    console.log('Document state updated');
+                } else {
+                    setTokenStatus('error');
+                    setTokenError('Document file not found. Please check with support.');
+                    console.error('No cloudinaryUrl in response');
+                }
+            } else {
+                setTokenStatus('error');
+                setTokenError(data.error || `Failed to retrieve document (${res.status})`);
+                console.error('API error:', data);
+            }
+        } catch (error) {
+            console.error('Confirm & Attach error:', error);
+            setTokenStatus('error');
+            setTokenError('Network error while attaching document.');
         }
     };
 
@@ -342,34 +386,91 @@ export default function DocumentHandler() {
                             )}
 
                             {tokenStatus === 'success' && tokenData && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 max-w-md mx-auto">
-                                    <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
-                                        <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
-                                        <div className="font-bold">
-                                            {t('Token Verified')}<br/>
-                                            <span className="font-normal text-[var(--font-sm)]">{tokenData.message}</span>
-                                        </div>
-                                    </div>
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 max-w-2xl mx-auto" key={documentLoaded ? 'loaded' : 'unloaded'}>
+                                    {/* BEFORE LOADING DOCUMENT */}
+                                    {!documentLoaded && (
+                                        <>
+                                            <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
+                                                <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
+                                                <div className="font-bold">
+                                                    {t('Token Verified')}<br/>
+                                                    <span className="font-normal text-[var(--font-sm)]">{tokenData.message}</span>
+                                                </div>
+                                            </div>
 
-                                    <div className="bg-[var(--irs-gray-50)] border-2 border-[var(--irs-gray-200)] rounded-[var(--radius-lg)] p-5 flex items-center gap-5">
-                                        <div className="w-14 h-14 bg-white rounded shadow-sm flex items-center justify-center border border-[var(--irs-gray-200)] shrink-0">
-                                            <FileText className="w-8 h-8 text-[var(--irs-gray-400)]" />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <p className="font-bold text-[var(--font-md)] text-[var(--irs-navy)] truncate">{tokenData.fileName}</p>
-                                            <p className="text-[var(--font-sm)] text-[var(--irs-gray-500)] font-medium mt-1">{tokenData.mimeType} • {(tokenData.fileSize / 1024).toFixed(1)} KB</p>
-                                        </div>
-                                    </div>
+                                            <div className="bg-[var(--irs-gray-50)] border-2 border-[var(--irs-gray-200)] rounded-[var(--radius-lg)] p-5 flex items-center gap-5">
+                                                <div className="w-14 h-14 bg-white rounded shadow-sm flex items-center justify-center border border-[var(--irs-gray-200)] shrink-0">
+                                                    <FileText className="w-8 h-8 text-[var(--irs-gray-400)]" />
+                                                </div>
+                                                <div className="flex-1 overflow-hidden">
+                                                    <p className="font-bold text-[var(--font-md)] text-[var(--irs-navy)] truncate">{tokenData.fileName}</p>
+                                                    <p className="text-[var(--font-sm)] text-[var(--irs-gray-500)] font-medium mt-1">{tokenData.mimeType} • {(tokenData.fileSize / 1024).toFixed(1)} KB</p>
+                                                </div>
+                                            </div>
 
-                                    <div className="flex gap-4 mt-8">
-                                        <button className="btn-secondary w-full h-[64px]" onClick={() => { setTokenStatus('idle'); setToken(''); }}>
-                                            {t('Use Another')}
-                                        </button>
-                                        <button className="btn-primary w-full h-[64px]" onClick={() => alert('Consent Verified. Document Attached!')}>
-                                            {t('Confirm & Attach')}
-                                        </button>
-                                    </div>
-                                    
+                                            <div className="flex gap-4 mt-8">
+                                                <button className="btn-secondary w-full h-[64px]" onClick={() => { setTokenStatus('idle'); setToken(''); setDocumentLoaded(false); setDocumentUrl(null); }}>
+                                                    {t('Use Another')}
+                                                </button>
+                                                <button className="btn-primary w-full h-[64px]" onClick={handleConfirmAttach} disabled={tokenStatus === 'loading'}>
+                                                    {tokenStatus === 'loading' ? t('Attaching...') : t('Confirm & Attach')}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* AFTER LOADING DOCUMENT */}
+                                    {documentLoaded && documentUrl && (
+                                        <>
+                                            <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
+                                                <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
+                                                <div className="font-bold">
+                                                    {t('Document Attached Successfully')}<br/>
+                                                    <span className="font-normal text-[var(--font-sm)]">{tokenData.fileName}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Document Preview */}
+                                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="border-2 border-[var(--irs-blue-mid)] rounded-[var(--radius-lg)] overflow-hidden bg-white">
+                                                {tokenData.mimeType?.startsWith('image/') ? (
+                                                    <>
+                                                        <img
+                                                            src={documentUrl}
+                                                            alt={tokenData.fileName}
+                                                            className="w-full max-h-96 object-contain bg-[var(--irs-gray-50)]"
+                                                            onError={(e) => {
+                                                                console.error('Image failed to load:', documentUrl);
+                                                                (e.target as HTMLImageElement).src = '';
+                                                            }}
+                                                            onLoad={() => console.log('Image loaded successfully from:', documentUrl)}
+                                                        />
+                                                    </>
+                                                ) : (
+                                                    <div className="p-8 flex flex-col items-center justify-center gap-4 bg-[var(--irs-gray-50)] min-h-96">
+                                                        <FileText className="w-16 h-16 text-[var(--irs-blue-mid)]" />
+                                                        <div className="text-center">
+                                                            <p className="font-bold text-[var(--font-md)]">{tokenData.fileName}</p>
+                                                            <p className="text-[var(--font-sm)] text-[var(--irs-gray-500)]">{tokenData.mimeType}</p>
+                                                            <a
+                                                                href={documentUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-[var(--irs-blue-mid)] underline mt-2 inline-block font-bold"
+                                                            >
+                                                                {t('Open in new tab')}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </motion.div>
+
+                                            <div className="flex gap-4 mt-8">
+                                                <button className="btn-secondary w-full h-[64px]" onClick={() => { setTokenStatus('idle'); setToken(''); setDocumentLoaded(false); setDocumentUrl(null); }}>
+                                                    {t('Upload Another')}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </motion.div>
                             )}
                         </motion.div>

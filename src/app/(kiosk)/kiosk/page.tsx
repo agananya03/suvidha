@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useKioskStore, AccessibilityMode } from '@/store/useKioskStore';
 import { useStore } from '@/lib/store';
 import {
-    Ear, Eye, ALargeSmall, UserRound, Globe, Hand, Smartphone, ShieldCheck, Fingerprint, ChevronLeft
+    Ear, Eye, ALargeSmall, UserRound, Globe, Hand, Smartphone, ShieldCheck, Fingerprint, ChevronLeft, ArrowRight
 } from 'lucide-react';
 import { ConsentModal } from '@/components/kiosk/ConsentModal';
 import AadhaarOfflineModal from '@/components/kiosk/AadhaarOfflineModal';
@@ -281,6 +281,7 @@ export default function KioskHome() {
                                 <button
                                     className={isIdle ? 'splash-cta-idle' : ''}
                                     onClick={() => setCurrentStep('LANGUAGE')}
+                                    data-speech-label="Choose your preferred language"
                                     style={{
                                         display: 'inline-flex',
                                         alignItems: 'center',
@@ -416,6 +417,7 @@ export default function KioskHome() {
                                         key={lang.code}
                                         onClick={() => setSelectedLang(lang.code)}
                                         className={`lang-btn flex-col gap-1 ${selectedLang === lang.code ? 'selected' : ''}`}
+                                        data-speech-label={`${lang.name} language`}
                                     >
                                         <span className="text-[var(--font-md)] font-bold">{lang.native}</span>
                                         <span className="text-[var(--font-xs)] opacity-80">{lang.name}</span>
@@ -425,16 +427,19 @@ export default function KioskHome() {
                         </div>
 
                         <div className="flex justify-between items-center py-6 px-4 w-full max-w-5xl mx-auto">
-                            <button className="btn-secondary" onClick={() => setCurrentStep('WELCOME')}>
+                            <button className="btn-secondary inline-flex items-center gap-2" onClick={() => setCurrentStep('WELCOME')} data-speech-label="Back to welcome screen">
+                                <ChevronLeft className="w-5 h-5" />
                                 Back
                             </button>
                             <button
-                                className="btn-primary"
+                                className="btn-primary inline-flex items-center gap-2"
                                 disabled={!selectedLang}
                                 onClick={handleLanguageConfirm}
+                                data-speech-label="Continue to verification options"
                                 style={{ opacity: selectedLang ? 1 : 0.5, cursor: selectedLang ? 'pointer' : 'not-allowed' }}
                             >
                                 Continue
+                                <ArrowRight className="w-5 h-5" />
                             </button>
                         </div>
                     </motion.div>
@@ -457,6 +462,7 @@ export default function KioskHome() {
                         <button
                             onClick={() => setCurrentStep('LANGUAGE')}
                             className="absolute top-10 left-10 flex items-center gap-2 text-[#1B3A6B] font-semibold hover:opacity-80 transition-opacity"
+                            data-speech-label="Back to language selection"
                         >
                             <ChevronLeft className="w-8 h-8" />
                             <span style={{ fontSize: 20 }}>Back</span>
@@ -478,6 +484,7 @@ export default function KioskHome() {
                             <button
                                 onClick={() => router.push('/kiosk/auth')}
                                 className="w-full flex items-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-[#1B3A6B] hover:shadow-md transition-all group"
+                                data-speech-label="OTP verification"
                             >
                                 <div className="bg-[#eef2f6] p-4 rounded-xl group-hover:bg-[#1B3A6B] transition-colors">
                                     <Smartphone className="w-8 h-8 text-[#1B3A6B] group-hover:text-white transition-colors" />
@@ -509,6 +516,7 @@ export default function KioskHome() {
                                     <button
                                         onClick={() => setShowAadhaarModal(true)}
                                         className="flex-1 flex flex-col items-center justify-center gap-4 py-8 px-4 bg-white border border-[#1B3A6B] rounded-2xl cursor-pointer hover:bg-[#1B3A6B] transition-all group shadow-sm hover:shadow-md"
+                                        data-speech-label="Aadhaar OTP verification"
                                     >
                                         <ShieldCheck className="w-10 h-10 text-[#1B3A6B] group-hover:text-white transition-colors" />
                                         <div className="text-center">
@@ -523,6 +531,7 @@ export default function KioskHome() {
                                     <button
                                         onClick={() => setShowAadhaarModal(true)}
                                         className="flex-1 flex flex-col items-center justify-center gap-4 py-8 px-4 bg-white border border-[#1B3A6B] rounded-2xl cursor-pointer hover:bg-[#1B3A6B] transition-all group shadow-sm hover:shadow-md"
+                                        data-speech-label="Biometric authentication"
                                     >
                                         <Fingerprint className="w-10 h-10 text-[#1B3A6B] group-hover:text-white transition-colors" />
                                         <div className="text-center">

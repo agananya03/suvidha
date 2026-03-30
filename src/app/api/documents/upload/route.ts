@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     const token = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    await (prisma as any).documentToken.create({
+    await prisma.documentToken.create({
       data: {
         token,
         fileName: file.name,

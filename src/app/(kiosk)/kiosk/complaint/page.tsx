@@ -354,6 +354,7 @@ export default function ComplaintPage() {
                             <button
                                 onClick={handleCopy}
                                 className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] border border-[var(--irs-blue-light)] bg-white text-[var(--irs-blue-mid)] font-bold text-[var(--font-sm)] hover:bg-[var(--irs-blue-light)] transition-colors"
+                                data-speech-label="Copy ticket ID"
                             >
                                 <Copy className="w-4 h-4" />
                                 {copied ? t('Copied!') : t('Copy')}
@@ -461,10 +462,10 @@ export default function ComplaintPage() {
 
                     {/* ── Action buttons ── */}
                     <div className="flex flex-col sm:flex-row gap-3 pb-8">
-                        <button className="btn-primary flex-1" onClick={() => router.push('/kiosk/queue')}>
+                        <button className="btn-primary flex-1" onClick={() => router.push('/kiosk/queue')} data-speech-label={t('Track this complaint')}>
                             {t('Track This Complaint')}
                         </button>
-                        <button className="btn-secondary flex-1" onClick={() => router.push('/kiosk/dashboard')}>
+                        <button className="btn-secondary flex-1" onClick={() => router.push('/kiosk/dashboard')} data-speech-label={t('Return to services')}>
                             {t('Return to Services')}
                         </button>
                     </div>
@@ -503,6 +504,7 @@ export default function ComplaintPage() {
                                         ? 'border-[var(--irs-blue-mid)] bg-[var(--irs-blue-pale)] text-[var(--irs-navy)]'
                                         : 'border-[var(--irs-gray-200)] bg-white hover:border-[var(--irs-blue-light)] hover:bg-[var(--irs-gray-100)]'
                                         }`}
+                                    data-speech-label={t(btn.label)}
                                 >
                                     <btn.icon className={`text-2xl w-8 h-8 ${serviceType === btn.id ? 'text-[#004085]' : 'text-[#0A1628]'}`} />
                                     <span className="text-lg font-bold text-[#0A1628]">{t(btn.label)}</span>
@@ -517,8 +519,8 @@ export default function ComplaintPage() {
                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)] overflow-hidden">
                                 <h3 className="kiosk-label text-[var(--font-lg)] mb-4">{t('DO YOU CURRENTLY SMELL GAS IN THE VICINITY?')}</h3>
                                 <div className="flex gap-4">
-                                    <button className={qsmellGas === 'yes' ? 'btn-primary bg-[var(--irs-error)] border-[var(--irs-error)] text-white w-32' : 'btn-secondary w-32'} onClick={() => { setQSmellGas('yes'); setDescription(prev => prev + " Strong smell of gas detected."); }}>{t('YES')}</button>
-                                    <button className={qsmellGas === 'no' ? 'btn-primary w-32' : 'btn-secondary w-32'} onClick={() => setQSmellGas('no')}>{t('NO')}</button>
+                                    <button className={qsmellGas === 'yes' ? 'btn-primary bg-[var(--irs-error)] border-[var(--irs-error)] text-white w-32' : 'btn-secondary w-32'} data-speech-label={t('Yes, smell gas')} onClick={() => { setQSmellGas('yes'); setDescription(prev => prev + " Strong smell of gas detected."); }}>{t('YES')}</button>
+                                    <button className={qsmellGas === 'no' ? 'btn-primary w-32' : 'btn-secondary w-32'} data-speech-label={t('No, no smell')} onClick={() => setQSmellGas('no')}>{t('NO')}</button>
                                 </div>
                                 {qsmellGas === 'yes' && (
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 kiosk-banner warning">
@@ -534,8 +536,8 @@ export default function ComplaintPage() {
                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-8 rounded-[var(--radius-lg)] shadow-sm border border-[var(--irs-gray-200)] overflow-hidden">
                                 <h3 className="kiosk-label text-[var(--font-lg)] mb-4">{t('IS THE POWER COMPLETELY OUT OR JUST FLICKERING?')}</h3>
                                 <div className="flex gap-4">
-                                    <button className={qPowerOutage === 'out' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setQPowerOutage('out'); setDescription(prev => prev + " Power is completely out."); }}>{t('Completely Out')}</button>
-                                    <button className={qPowerOutage === 'flickering' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setQPowerOutage('flickering'); setDescription(prev => prev + " Power is flickering."); }}>{t('Flickering')}</button>
+                                    <button className={qPowerOutage === 'out' ? 'btn-primary' : 'btn-secondary'} data-speech-label={t('Power completely out')} onClick={() => { setQPowerOutage('out'); setDescription(prev => prev + " Power is completely out."); }}>{t('Completely Out')}</button>
+                                    <button className={qPowerOutage === 'flickering' ? 'btn-primary' : 'btn-secondary'} data-speech-label={t('Power flickering')} onClick={() => { setQPowerOutage('flickering'); setDescription(prev => prev + " Power is flickering."); }}>{t('Flickering')}</button>
                                 </div>
                             </motion.div>
                         )}
@@ -559,6 +561,7 @@ export default function ComplaintPage() {
                             <button
                                 onClick={toggleRecording}
                                 className={`transition-all ${isRecording ? 'bg-[#FFF5F5] border-2 border-[#FEB2B2] text-[#9B1C1C] rounded-2xl px-6 py-4 min-h-[56px] animate-pulse flex items-center gap-3 text-lg font-semibold' : 'bg-white border-2 border-[#90CDF4] hover:bg-[#E8F4FD] text-[#004085] rounded-2xl px-6 py-4 min-h-[56px] flex items-center gap-3 text-lg font-semibold active:scale-95'}`}
+                                data-speech-label={isRecording ? t('Stop recording') : t('Dictate using microphone')}
                             >
                                 <Mic className={`w-4 h-4 ${isRecording ? 'animate-bounce' : ''}`} />
                                 {isRecording ? t('Listening...') : t('Dictate')}
@@ -591,6 +594,7 @@ export default function ComplaintPage() {
                             className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full mt-6"
                             disabled={description.length < 20 || isSubmitting}
                             onClick={handleSubmit}
+                            data-speech-label={t('Submit complaint')}
                         >
                             {isSubmitting ? t('Routing Complaint...') : t('Submit Complaint')} <Send className="w-5 h-5 ml-2 inline-block" />
                         </button>

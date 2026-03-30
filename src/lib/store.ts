@@ -35,7 +35,7 @@ export const useStore = create<SessionState>((set) => ({
     token: null,
     language: 'en',
 
-    voiceMode: false,
+    voiceMode: true,
     highContrast: false,
     fontSize: 'normal',
     isISLActive: false,

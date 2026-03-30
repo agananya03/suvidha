@@ -156,6 +156,7 @@ export default function AuthPage() {
                         key={mode}
                         onClick={() => handleAccessibilitySelect(mode)}
                         title={desc}
+                        data-speech-label={label}
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -193,6 +194,7 @@ export default function AuthPage() {
                 <button 
                     onClick={() => router.push('/kiosk?step=OPTIONS')}
                     className="absolute top-8 left-8 text-[#6B7280] hover:text-[#1B3A6B] font-semibold text-lg hover:underline transition-colors z-20 flex items-center gap-2"
+                    data-speech-label={t('Back to options')}
                 >
                     &larr; {t('Back')}
                 </button>
@@ -241,6 +243,7 @@ export default function AuthPage() {
                         <button
                             onClick={handleSendOTP}
                             disabled={mobile.length !== 10 || isLoading}
+                            data-speech-label="Send one-time password"
                             style={{
                                 width: 260,
                                 height: 64,
@@ -300,6 +303,7 @@ export default function AuthPage() {
                             <button
                                 onClick={handleVerifyOTP}
                                 disabled={otp.join('').length !== 6 || isLoading}
+                                data-speech-label="Verify OTP and continue"
                                 style={{
                                     width: 260,
                                     height: 64,
@@ -319,7 +323,7 @@ export default function AuthPage() {
                             >
                                 {isLoading ? t('Verifying...') : t('Verify & Continue')}
                             </button>
-                            <button onClick={() => { setOtpSent(false); setOtp(['','','','','','']); setMobile(''); }} className="mt-4 text-[#1B3A6B] font-semibold underline text-sm">
+                            <button onClick={() => { setOtpSent(false); setOtp(['','','','','','']); setMobile(''); }} className="mt-4 text-[#1B3A6B] font-semibold underline text-sm" data-speech-label="Change mobile number">
                                 {t('Change Mobile Number')}
                             </button>
                         </motion.div>
@@ -334,6 +338,7 @@ export default function AuthPage() {
                         key={mode}
                         onClick={() => handleAccessibilitySelect(mode)}
                         className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-[#1B3A6B] transition-colors group"
+                        data-speech-label={label}
                     >
                         <Icon size={22} className="group-hover:scale-110 transition-transform" />
                         <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>

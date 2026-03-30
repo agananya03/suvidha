@@ -192,6 +192,7 @@ export default function DashboardPage() {
     const discoveredServices = useKioskStore(state => state.discoveredServices);
     // Demo-ready: uses static hardcoded service tiles — no API fetch required
     const [activeTab, setActiveTab] = useState<'electricity' | 'gas' | 'municipal'>('electricity');
+    const [showMoreServices, setShowMoreServices] = useState(false);
 
     // Mapped content
     const tabs = [
@@ -262,6 +263,7 @@ export default function DashboardPage() {
                         key={tab.id}
                         className={`flex-1 flex justify-center py-3 text-lg font-bold rounded-lg transition-all ${activeTab === tab.id ? 'bg-white text-[#004085] shadow-sm' : 'text-[#4A6FA5] hover:text-[#002868]'}`}
                         onClick={() => setActiveTab(tab.id)}
+                      data-speech-label={`${tab.id} services`}
                     >
                         {t(tab.label)}
                     </button>
@@ -281,6 +283,7 @@ export default function DashboardPage() {
                             key={index}
                             className="bg-white rounded-2xl p-5 min-h-[120px] border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md cursor-pointer transition-all duration-150 active:scale-95 flex flex-col items-center justify-center text-center gap-3 group shadow-sm"
                             onClick={service.action}
+                          data-speech-label={service.label}
                         >
                             <div className="w-14 h-14 rounded-2xl bg-[#E8F4FD] flex items-center justify-center text-2xl text-[#004085] transition-all group-hover:bg-[#004085]">
                                 <Icon className="w-8 h-8 text-[#004085] group-hover:text-white" />
@@ -295,12 +298,21 @@ export default function DashboardPage() {
 
             {/* More Services — previously hidden features */}
             <div className="mt-8 mb-4">
-                <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-4">
                     <h2 className="text-xl font-black text-[#0A1628]">More Services</h2>
                     <span className="text-xs bg-[#004085] text-white px-2 py-0.5 rounded-full font-bold">NEW</span>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {[
+              <button
+                onClick={() => setShowMoreServices((prev) => !prev)}
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-[#BEE3F8] bg-white px-4 py-2 font-semibold text-[#004085] hover:border-[#004085] transition-colors"
+                data-speech-label={showMoreServices ? 'Hide optional services' : 'Show optional services'}
+              >
+                <ExternalLink className="w-4 h-4" />
+                {showMoreServices ? t('Hide optional services') : t('Show optional services')}
+              </button>
+              {showMoreServices && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                {[
                         {
                             icon: UploadCloud,
                             label: 'Upload Documents',
@@ -332,6 +344,7 @@ export default function DashboardPage() {
                                 key={item.label}
                                 onClick={item.action}
                                 className="bg-white rounded-2xl p-5 border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md cursor-pointer transition-all duration-150 active:scale-95 flex flex-col items-start gap-3 group shadow-sm text-left"
+                              data-speech-label={item.label}
                             >
                                 <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center transition-all group-hover:scale-110`}>
                                     <Icon className={`w-7 h-7 ${item.color}`} />
@@ -345,6 +358,7 @@ export default function DashboardPage() {
                         );
                     })}
                 </div>
+                      )}
             </div>
 
         </div>

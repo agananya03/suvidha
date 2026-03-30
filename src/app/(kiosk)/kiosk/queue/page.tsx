@@ -140,6 +140,7 @@ export default function QueuePage() {
                                     ? 'border-[#004085] text-[#004085]'
                                     : 'border-transparent text-[#4A6FA5] hover:text-[#004085]'
                                     }`}
+                                data-speech-label={`${idx === 0 ? 'Latest complaint' : `Complaint ${idx + 1}`} at position ${c.position}`}
                             >
                                 {idx === 0 ? t('Latest Complaint') : `${t('Complaint')} ${idx + 1}`}
                                 <span className="ml-2 px-2 py-0.5 bg-[#E8F4FD] text-[#004085] rounded-full text-xs font-bold px-2 py-0.5">
@@ -340,12 +341,12 @@ export default function QueuePage() {
 
                             <div className="mt-8 pt-8 border-t space-y-3">
                                 <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" asChild>
-                                    <a href="/kiosk/complaint">
+                                    <a href="/kiosk/complaint" data-speech-label="File new complaint">
                                         <PlusCircle className="w-4 h-4 mr-2" /> {t('File New Complaint')}
                                     </a>
                                 </Button>
                                 <Button variant="outline" className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" asChild>
-                                    <a href="/kiosk">
+                                    <a href="/kiosk" data-speech-label="Return to home">
                                         <Home className="w-4 h-4 mr-2" /> {t('Return Home')}
                                     </a>
                                 </Button>
