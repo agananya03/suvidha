@@ -1,55 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleWhatsAppMessage } from "@/lib/whatsappBot";
-import twilio from "twilio";
 
-// 🔹 TWILIO VERIFICATION - Twilio checks webhook on setup
-export async function GET(req: NextRequest) {
-  // Twilio doesn't actually verify via GET, but some setups might check
-  return NextResponse.json({ status: "ok" });
-}
+/**
+ * 🚀 VERCEL-COMPATIBLE TWILIO WEBHOOK
+ * 
+ * Key changes for Vercel serverless:
+ * 1. Uses formData() for Twilio's form-encoded requests
+ * 2. Returns TwiML XML (not JSON)
+ * 3. Fire-and-forget async processing
+ * 4. Fast response (& lt;100ms)
+ */
 
-// 🔹 TWILIO WEBHOOK - Receive WhatsApp messages
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    // Parse Twilio's form-encoded request
+    // 📥 Parse Twilio's form-encoded data
     const formData = await req.formData();
     
-    const fromPhone = formData.get("From") as string; // whatsapp:+1234567890
-    const messageBody = formData.get("Body") as string;
-    const numMedia = parseInt(formData.get("NumMedia") as string, 10) || 0;
+    const fromPhone = formData.get("From") as string;
+    const messageBody = (formData.get("Body") as string) ?? "";
+    const numMedia = parseInt((formData.get("NumMedia") as string) ?? "0", 10);
 
-    console.log("📩 Incoming Twilio Message:", {
-      from: fromPhone,
-      body: messageBody,
-      mediaCount: numMedia,
-    });
-
-    // Don't fail if no message body - Twilio always sends these fields
-    if (!fromPhone) {
-      console.warn("⚠️ No 'From' field in Twilio request");
-      return NextResponse.json({ success: true }, { status: 200 });
-    }
-
-    // Handle media if present
+    // 📎 Extract media if present
     let mediaUrl: string | undefined;
     let mediaContentType: string | undefined;
 
     if (numMedia > 0) {
-      mediaUrl = formData.get("MediaUrl0") as string | undefined;
-      mediaContentType = formData.get("MediaContentType0") as string | undefined;
-      console.log("📎 Media attached:", { mediaUrl, mediaContentType });
+      mediaUrl = (formData.get("MediaUrl0") as string) ?? undefined;
+      mediaContentType = (formData.get("MediaContentType0") as string) ?? undefined;
     }
 
-    // Process message/media
-    if (messageBody || mediaUrl) {
-      await handleWhatsAppMessage(fromPhone, messageBody || "", mediaUrl, mediaContentType);
+    // ✅ Validate minimum requirements
+    if (!fromPhone) {
+      return new NextResponse(
+        '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        { status: 200, headers: { "Content-Type": "text/xml" } }
+      );
     }
 
-    // Always return 200 OK to Twilio
-    return NextResponse.json({ success: true }, { status: 200 });
+    // 🔥 CRITICAL: Fire-and-forget (don't await!)
+    // This ensures Vercel returns response within timeout
+    handleWhatsAppMessage(fromPhone, messageBody, mediaUrl, mediaContentType).catch(
+      (err) => console.error("❌ WhatsApp message handler error:", err)
+    );
+
+    // ✨ Return TwiML immediately (Vercel-compatible)
+    return new NextResponse(
+      '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+      {
+        status: 200,
+        headers: { "Content-Type": "text/xml" },
+      }
+    );
   } catch (err) {
     console.error("❌ Webhook error:", err);
-    // Still return 200 so Twilio doesn't retry
-    return NextResponse.json({ error: "Processed" }, { status: 200 });
+
+    // Even on error, return valid TwiML so Twilio doesn't retry
+    return new NextResponse(
+      '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+      {
+        status: 200,
+        headers: { "Content-Type": "text/xml" },
+      }
+    );
   }
+}
+
+// GET for Twilio verification (optional)
+export async function GET(): Promise<NextResponse> {
+  return new NextResponse(
+    '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+    {
+      status: 200,
+      headers: { "Content-Type": "text/xml" },
+    }
+  );
 }
