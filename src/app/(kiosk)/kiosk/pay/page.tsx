@@ -279,6 +279,7 @@ export default function PaymentPage() {
                               key={biller.id}
                               onClick={() => { setSelectedBiller(biller); setView('consumer_input'); }}
                               className="w-full p-5 rounded-2xl border-2 border-[#BEE3F8] bg-white text-left hover:border-[#004085] hover:shadow-md transition-all group active:scale-98 flex items-center gap-4 min-h-[80px]"
+                              data-speech-label={`${biller.name} ${biller.state}`}
                             >
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center
@@ -345,6 +346,7 @@ export default function PaymentPage() {
                       <Button
                         className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full"
                         disabled={isFetchingBill || !consumerNumberInput.trim()}
+                        data-speech-label={t('Fetch my bill')}
                         onClick={async () => {
                           if (!consumerNumberInput.trim()) return;
                           setIsFetchingBill(true);
@@ -377,7 +379,7 @@ export default function PaymentPage() {
                       </Button>
                     </div>
 
-                    <Button variant="ghost" onClick={() => setView('biller_select')}>
+                    <Button variant="ghost" onClick={() => setView('biller_select')} data-speech-label={t('Change provider')}>
                       ← {t('Change Provider')}
                     </Button>
                   </motion.div>
@@ -439,6 +441,7 @@ export default function PaymentPage() {
                                 <button
                                     onClick={() => setIsBreakdownOpen(!isBreakdownOpen)}
                                     className="flex items-center justify-between w-full text-left font-medium text-[#2C5282] p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                                    data-speech-label={isBreakdownOpen ? "Hide itemized breakdown" : "View itemized breakdown"}
                                 >
                                     <span>{t('View Itemized Breakdown')}</span>
                                     {isBreakdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -479,12 +482,14 @@ export default function PaymentPage() {
                                             <Button
                                                 variant="outline" className="bg-white hover:bg-[#E8F4FD] active:bg-[#BEE3F8] text-[#004085] border-2 border-[#004085] font-semibold text-lg min-h-[56px] px-8 rounded-xl"
                                                 onClick={() => setView('dispute')}
+                                                data-speech-label={t('Dispute this bill')}
                                             >
                                                 {t('Dispute This Bill')}
                                             </Button>
                                             <Button
                                                 onClick={() => setView('payment_method')}
                                                 className="bg-[#004085] hover:bg-[#002868] text-white font-bold text-lg min-h-[56px] px-8 rounded-xl shadow-md"
+                                                data-speech-label={t('Pay anyway')}
                                             >
                                                 {t('Pay Anyway')}
                                             </Button>
@@ -495,7 +500,7 @@ export default function PaymentPage() {
                         )}
                         {!billData.anomaly.flagged && (
                             <div className="mt-6 flex justify-end">
-                                <Button size="lg" onClick={() => setView('payment_method')}>{t('Proceed to Payment')}</Button>
+                                <Button size="lg" onClick={() => setView('payment_method')} data-speech-label={t('Proceed to payment')}>{t('Proceed to Payment')}</Button>
                             </div>
                         )}
                     </motion.div>
@@ -530,8 +535,8 @@ export default function PaymentPage() {
                             </div>
 
                             <div className="flex justify-end gap-4 pt-4 border-t">
-                                <Button variant="ghost" onClick={() => setView('bill')}>{t('Cancel')}</Button>
-                                <Button onClick={handleDisputeSubmit} disabled={!disputeReason.trim()}>{t('Submit Dispute')}</Button>
+                                <Button variant="ghost" onClick={() => setView('bill')} data-speech-label={t('Cancel')}>{t('Cancel')}</Button>
+                                <Button onClick={handleDisputeSubmit} disabled={!disputeReason.trim()} data-speech-label={t('Submit dispute')}>{t('Submit Dispute')}</Button>
                             </div>
                         </div>
                     </motion.div>
@@ -552,7 +557,7 @@ export default function PaymentPage() {
 
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* UPI Card */}
-                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" onClick={() => setView('upi_qr')}>
+                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative overflow-hidden" data-speech-label={t('UPI payment')} onClick={() => setView('upi_qr')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-green-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <Smartphone className="w-10 h-10 text-green-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('UPI Payment')}</h3>
@@ -566,7 +571,7 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Card Payment */}
-                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('card')}>
+                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative" data-speech-label={t('Card payment')} onClick={() => processPayment('card')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <CreditCard className="w-10 h-10 text-blue-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('Card Payment')}</h3>
@@ -584,7 +589,7 @@ export default function PaymentPage() {
                             </div>
 
                             {/* Cash Payment */}
-                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative" onClick={() => processPayment('cash')}>
+                            <div className="bg-white p-6 rounded-2xl border-2 border-[#BEE3F8] hover:border-[#004085] hover:shadow-md transition-all cursor-pointer group relative" data-speech-label={t('Cash at counter')} onClick={() => processPayment('cash')}>
                                 <div className="absolute top-0 left-0 w-full h-1 bg-orange-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                                 <Banknote className="w-10 h-10 text-orange-500 mb-4" />
                                 <h3 className="text-lg font-bold mb-2">{t('Cash at Counter')}</h3>
@@ -599,6 +604,7 @@ export default function PaymentPage() {
                                     onClick={generatePaymentIntent}
                                     className="w-full p-4 rounded-xl border-2 border-amber-300 bg-amber-50 text-left transition-all hover:border-amber-400"
                                     whileTap={{ scale: 0.98 }}
+                                    data-speech-label={t('Pay later offline')}
                                 >
                                     <div className="flex items-start gap-3">
                                         <div className="p-2 rounded-lg bg-amber-100">
@@ -616,7 +622,7 @@ export default function PaymentPage() {
                         </div>
 
                         <div className="pt-6">
-                            <Button variant="ghost" onClick={() => setView('bill')}>{t('Back to Bill Details')}</Button>
+                            <Button variant="ghost" onClick={() => setView('bill')} data-speech-label={t('Back to bill details')}>{t('Back to Bill Details')}</Button>
                         </div>
                     </motion.div>
                 )}
@@ -675,6 +681,7 @@ export default function PaymentPage() {
                         <div className="flex gap-3">
                             <Button
                                 className="flex-1"
+                                data-speech-label={t('Download payment intent')}
                                 onClick={() => {
                                     const doc = new jsPDF();
                                     doc.setFontSize(18);
@@ -694,6 +701,7 @@ export default function PaymentPage() {
                             <Button
                                 variant="outline"
                                 onClick={() => router.push('/kiosk/discovery')}
+                                data-speech-label={t('Done')}
                             >
                                 Done
                             </Button>
@@ -760,10 +768,10 @@ export default function PaymentPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" onClick={() => processPayment('upi')}>
+                      <Button className="bg-[#004085] hover:bg-[#002868] active:bg-[#001a4d] text-white font-bold text-xl min-h-[64px] px-8 rounded-2xl transition-all duration-150 shadow-md flex items-center justify-center gap-3 w-full" data-speech-label={t('Payment completed')} onClick={() => processPayment('upi')}>
                         ✅ {t('I have completed the payment')}
                       </Button>
-                      <Button variant="ghost" onClick={() => setView('payment_method')}>
+                      <Button variant="ghost" onClick={() => setView('payment_method')} data-speech-label={t('Back to payment methods')}>
                         ← {t('Back')}
                       </Button>
                     </div>
@@ -811,6 +819,7 @@ export default function PaymentPage() {
                         size="lg"
                         className="w-full sm:w-auto h-14 px-10 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg"
                         onClick={() => window.print()}
+                        data-speech-label={t('Print receipt')}
                       >
                         <Printer className="w-5 h-5 mr-2" />
                         {t('Print Receipt')}
@@ -821,6 +830,7 @@ export default function PaymentPage() {
                         size="lg"
                         className="w-full sm:w-auto h-14"
                         onClick={() => router.push('/kiosk')}
+                        data-speech-label={t('Return to services')}
                       >
                         {t('Return to Services')}
                       </Button>

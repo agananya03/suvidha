@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Smartphone, ScanLine,
@@ -35,7 +35,10 @@ export default function DocumentHandler({ onComplete }: { onComplete?: () => voi
     const [token, setToken] = useState('');
     const [tokenStatus, setTokenStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [tokenError, setTokenError] = useState('');
-    const [tokenData, setTokenData] = useState<{ fileName: string; fileSize: number; mimeType: string; message: string; fileUrl?: string } | null>(null);
+    const [tokenData, setTokenData] = useState<{ fileName: string; fileSize: number; mimeType: string; message: string } | null>(null);
+    const [documentLoaded, setDocumentLoaded] = useState(false);
+    const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+    const [isAttaching, setIsAttaching] = useState(false);
 
     // --- TAB 1: DIGILOCKER HANDLERS --- //
     const handleDigiLockerRequest = () => {
@@ -55,7 +58,7 @@ export default function DocumentHandler({ onComplete }: { onComplete?: () => voi
     };
 
     // --- TAB 2: SCANNER HANDLERS --- //
-    const startScan = () => {
+    const startScan = useCallback(() => {
         setScanStatus('scanning');
         setScanProgress(0);
 
@@ -69,10 +72,10 @@ export default function DocumentHandler({ onComplete }: { onComplete?: () => voi
                 return prev + 5;
             });
         }, 100);
-    };
+    }, []);
 
     // --- TAB 3: TOKEN HANDLERS --- //
-    const handleTokenSubmit = async () => {
+    const handleTokenSubmit = useCallback(async () => {
         if (token.length !== 6) return;
         setTokenStatus('loading');
         setTokenError('');
@@ -93,7 +96,46 @@ export default function DocumentHandler({ onComplete }: { onComplete?: () => voi
             setTokenStatus('error');
             setTokenError('Network error while retrieving token.');
         }
-    };
+    }, [token]);
+
+    const handleConfirmAttach = useCallback(async () => {
+        if (!token || tokenStatus !== 'success' || isAttaching) return;
+        
+        setIsAttaching(true);
+        
+        try {
+            const res = await fetch(`/api/documents/retrieve/${token.toUpperCase()}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok && data.success) {
+                if (data.cloudinaryUrl) {
+                    // Set both states immediately
+                    setDocumentUrl(data.cloudinaryUrl);
+                    setDocumentLoaded(true);
+                    
+                    // Scroll to ensure visibility
+                    setTimeout(() => {
+                        const previewElement = document.querySelector('[data-preview-section]');
+                        if (previewElement) {
+                            previewElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100);
+                } else {
+                    setTokenError('Document file not found. Please check with support.');
+                }
+            } else {
+                setTokenError(data.error || `Failed to retrieve document (${res.status})`);
+            }
+        } catch (error) {
+            setTokenError('Network error while attaching document.');
+        } finally {
+            setIsAttaching(false);
+        }
+    }, [token, tokenStatus, isAttaching]);
 
 
     return (
@@ -312,7 +354,109 @@ export default function DocumentHandler({ onComplete }: { onComplete?: () => voi
                                 <p className="text-[var(--font-sm)] text-[var(--irs-gray-600)] mt-2 font-medium">Already uploaded files from your phone? Enter the 6-character retrieval token below.</p>
                             </div>
 
-                            {tokenStatus !== 'success' && (
+                            {/* PRIORITY 1: Show document preview if document is loaded */}
+                            {documentLoaded && documentUrl && (
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 max-w-2xl mx-auto">
+                                    <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
+                                        <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
+                                        <div className="font-bold">
+                                            {t('Document Attached Successfully')}<br/>
+                                            <span className="font-normal text-[var(--font-sm)]">{tokenData?.fileName}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Document Preview */}
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="border-2 border-[var(--irs-blue-mid)] rounded-[var(--radius-lg)] overflow-hidden bg-white mt-6" data-preview-section="true">
+                                        {tokenData?.mimeType?.startsWith('image/') ? (
+                                            <div className="w-full bg-[var(--irs-gray-50)] flex items-center justify-center">
+                                                <img
+                                                    src={documentUrl}
+                                                    alt={tokenData?.fileName}
+                                                    className="w-full max-h-96 object-contain"
+                                                    style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
+                                                    onError={(e) => {
+                                                        const img = e.target as HTMLImageElement;
+                                                        img.style.display = 'none';
+                                                    }}
+                                                    onLoad={() => {}}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 flex flex-col items-center justify-center gap-4 bg-[var(--irs-gray-50)] min-h-96">
+                                                <FileText className="w-16 h-16 text-[var(--irs-blue-mid)]" />
+                                                <div className="text-center">
+                                                    <p className="font-bold text-[var(--font-md)]">{tokenData?.fileName}</p>
+                                                    <p className="text-[var(--font-sm)] text-[var(--irs-gray-500)]">{tokenData?.mimeType}</p>
+                                                    <a
+                                                        href={documentUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-[var(--irs-blue-mid)] underline mt-3 inline-block font-bold hover:text-[var(--irs-blue-dark)]"
+                                                    >
+                                                        {t('Open in new tab')} →
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </motion.div>
+
+                                    <div className="flex gap-4 mt-8">
+                                        <button 
+                                            className="btn-secondary w-full h-[64px]" 
+                                            onClick={() => { 
+                                                setTokenStatus('idle'); 
+                                                setToken(''); 
+                                                setDocumentLoaded(false); 
+                                                setDocumentUrl(null);
+                                                setTokenError('');
+                                            }}>
+                                            {t('Upload Another')}
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* PRIORITY 2: Show token verified UI if token data exists (but document not yet loaded) */}
+                            {!documentLoaded && tokenData && (
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 max-w-2xl mx-auto">
+                                    <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
+                                        <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
+                                        <div className="font-bold">
+                                            {t('Token Verified')}<br/>
+                                            <span className="font-normal text-[var(--font-sm)]">{tokenData.message}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-[var(--irs-gray-50)] border-2 border-[var(--irs-gray-200)] rounded-[var(--radius-lg)] p-5 flex items-center gap-5">
+                                        <div className="w-14 h-14 bg-white rounded shadow-sm flex items-center justify-center border border-[var(--irs-gray-200)] shrink-0">
+                                            <FileText className="w-8 h-8 text-[var(--irs-gray-400)]" />
+                                        </div>
+                                        <div className="flex-1 overflow-hidden">
+                                            <p className="font-bold text-[var(--font-md)] text-[var(--irs-navy)] truncate">{tokenData.fileName}</p>
+                                            <p className="text-[var(--font-sm)] text-[var(--irs-gray-500)] font-medium mt-1">{tokenData.mimeType} • {(tokenData.fileSize / 1024).toFixed(1)} KB</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 mt-8">
+                                        <button className="btn-secondary w-full h-[64px]" onClick={() => { setTokenStatus('idle'); setToken(''); setDocumentLoaded(false); setDocumentUrl(null); }}>
+                                            {t('Use Another')}
+                                        </button>
+                                        <button className="btn-primary w-full h-[64px]" onClick={handleConfirmAttach} disabled={isAttaching}>
+                                            {isAttaching ? (
+                                                <span className="flex items-center justify-center gap-2">
+                                                    <RefreshCcw className="w-5 h-5 animate-spin" />
+                                                    {t('Attaching...')}
+                                                </span>
+                                            ) : (
+                                                t('Confirm & Attach')
+                                            )}
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* PRIORITY 3: Show token input UI if no token data available */}
+                            {!tokenData && (
                                 <div className="space-y-6 max-w-lg mx-auto">
                                     <label className="kiosk-label text-center block mb-4">{t('6-CHAR SECURE TOKEN')}</label>
                                     
@@ -345,47 +489,6 @@ export default function DocumentHandler({ onComplete }: { onComplete?: () => voi
                                         <p className="font-medium">Files expire automatically after 48 hours. They remain strictly encrypted until token redemption.</p>
                                     </div>
                                 </div>
-                            )}
-
-                            {tokenStatus === 'success' && tokenData && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 max-w-md mx-auto">
-                                    <div className="kiosk-banner success flex justify-center text-[var(--font-md)]">
-                                        <CheckCircle2 className="w-6 h-6 shrink-0 mt-0.5" />
-                                        <div className="font-bold">
-                                            {t('Token Verified')}<br/>
-                                            <span className="font-normal text-[var(--font-sm)]">{tokenData.message}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-[var(--irs-gray-50)] border-2 border-[var(--irs-gray-200)] rounded-[var(--radius-lg)] p-5 flex items-center gap-5">
-                                        <div className="w-14 h-14 bg-white rounded shadow-sm flex items-center justify-center border border-[var(--irs-gray-200)] shrink-0">
-                                            <FileText className="w-8 h-8 text-[var(--irs-gray-400)]" />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <p className="font-bold text-[var(--font-md)] text-[var(--irs-navy)] truncate">{tokenData.fileName}</p>
-                                            <p className="text-[var(--font-sm)] text-[var(--irs-gray-500)] font-medium mt-1">{tokenData.mimeType} • {(tokenData.fileSize / 1024).toFixed(1)} KB</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-4 mt-8">
-                                        <button className="btn-primary w-full h-[64px]" onClick={() => {
-                                            if (onComplete) {
-                                                onComplete();
-                                            } else {
-                                                alert('Consent Verified. Document Attached!');
-                                            }
-                                        }}>
-                                            {t('Confirm & Attach')}
-                                        </button>
-                                    </div>
-                                    
-                                    {tokenData.fileUrl && (
-                                        <button className="btn-secondary w-full h-[48px] mt-4 flex items-center justify-center gap-2" onClick={() => window.open(tokenData.fileUrl, '_blank')}>
-                                            <FileText className="w-5 h-5" /> {t('View Document')}
-                                        </button>
-                                    )}
-                                    
-                                </motion.div>
                             )}
                         </motion.div>
                     )}

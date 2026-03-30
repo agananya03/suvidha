@@ -10,6 +10,7 @@ import { ConsentModal } from '@/components/kiosk/ConsentModal';
 import { ConnectivityBanner } from '@/components/kiosk/ConnectivityBanner';
 import { VoiceNavigator } from '@/components/kiosk/VoiceNavigator';
 import { JourneyBar } from '@/components/kiosk/JourneyBar';
+import { ClickSpeechGuide } from '@/components/kiosk/ClickSpeechGuide';
 
 
 export default function KioskLayout({
@@ -27,6 +28,7 @@ export default function KioskLayout({
                 <FaceLock />
                 <ConsentModal />
                 <VoiceNavigator />
+                <ClickSpeechGuide />
                 <AttractLoop />
                 <FloatingSpeakerButton />
             </main>
