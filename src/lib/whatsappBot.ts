@@ -33,72 +33,9 @@ export async function handleWhatsAppMessage(
     try {
       const immediateResponse = '⏳ Got your document! Processing securely...';
       
-      // Return immediate response for TwiML, process in background
-      setImmediate(async () => {
-        try {
-          console.log('[Bot] Starting media upload processing');
-          const credentials = Buffer.from(
-            `${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`
-          ).toString('base64');
-
-          console.log('[Bot] Downloading media from:', mediaUrl);
-          const mediaRes = await fetch(mediaUrl, {
-            headers: { Authorization: `Basic ${credentials}` },
-          });
-          if (!mediaRes.ok) {
-            throw new Error(`Media download failed: ${mediaRes.status} ${mediaRes.statusText}`);
-          }
-
-          const buffer = Buffer.from(await mediaRes.arrayBuffer());
-          console.log('[Bot] Downloaded media, size:', buffer.length, 'bytes');
-          
-          const extMap: Record<string, string> = {
-            'image/jpeg': 'jpg', 'image/png': 'png',
-            'application/pdf': 'pdf', 'image/webp': 'webp',
-          };
-          const ext = extMap[mediaContentType] ?? 'bin';
-          const filename = `wa-doc-${Date.now()}.${ext}`;
-
-          const formData = new FormData();
-          formData.append(
-            'file',
-            new Blob([buffer], { type: mediaContentType }),
-            filename
-          );
-          formData.append('serviceType', session.serviceType ?? '');
-
-          console.log('[Bot] Uploading to:', `${BASE_URL}/api/documents/upload`);
-          const uploadRes = await fetch(
-            `${BASE_URL}/api/documents/upload`,
-            { method: 'POST', body: formData }
-          );
-          if (!uploadRes.ok) {
-            const errorText = await uploadRes.text();
-            throw new Error(`Upload API failed: ${uploadRes.status} ${uploadRes.statusText} - ${errorText}`);
-          }
-
-          const { token } = await uploadRes.json() as { token: string };
-          console.log('[Bot] Upload successful, token:', token);
-
-          session.uploadedToken = token;
-          session.step = 'DONE';
-          session.history.push(
-            { role: 'user', content: '[Citizen sent a document via WhatsApp]' },
-            { role: 'assistant', content: `Document received. Token: ${token}` }
-          );
-          await saveSession(fromPhone, session);
-          console.log('[Bot] Sending token to user');
-          await sendWhatsAppMessage(fromPhone, DONE_MSG(token));
-        } catch (err) {
-          console.error('[Bot] Media upload error:', {
-            message: err instanceof Error ? err.message : String(err),
-            baseUrl: BASE_URL,
-            mediaUrl: mediaUrl?.substring(0, 50) + '...',
-          });
-          await sendWhatsAppMessage(fromPhone,
-            `❌ Could not process your document. Try again or use:\n${BASE_URL}/upload/${encodeURIComponent(fromPhone)}`
-          );
-        }
+      // Process media upload in background (fire-and-forget)
+      processMediaUpload(fromPhone, mediaUrl, mediaContentType, session, BASE_URL).catch((err) => {
+        console.error('[Bot] Background processing failed:', err);
       });
 
       return immediateResponse;
@@ -139,5 +76,94 @@ export async function handleWhatsAppMessage(
   } catch (err) {
     console.error('[Bot] Gemini error:', err);
     return `Sorry, I'm having trouble right now. Please call *1800-111-2026* or type *MENU* to try again.`;
+  }
+}
+
+/**
+ * Background task to process media upload
+ * Runs asynchronously without blocking the webhook response
+ * For Vercel serverless compatibility, use Promise chain (not setImmediate)
+ */
+async function processMediaUpload(
+  fromPhone: string,
+  mediaUrl: string,
+  mediaContentType: string,
+  session: WhatsAppSession,
+  baseUrl: string
+): Promise<void> {
+  try {
+    console.log('[Bot] Starting media upload processing for:', fromPhone);
+    
+    const credentials = Buffer.from(
+      `${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`
+    ).toString('base64');
+
+    console.log('[Bot] Downloading media from:', mediaUrl);
+    const mediaRes = await fetch(mediaUrl, {
+      headers: { Authorization: `Basic ${credentials}` },
+    });
+    if (!mediaRes.ok) {
+      throw new Error(`Media download failed: ${mediaRes.status} ${mediaRes.statusText}`);
+    }
+
+    const buffer = Buffer.from(await mediaRes.arrayBuffer());
+    console.log('[Bot] Downloaded media, size:', buffer.length, 'bytes');
+    
+    const extMap: Record<string, string> = {
+      'image/jpeg': 'jpg', 'image/png': 'png',
+      'application/pdf': 'pdf', 'image/webp': 'webp',
+    };
+    const ext = extMap[mediaContentType] ?? 'bin';
+    const filename = `wa-doc-${Date.now()}.${ext}`;
+
+    const formData = new FormData();
+    formData.append(
+      'file',
+      new Blob([buffer], { type: mediaContentType }),
+      filename
+    );
+    formData.append('serviceType', session.serviceType ?? '');
+
+    console.log('[Bot] Uploading to:', `${baseUrl}/api/documents/upload`);
+    const uploadRes = await fetch(
+      `${baseUrl}/api/documents/upload`,
+      { method: 'POST', body: formData }
+    );
+    if (!uploadRes.ok) {
+      const errorText = await uploadRes.text();
+      throw new Error(`Upload API failed: ${uploadRes.status} ${uploadRes.statusText} - ${errorText}`);
+    }
+
+    const { token } = await uploadRes.json() as { token: string };
+    console.log('[Bot] Upload successful, token:', token);
+
+    // Update session
+    session.uploadedToken = token;
+    session.step = 'DONE';
+    session.history.push(
+      { role: 'user', content: '[Citizen sent a document via WhatsApp]' },
+      { role: 'assistant', content: `Document received. Token: ${token}` }
+    );
+    await saveSession(fromPhone, session);
+    console.log('[Bot] Session saved, now sending token message');
+
+    // Send token to user
+    await sendWhatsAppMessage(fromPhone, DONE_MSG(token));
+    console.log('[Bot] Token message sent successfully');
+
+  } catch (err) {
+    console.error('[Bot] Background media processing error:', {
+      phone: fromPhone,
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    
+    try {
+      await sendWhatsAppMessage(fromPhone,
+        `❌ Could not process your document. Try again or use:\n${baseUrl}/upload/${encodeURIComponent(fromPhone)}`
+      );
+    } catch (sendErr) {
+      console.error('[Bot] Failed to send error message:', sendErr);
+    }
   }
 }
