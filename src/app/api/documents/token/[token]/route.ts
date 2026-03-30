@@ -36,6 +36,7 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   fileSize: documentToken.fileSize ?? 0,
   mimeType: documentToken.mimeType ?? 'application/octet-stream',
   serviceType: documentToken.serviceType ?? null,
+  fileUrl: documentToken.cloudinaryUrl || null,
   uploadedAt: documentToken.uploadedAt,
   expiresAt: documentToken.expiresAt,
   hasFile: !!documentToken.cloudinaryUrl,

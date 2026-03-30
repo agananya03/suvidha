@@ -1,0 +1,133 @@
+﻿
+> suvidha@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô (pwa) Compiling for server...
+ Γ£ô (pwa) Compiling for server...
+ Γ£ô (pwa) Compiling for client (static)...
+ Γùï (pwa) Service worker: C:\Users\ASUS\OneDrive\Desktop\suvidhaah\public\sw.js
+ Γùï (pwa)   URL: /sw.js
+ Γùï (pwa)   Scope: /
+ Γùï (pwa) Custom runtimeCaching array found, using it instead of the default one.
+ Γ£ô Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+node.exe : 
+unhandledRejection Error: 
+Cannot find module 
+'./1682.js'
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (unh  
+  andledReject...ule './   
+ 1682.js':String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+Require stack:
+- C:\Users\ASUS\OneDrive\De
+sktop\suvidhaah\.next\serve
+r\webpack-runtime.js
+- C:\Users\ASUS\OneDrive\De
+sktop\suvidhaah\.next\serve
+r\pages\_document.js
+- C:\Users\ASUS\OneDrive\De
+sktop\suvidhaah\node_module
+s\next\dist\server\require.
+js
+- C:\Users\ASUS\OneDrive\De
+sktop\suvidhaah\node_module
+s\next\dist\server\load-com
+ponents.js
+- C:\Users\ASUS\OneDrive\De
+sktop\suvidhaah\node_module
+s\next\dist\build\utils.js
+- C:\Users\ASUS\OneDrive\De
+sktop\suvidhaah\node_module
+s\next\dist\build\worker.js
+- C:\Users\ASUS\OneDrive\De
+sktop\suvidhaah\node_module
+s\next\dist\compiled\jest-w
+orker\processChild.js
+    at 
+Function.<anonymous> (node:
+internal/modules/cjs/loader
+:1401:15)
+    at C:\Users\ASUS\OneDri
+ve\Desktop\suvidhaah\node_m
+odules\next\dist\server\req
+uire-hook.js:55:36
+    at defaultResolveImpl (
+node:internal/modules/cjs/l
+oader:1057:19)
+    at 
+resolveForCJSWithHooks (nod
+e:internal/modules/cjs/load
+er:1062:22)
+    at Function._load (node
+:internal/modules/cjs/loade
+r:1211:37)
+    at 
+TracingChannel.traceSync (n
+ode:diagnostics_channel:322
+:14)
+    at wrapModuleLoad (node
+:internal/modules/cjs/loade
+r:235:24)
+    at Module.<anonymous> (
+node:internal/modules/cjs/l
+oader:1487:12)
+    at mod.require (C:\User
+s\ASUS\OneDrive\Desktop\suv
+idhaah\node_modules\next\di
+st\server\require-hook.js:6
+5:28)
+    at require (node:intern
+al/modules/helpers:135:16) 
+{
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\ASUS\\OneDr
+ive\\Desktop\\suvidhaah\\.n
+ext\\server\\webpack-runtim
+e.js',
+    'C:\\Users\\ASUS\\OneDr
+ive\\Desktop\\suvidhaah\\.n
+ext\\server\\pages\\_docume
+nt.js',
+    'C:\\Users\\ASUS\\OneDr
+ive\\Desktop\\suvidhaah\\no
+de_modules\\next\\dist\\ser
+ver\\require.js',
+    'C:\\Users\\ASUS\\OneDr
+ive\\Desktop\\suvidhaah\\no
+de_modules\\next\\dist\\ser
+ver\\load-components.js',
+    'C:\\Users\\ASUS\\OneDr
+ive\\Desktop\\suvidhaah\\no
+de_modules\\next\\dist\\bui
+ld\\utils.js',
+    'C:\\Users\\ASUS\\OneDr
+ive\\Desktop\\suvidhaah\\no
+de_modules\\next\\dist\\bui
+ld\\worker.js',
+    'C:\\Users\\ASUS\\OneDr
+ive\\Desktop\\suvidhaah\\no
+de_modules\\next\\dist\\com
+piled\\jest-worker\\process
+Child.js'
+  ]
+}

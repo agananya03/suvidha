@@ -17,7 +17,7 @@ const MOCK_DIGILOCKER_DOCS = [
     { id: '3', name: 'Driving License', type: 'ID PROOF', date: '2022-01-15' },
 ];
 
-export default function DocumentHandler() {
+export default function DocumentHandler({ onComplete }: { onComplete?: () => void }) {
     const { highContrast } = useStore();
     const { t } = useDynamicTranslation();
     const [activeTab, setActiveTab] = useState<'digilocker' | 'scanner' | 'token'>('digilocker');
@@ -253,7 +253,10 @@ export default function DocumentHandler() {
                                             </div>
                                         ))}
                                     </div>
-                                    <button className="btn-primary w-full h-[64px]" disabled={selectedDocs.length === 0} onClick={() => alert('Documents attached!')}>
+                                    <button className="btn-primary w-full h-[64px]" disabled={selectedDocs.length === 0} onClick={() => {
+                                        if (onComplete) onComplete();
+                                        else alert('Documents attached!');
+                                    }}>
                                         Attach {selectedDocs.length} Document{selectedDocs.length !== 1 && 's'}
                                     </button>
                                 </motion.div>
@@ -332,7 +335,10 @@ export default function DocumentHandler() {
                                     </div>
                                     <div className="flex gap-4">
                                         <button className="btn-secondary w-full h-[64px]" onClick={() => setScanStatus('idle')}>{t('Rescan')}</button>
-                                        <button className="btn-primary w-full h-[64px]" onClick={() => alert('Attached scanned file!')}>{t('Attach File')}</button>
+                                        <button className="btn-primary w-full h-[64px]" onClick={() => {
+                                            if (onComplete) onComplete();
+                                            else alert('Attached scanned file!');
+                                        }}>{t('Attach File')}</button>
                                     </div>
                                 </motion.div>
                             )}

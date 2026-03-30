@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -57,7 +57,7 @@ const POLICIES = [
 
 const SLOTS = ['9:00 AM – 12:00 PM', '12:00 PM – 3:00 PM', '3:00 PM – 6:00 PM'];
 
-export default function GasPage() {
+function GasContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useDynamicTranslation();
@@ -356,5 +356,17 @@ export default function GasPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function GasPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-full flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    }>
+      <GasContent />
+    </Suspense>
   );
 }

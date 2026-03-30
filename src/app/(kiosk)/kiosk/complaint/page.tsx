@@ -206,7 +206,7 @@ export default function ComplaintPage() {
         });
     };
 
-    const queueComplaintLocally = async (payload: { serviceType: string; description: string; dnaAnalysis: unknown; }) => {
+    const queueComplaintLocally = async (payload: any) => {
         const { queueAction } = await import('@/lib/offlineDb');
         const { createSignedSyncItem } = await import('@/lib/offlineCrypto');
         const signedItem = await createSignedSyncItem('complaint', payload);
@@ -219,7 +219,7 @@ export default function ComplaintPage() {
         return { queued: true as const };
     };
 
-    const submitComplaintWithOfflineFallback = async (payload: { serviceType: string; description: string; dnaAnalysis: unknown; }) => {
+    const submitComplaintWithOfflineFallback = async (payload: any) => {
         if (!isOnline || !navigator.onLine) {
             return queueComplaintLocally(payload);
         }
@@ -258,11 +258,7 @@ export default function ComplaintPage() {
                 slaDeadline: dnaAnalysis?.slaDays ? new Date(Date.now() + dnaAnalysis.slaDays * 86400000).toISOString() : undefined
             };
 
-            const result = await submitComplaintWithOfflineFallback({
-                serviceType: serviceType || 'OTHER',
-                description,
-                dnaAnalysis: dnaAnalysis || null
-            });
+            const result = await submitComplaintWithOfflineFallback(payload);
 
             if (result.queued) {
                 const { suvidhaToast } = await import('@/lib/toast');

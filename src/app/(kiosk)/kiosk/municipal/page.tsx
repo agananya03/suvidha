@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -41,7 +41,7 @@ const POLICIES = [
   { title: 'PMAY-U Urban Housing', desc: 'Affordable housing under Credit Linked Subsidy Scheme — interest subsidy up to 6.5%.', icon: '🏗️', color: 'bg-orange-50 border-orange-200 text-orange-800' },
 ];
 
-export default function MunicipalPage() {
+function MunicipalContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useDynamicTranslation();
@@ -409,5 +409,17 @@ export default function MunicipalPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function MunicipalPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-full flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    }>
+      <MunicipalContent />
+    </Suspense>
   );
 }

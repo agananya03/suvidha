@@ -1,0 +1,100 @@
+
+> suvidha@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: C:\Users\ASUS\OneDrive\Desktop\suvidhaah\public\sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+ ○ (pwa) Custom runtimeCaching array found, using it instead of the default one.
+ ✓ Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/34) ...
+   Generating static pages (8/34) 
+Dashboard API Error: B [Error]: Dynamic server usage: Route /api/user/dashboard couldn't be rendered statically because it used `request.headers`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:21778)
+    at Object.get (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:29465)
+    at u (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\app\api\user\data\route.js:1:2328)
+    at p (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\app\api\user\dashboard\route.js:1:712)
+    at C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854) {
+  description: "Route /api/user/dashboard couldn't be rendered statically because it used `request.headers`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+   Generating static pages (16/34) 
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/kiosk/electricity". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\chunks\3785.js:1:13955)
+    at c (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\chunks\3785.js:1:24938)
+    at D (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\app\(kiosk)\kiosk\electricity\page.js:1:9830)
+    at nj (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nL (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nI (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47011)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47718)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+
+Error occurred prerendering page "/kiosk/electricity". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (25/34) 
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/kiosk/gas". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\chunks\3785.js:1:13955)
+    at c (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\chunks\3785.js:1:24938)
+    at E (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\app\(kiosk)\kiosk\gas\page.js:1:8154)
+    at nj (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nL (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nI (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47011)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47718)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+
+Error occurred prerendering page "/kiosk/gas". Read more: https://nextjs.org/docs/messages/prerender-error
+
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/kiosk/municipal". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\chunks\3785.js:1:13955)
+    at c (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\chunks\3785.js:1:24938)
+    at M (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\.next\server\app\(kiosk)\kiosk\municipal\page.js:1:7802)
+    at nj (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nL (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nI (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47011)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47718)
+    at nM (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\ASUS\OneDrive\Desktop\suvidhaah\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+
+Error occurred prerendering page "/kiosk/municipal". Read more: https://nextjs.org/docs/messages/prerender-error
+
+🌐 i18next is maintained with support from Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ ✓ Generating static pages (34/34)
+
+> Export encountered errors on following paths:
+	/(kiosk)/kiosk/electricity/page: /kiosk/electricity
+	/(kiosk)/kiosk/gas/page: /kiosk/gas
+	/(kiosk)/kiosk/municipal/page: /kiosk/municipal
