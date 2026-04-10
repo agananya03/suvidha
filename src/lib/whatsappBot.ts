@@ -1,7 +1,7 @@
 import { getSession, saveSession, WhatsAppSession } from '@/lib/redisClient';
 import { sendWhatsAppMessage } from '@/lib/messaging';
 
-// Construct BASE_URL with Vercel support
+  // Construct BASE_URL with Vercel support
 const getBaseUrl = () => {
   // Vercel environment
   if (process.env.VERCEL_URL) {
